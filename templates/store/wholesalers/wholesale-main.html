@@ -1,0 +1,2400 @@
+<!doctype html>
+<html lang="zxx">
+{% load static %}
+{% load math_filters %}
+{% load url_filters %}
+{% load query_params %}
+<head>
+    <!-- metas -->
+    
+    <meta charset="UTF-8">
+    <meta name="author" content="pxdraft">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="keywords" content="Jirani Mall - Earn point from every purchase for shopping, airtime and experiences">
+    <meta name="description" content="Jirani Mall - Earn point from every purchase for shopping, airtime and experiences">
+    <!-- title -->
+    <title>Garantii Mall - Wholesale Platform</title>
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'assets-shopap/img/jiranimall-logo.png' %}">
+    <!-- CSS Template -->
+    <link href="{% static 'assets-shopap/css/style.css' %}" rel="stylesheet">
+    
+  <link href="{% static 'assets-shopap/vendor/simple-datatables/style.css' %}" rel="stylesheet">
+    <style>
+    .quantity-wrapper {
+      min-width: 100%;
+    }
+    
+    .quantity-value {
+      display: inline-block;
+      min-width: 30%;
+      text-align: center;
+      font-weight: bold;
+    }
+    /*.product-card-info {*/
+    /*  overflow: visible !important;*/
+    /*}*/
+
+    /*.product-card-7 {*/
+    /*  display: flex;*/
+    /*  flex-direction: column;*/
+      height: auto !important; /* allow natural height */
+      overflow: visible !important; /* don't clip inner content */
+    /*}*/
+
+    /*.extra-info {*/
+    /*  max-height: 0;*/
+    /*  overflow: hidden;*/
+    /*  transition: max-height 0.4s ease-out;*/
+    /*}*/
+    /*.extra-info.show {*/
+      max-height: 500px; /* adjust as needed */
+    /*}*/
+
+    </style>
+    
+
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L8J68PS7HQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-L8J68PS7HQ');
+</script>
+<body>
+    
+    <!-- Ask Form -->
+    <div class="modal-askform-view modal fade" id="px_ask_modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Ask about product</h4><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3"><label class="form-label">Your Name</label> <input type="text" class="form-control" placeholder="Name"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3"><label class="form-label">Email address</label> <input type="email" class="form-control" placeholder="E-mail"></div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3"><label class="form-label" for="exampleInputEmail1">Subject</label> <input type="text" class="form-control" placeholder="Subject"></div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3"><label class="form-label" for="exampleInputEmail1">Your Message</label> <textarea class="form-control" rows="5" placeholder="Your Message"></textarea></div>
+                            </div>
+                        </div>
+                        <div class=""><button type="submit" class="btn btn-primary">Send Message</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Ask Form -->
+    <!-- Header Search -->
+    <div class="px-search-full collapse bg-body p-3 position-fixed w-100 top-0" id="search-open">
+        <div class="container position-relative">
+            <div class="row vh-100 justify-content-center">
+                <div class="col-lg-8 pt-12">
+                    <h2 class="h1 mb-4"><span class="d-block">Search</span></h2>
+                    <form class="position-relative w-100" method="get" action="{% url 'all_Wholesale_products' %}">
+                      <div class="mb-3 input-group">
+                        <!-- Search input -->
+                        <input class="form-control shadow-none"
+                               type="text"
+                               name="q"
+                               placeholder="What are you looking for?"
+                               required
+                               value="{{ request.GET.q|default:'' }}">
+                        <!-- Search button -->
+                        <button type="submit" class="btn btn-primary shadow-none">
+                          <i class="fi-search"></i>
+                        </button>
+                      </div>
+                    </form>
+                    
+                </div>
+            </div>
+            <!-- Search button close START --><a class="search-close" data-bs-toggle="collapse" href="javascript:void(0)" data-bs-target="#search-open" aria-expanded="true"><i class="bi bi-x p-0 lh-1"></i> </a>
+            <!-- Search button close END -->
+        </div>
+    </div>
+    </div>
+    <!-- End Header Search -->
+    <!-- Header Side Search -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="header_search_popup" aria-labelledby="header_search_popupLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" id="header_search_popupLabel">Search</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button></div>
+        <div class="offcanvas-body">
+            <form class="position-relative w-100" method="get" action="{% url 'all_Wholesale_products' %}">
+                <div class="input-group">
+                    <!-- Search input --><input class="form-control shadow-none"
+                               type="text"
+                               name="q"
+                               placeholder="What are you looking for?"
+                               required
+                               value="{{ request.GET.q|default:'' }}">
+                    <!-- Search button --><button type="submit" class="btn btn-primary shadow-none"><i class="fi-search"></i></button></div>
+            </form>
+            <div class="nav-tabs-wrapper overflow-auto mt-2">
+                <ul class="nav nav-tabs nav-tabs-02 flex-nowrap justify-content-start" id="home-6_tabs" role="tablist" style="white-space: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    {% for category in subcategories %}
+                    <a class="rounded-pill px-3 small font-w-500 py-1 bg-gray-200 me-1 mb-1 text-mode" href="#">{{ category.sub_category_name }}</a>
+                    
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- End Header Side Search -->
+    <!-- Mini Cart -->
+    <!-- Mini Cart -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="modalMiniCart" aria-labelledby="modalMiniCartLabel">
+      <div class="offcanvas-header border-bottom">
+        <h6 class="offcanvas-title" id="modalMiniCartLabel">
+          <a class="nav-link">
+            <span data-cart-items="0"><i class="fi-shopping-cart"></i></span>
+          </a>
+        </h6>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+    
+      <div class="offcanvas-body">
+        <ul class="list-unstyled m-0 p-0" id="cart-items">
+          <!-- Cart items will be injected here -->
+        </ul>
+      </div>
+
+      <div class="offcanvas-footer border-top p-3">
+        <div class="row g-0 py-2">
+          <div class="col-8">
+              <p>Subtotal: <span id="subtotal">ksh0.00</span></p>
+              <p>total Items: <span data-cart-items>00</span></p>
+              <p>you will earn: <span  id="total-earned-points-wholesale">0</span> pts</p>
+            </div>
+        </div>
+        {% if request.user.is_staff %}
+        <div class="mb-3">
+          <label for="customerPhone" class="form-label">Customer Info (optional)</label>
+          <input type="text" id="customerNameInput" class="form-control" placeholder="Enter customer name">
+          <input type="text" id="customerPhone" class="form-control" placeholder="Enter customer phone number">
+        </div>
+        {% endif %}
+
+        <div class="pt-4">
+          <button class="btn btn-block btn-mode w-100 mb-3" id="checkout-btn" onclick="checkout(event)">
+            Continue to Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- End Mini Cart  -->
+    <!-- Quick View  -->
+    <div class="modal-quick-view modal fade" id="px-quick-view" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content"><button class="btn-close position-absolute end-0 top-0 me-2 mt-2 z-index-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-body p-3">
+                    <div class="row">
+                        <!-- Product Gallery -->
+                        <div class="col-lg-6 lightbox-gallery product-gallery">
+                            <div id="modal-product-carousel" class="carousel slide" data-bs-ride="carousel">
+                              <div class="carousel-inner" id="carousel-images-container">
+                                <!-- Images will be injected here -->
+                              </div>
+                              <button class="carousel-control-prev" type="button" data-bs-target="#modal-product-carousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                                <span class="visually-hidden">Previous</span>
+                              </button>
+                              <button class="carousel-control-next" type="button" data-bs-target="#modal-product-carousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                                <span class="visually-hidden">Next</span>
+                              </button>
+                            </div>
+
+
+                        </div>
+                        <!-- End Product Gallery -->
+                        <!-- Product Details -->
+                        <div class="col-lg-6">
+                      <div class="product-detail pt-4">
+                        <!-- ðŸŸ© Inject seller name here -->
+                        <div class="products-brand pb-2">
+                          <span id="modal-product-seller">Brand name</span>
+                        </div>
+                    
+                        <!-- ðŸŸ© Inject product name here -->
+                        <div class="products-title mb-2">
+                          <h1 class="h4" id="modal-product-name">Product Title Here</h1>
+                        </div>
+                    
+                        <!-- ðŸŸ© You can later update rating stars dynamically if needed -->
+                        <div class="rating-star text small pb-4">
+                          <i class="bi bi-star-fill active"></i>
+                          <i class="bi bi-star-fill active"></i>
+                          <i class="bi bi-star-fill active"></i>
+                          <i class="bi bi-star-fill active"></i>
+                          <i class="bi bi-star"></i>
+                          <small>(4 Reviews)</small>
+                        </div>
+                    
+                        
+                        <!-- ðŸŸ© Inject pricing -->
+                        <div class="product-price fs-3 fw-500 mb-2">
+                          <!--<del class="text-muted fs-6">ksh<span id="modal-old-price">38.<small>50</small></span></del>-->
+                          <span class="text-primary">ksh<span id="modal-price">28.<small>50</small></span></span>
+                        </div>
+                        <div class="product-extra-info mt-3">
+                            <p><strong>Items per Unit:</strong> <span id="modal-items-per-unit"></span></p>
+                            <p><strong>Price per Item:</strong> <span id="modal-price-per-item"></span></p>
+                            <p><strong>Seller Location:</strong> <span id="modal-seller-location"></span></p>
+                        
+                            <p><strong>Available Sizes:</strong></p>
+                            <div id="modal-available-sizes" class="mb-2"></div>
+                        
+                            <p><strong>Available Colours:</strong></p>
+                            <div id="modal-available-colours"></div>
+                        </div>
+                        <!-- ðŸŸ© Inject product description here -->
+                        <div class="product-description">
+                          <div id="modal-product-description">Loading description...</div>
+                        </div>
+                        
+                        <div class="product-detail-actions d-flex flex-wrap pt-3">
+                          <div class="cart-qty me-3 mb-3" data-id="">
+                            <!-- ðŸŸ© Use same data here if needed -->
+                            <!--<a href="#" class="btn btn-primary add-to-cart-btn"-->
+                            <!--   data-id=""-->
+                            <!--   data-name=""-->
+                            <!--   data-price=""-->
+                            <!--   data-image="">-->
+                            <!--  <i class="fi-shopping-cart"></i> Add to Cart-->
+                            <!--</a>-->
+                    
+                            <div class="quantity-control d-none">
+                              <div class="d-flex align-items-center gap-2 justify-content-start quantity-wrapper">
+                                <button class="btn btn-danger">0706420043</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- End Product Details -->
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- End Quick View  -->
+    
+    <!-- modal for group product offers-->
+    <div class="modal fade" id="offersModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+    
+          <div class="modal-header">
+            <h5 class="modal-title">Available Offers</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+    
+          <div class="modal-body">
+    
+            <div class="row mb-3">
+                <div class="col-md-3 text-center">
+                    <img id="modalProductImage"
+                         class="img-fluid rounded"
+                         style="max-height:120px; object-fit:contain;">
+                </div>
+                
+                <div class="col-md-9">
+                    <h5 id="modalProductName"></h5>
+                
+                    <p class="text-muted mb-1">Normal Price</p>
+                
+                    <h4 class="text-danger">
+                        KSh <span id="modalProductPrice"></span>
+                    </h4>
+                </div>              
+              
+            </div>
+    
+            <hr>
+    
+            <div id="offersContainer"></div>
+    
+          </div>
+    
+        </div>
+      </div>
+    </div>
+    <!-- end modal -->
+    <!-- 
+    ========================
+        Wrapper 
+    ========================
+    -->
+    <div class="wrapper">
+        <!-- heder height -->
+        <div class="header-height-bar"></div>
+        <!-- Header -->
+        <header class="header-main header-light header-fluid bg-mode-re header-option-5">
+            <!-- Top Header -->
+            <div class="header-top bg-primary text-white">
+                <div class="container">
+                    <p class="m-0 text-center py-2 small">
+                        📍 Pickup Point: Afya Centre, Travis Building, 3rd Floor, Shop B32<br/>
+                        call 0706420043
+                    </p>
+                </div>
+            </div>
+            <!-- End Top Header -->
+            <!-- Top Header -->
+            <div class="header-middle d-none d-lg-block">
+                <div class="container">
+                    <div class="row justify-content-around align-items-center">
+                        <div class="col-md-4 text-center order-md-1 d-flex align-items-center justify-content-center">
+                            {% if business %}<b>{{business.business_name}}</b> 
+                            {% else %} 
+                            <!-- Logo --><a class="navbar-brand" href="{% url 'all_Wholesale_products' %}"><img class="logo-dark" style="height: 5px;" src="{% static 'assets-shopap/img/jiranimall-logo.png' %}" title="" alt=""> <img class="logo-light" src="{% static 'assets-shopap/img/jiranimall-logo.png' %}" title="" alt=""> </a>
+                            {% endif %}
+                            <!-- Logo -->
+                        </div>
+                        <div class="col-md-4">
+                            <form  method="get" action="{% url 'all_Wholesale_products' %}">
+                                <div class="h-search">
+                                    <!-- Search input --><input class="form-control" type="text" name="q" placeholder="What are you looking for?"  required>
+                                    <!-- Search button --><button type="submit" class="btn shadow-none"><i class="fi-search"></i></button></div>
+                            </form>
+                        </div>
+                        <div class="col-md-4 order-md-1">
+                            <div class="nav flex-nowrap align-items-center justify-content-md-end header-right">
+                                <!-- Nav User-->
+                                <div class="nav-item dropdown"><a class="nav-link" href="#" role="button" id="dropdown_myaccount" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fi-user"></i></a>
+                                    <div class="dropdown-menu dropdown-menu-end mt-2 shadow"
+                                        aria-labelledby="dropdown_myaccount">
+                                        {% if request.user.is_authenticated %}
+                                        {% if request.user.business_set.exists  or request.user.is_staff %}
+                                        <a class="dropdown-item" href="{% url 'business' %}">My Business</a>
+                                        {% else %}
+                                        <a class="dropdown-item" href="{% url 'profile' %}">Profile</a>
+                                        {% endif %}
+                                        <a class="dropdown-item" href="{% url 'logout_user' %}">Logout</a>
+                                        {% else %}
+                                        <a class="dropdown-item" href="{% url 'login_user' %}">Login</a> 
+                                        <a class="dropdown-item" href="{% url 'register_user' %}">Register</a> 
+                                        {% endif %}
+                                        <a class="dropdown-item" href="{% url 'my_wholesale_orders' %}">my orders</a>
+                                        {% if request.user.is_staff %}
+                                        <a class="dropdown-item" href="https://accounts.garantiimall.shop/">Accounting</a>
+                                        {% endif %}
+                                        
+                                        
+                                    </div>
+                                </div>
+                                <!-- Wishlist -->
+                                <!--<div class="nav-item d-none d-xl-block"><a class="nav-link" href="#"><i class="fi-heart"></i></a></div>-->
+                                <!-- Cart -->
+                                <div class="nav-item"><a class="nav-link" data-bs-toggle="offcanvas" href="#modalMiniCart" role="button" aria-controls="modalMiniCart"><span class="" data-cart-items="8"><i class="fi-shopping-cart"></i></span></a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Top Header -->
+            <nav class="navbar navbar-expand-lg navbar-light d-none d-lg-flex">
+                <div class="container">
+                    <!-- Menu -->
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav mx-auto">
+                            <li class="dropdown nav-item"><a href="#" class="nav-link">Challenges</a> <label class="px-dropdown-toggle mob-menu"></label>
+                                <ul class="dropdown-menu left shadow-lg">
+                                    <li><a class="dropdown-item" href="{% url 'hug_or_slap_view' %}">Slap or Hug Challenge </a></li>
+                                    <li><a class="dropdown-item" href="{% url 'view_all_qna_challenges' %}">Q&A Challenge</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'vote_challenge_opportunities' %}">Creative Challenge</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'refferal_challenge_opportunities' %}">Refferal Challenge</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="dropdown nav-item"><a href="#" class="nav-link">Products</a> <label class="px-dropdown-toggle mob-menu"></label>
+                                <ul class="dropdown-menu left shadow-lg">
+                                    <li><a class="dropdown-item" href="{% url 'all_Wholesale_products' %}">All Products</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'all_Wholesale_products' %}?dropship=dropship">Dropshiped Products</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'buy_in_groups' %}">Active Groups</a></li>l
+                                  </ul>
+                            </li>
+                            
+
+                            {% if request.user.is_authenticated %}
+                            <li class="dropdown nav-item"><a href="#" class="nav-link">My Purchases</a> <label class="px-dropdown-toggle mob-menu"></label>
+                                <ul class="dropdown-menu left shadow-lg">
+                                    <li><a class="dropdown-item" href="{% url 'all_customer_orders' request.user.customer.id %}">My Wholesale Purchases</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'all_customer_whishlist' request.user.customer.id %}">My Unpaid Orders</a></li>
+                                </ul>
+                            </li>
+                            
+                            {% else %}
+                            <li class="dropdown nav-item"><a href="#" class="nav-link">My Purchases</a> <label class="px-dropdown-toggle mob-menu"></label>
+                                <ul class="dropdown-menu left shadow-lg">
+                                    <li><a class="dropdown-item login-to-pay" href="{% url 'customer_orders_redirect'%}">My Wholesale Purchases</a></li>
+                                    <li><a class="dropdown-item login-to-pay" href="{% url 'customer_orders_redirect'%}?wishlist=wishlist">My Unpaid Orders</a></li>
+                                </ul>
+                            </li>
+                            {% endif %}
+                            {% if request.user.is_staff %}
+                            <li class="dropdown nav-item"><a href="#" class="nav-link">Administration</a> <label class="px-dropdown-toggle mob-menu"></label>
+                                <ul class="dropdown-menu left shadow-lg">
+                                    <li><a class="dropdown-item" href="https://accounts.garantiimall.shop/">Accounting</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'customers_with_active_orders' %}">Customers With Orders</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'all_dispatch_orders' %}">All Dispatch Orders</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'add_dispatch' %}">Add Dispatch</a></li>
+                                </ul>
+                            </li>
+                            {% endif %}
+                            
+                        </ul>
+                    </div>
+                    <!-- End Menu -->
+                </div>
+            </nav>
+            <!-- Mobile Menu -->
+            <div class="mobile-header-01 d-lg-none">
+                <div class="mob-head-in">
+                    <div class="mob-toggle"><button class="hm-toggle-mob" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_mobile_header_01" aria-controls="offcanvas_mobile_header_01"><span></span></button></div>
+                    <div class="mob-logo text-center w-100 d-flex justify-content-center">
+                        {% if business %}
+                        <b>{{business.business_name}}</b> 
+                        {% else %} 
+                            <a href="{% url 'all_Wholesale_products' %}"><img class="logo-dark" style="max-height: 30px;" src="{% static 'assets-shopap/img/jiranimall-logo.jpg' %}" title="" alt=""> <img class="logo-light" src="{% static 'assets-shopap/img/jiranimall-logo.jpg' %}" title="" alt=""> </a>
+                        {% endif %}
+                        </div>
+                    <div class="mob-end">
+                        <!-- Cart -->
+                        <div class="nav-item"><a class="nav-link" data-bs-toggle="offcanvas" href="#modalMiniCart" role="button" aria-controls="modalMiniCart"><span class="" data-cart-items="8"><i class="fi-shopping-cart"></i></span></a></div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Mobile Menu -->
+        </header>
+        <!-- Header End -->
+        <!-- Mobile Bottom -->
+        <!-- Header Bottom -->
+        <div class="mob-header-btn-fixed-01 d-lg-none">
+            <div class="mob-hb-in">
+                <div id="cartLink" class="mob-hb-item" style="display: none;"><a  class="mob-hb-link" data-bs-toggle="offcanvas" href="#modalMiniCart" role="button" aria-controls="modalMiniCart" data-cart-items="8"><i class="fi-shopping-cart"><sub>08</sub></i> <span>Cart</span></a></div>
+                <div id="emptyCartLink" class="mob-hb-item" style="display: none;"><a class="mob-hb-link" href="{% url 'my_wholesale_orders' %}"><i class="bi bi-cart"></i> <span>my orders</span></a></div>
+                <div class="mob-hb-item"><a class="mob-hb-link" data-bs-toggle="offcanvas" href="#header_search_popup" role="button" aria-controls="header_search_popup"><i class="fi-search"></i> <span>Search</span></a></div>
+                {% if request.user.is_authenticated %}
+                    {% if request.user.business_set.exists or request.user.is_staff %}
+                        <!-- User has at least one business -->
+                        <div class="mob-hb-item">
+                            <a href="{% url 'business' %}" class="mob-hb-link">
+                                <i class="fi-user"></i> <span>My Business</span>
+                            </a>
+                        </div>
+                    {% else %}
+                        <!-- Authenticated but no business -->
+                        <div class="mob-hb-item">
+                            <a href="{% url 'profile' %}" class="mob-hb-link">
+                                <i class="fi-user"></i> <span>Profile</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                <div class="mob-hb-item"><a href="{% url 'login_user' %}" class="mob-hb-link" ><i class="fi-user"></i> <span>Login</span></a></div>
+                {% endif %}
+                <div class="mob-hb-item"><a href="{% url 'vote_challenge_opportunities' %}" class="mob-hb-link" ><i class="bi bi-trophy"></i> <span>Challenges</span></a></div>
+                
+                
+                
+            </div>
+        </div>
+        <!-- End Header Bottom -->
+        <!-- Mobile  -->
+        <div class="offcanvas-lg mobile-nav-offcanvas offcanvas-start d-lg-none" tabindex="-1" id="offcanvas_mobile_header_01" aria-labelledby="offcanvas_mobile_header_01">
+            <div class="offcanvas-header">
+                <div class="offcanvas-header-overlay"></div><button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#offcanvas_mobile_header_01" aria-label="Close"><i class="fi-x"></i></button>
+                {% if request.user.is_authenticated %}
+                <div class="mob-user"><a href="{% url 'logout_user' %}"><i class="fi-user"></i> <span>Logout</span></a></div>
+                {% else %}
+                <div class="mob-user"><a href="{% url 'login_user' %}"><i class="fi-user"></i> <span>Login</span></a></div>
+                {% endif %}
+                <ul class="mob-extra">
+                    <!--<li class="nav-item"><a href="#" class="nav-link"><i class="fi-heart"></i> <span>Wishlist</span></a></li>-->
+                </ul>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="navbar-nav mx-auto">
+                <!-- Cat Menu -->
+                <li class="dropdown nav-item"><a href="#" class="nav-link">Challenges</a> <label class="px-dropdown-toggle mob-menu"></label>
+                    <ul class="dropdown-menu left shadow-lg">
+                        <li><a class="dropdown-item" href="{% url 'hug_or_slap_view' %}">Slap or Hug Challenge </a></li>
+                        <li><a class="dropdown-item" href="{% url 'view_all_qna_challenges' %}">QnA Challenge</a></li>
+                        <li><a class="dropdown-item" href="{% url 'vote_challenge_opportunities' %}">Creative Challenge</a></li>
+                        <li><a class="dropdown-item" href="{% url 'refferal_challenge_opportunities' %}">Refferal Challenge</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="{% if dropshipping_page %} {% url 'Wholesale_products_for_dropshipping' %} {% else %} {% url 'all_Wholesale_products' %}{% endif %}" class="nav-link">
+                        <i class="bi bi-grid-3x3-gap"></i> All Products
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="{% url 'all_products' %}?type=experience" class="nav-link">
+                        <i class="bi bi-camera"></i> Experiences
+                    </a>
+                </li>
+                <li class="dropdown nav-item vertical-dropdown">
+                <a href="#" class="nav-link">
+                    Categories
+                </a>
+                <label class="px-dropdown-toggle mob-menu"></label>
+                <ul class="vertical-dropdown-menu dropdown-menu left shadow-none">
+                    {% for category in categories %}
+                    <li>
+                        <a class="dropdown-item" href="{% if dropshipping_page %} {% url 'Wholesale_products_for_dropshipping' %} {% else %} {% url 'all_Wholesale_products' %}{% endif %}?category_id={{category.id}}">
+                            <i class="bi bi-gift me-2"></i> <span>{{ category.category_name }}</span>
+                        </a>
+                        <label class="px-dropdown-toggle mob-menu"></label>
+                        <div class="vertical-mm-in">
+                            <div class="row gy-4">
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <h6 class="sm-title-04">
+                                <a class="text-reset" href="{% if dropshipping_page %} {% url 'Wholesale_products_for_dropshipping' %} {% else %} {% url 'all_Wholesale_products' %}{% endif %}?category_id={{category.id}}">
+                                    {{ category.category_name }}
+                                </a>
+                                </h6>
+                                <ul class="list-unstyled link-list-style-03">
+                                
+                                {% for sub in category.prefetched_subcategories %}
+                                <li>
+                                    <a href="{% if dropshipping_page %} {% url 'Wholesale_products_for_dropshipping' %} {% else %} {% url 'all_Wholesale_products' %}{% endif %}?subcategory_id={{sub.id}}">{{ sub.sub_category_name }}</a>
+                                </li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                </li>
+
+                {% if sellers %}
+                <li class="dropdown nav-item"><a href="#" class="nav-link">Sellers</a> <label class="px-dropdown-toggle mob-menu"></label>
+                    <ul class="dropdown-menu left shadow-lg">
+                        {% for seller in sellers %}
+                        <li><a class="dropdown-item" href="{% url 'wholesale_store' seller.slug %}">{{seller.business_name}}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %}
+                <!--my wholesale orders -->
+                {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                    <a href="{% url 'all_customer_whishlist' request.user.customer.id %}" class="nav-link">
+                        <i class="bi bi-camera"></i> Your Unpaid Orders
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link  collapsed" href="{% url 'all_customer_orders' request.user.customer.id %}">
+                      <i class="bi bi-bag"></i>
+                      <span>My Wholesale Purchases</span>
+                    </a>
+                </li><!-- my orders -->
+                {% else %}
+                <li>
+                  <a href="{% url 'customer_orders_redirect' %}"
+                    class="btn btn-primary login-to-pay">
+                      My Wholesale Purchases
+                  </a>
+                </li>
+                {% endif %}
+                
+                {% if request.user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link  collapsed" href="{% url 'business' %}">
+                      <i class="bi bi-bag"></i>
+                      <span>Admin Section</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link  collapsed" href="https://accounts.garantiimall.shop/">
+                      <i class="bi bi-bag"></i>
+                      <span>Accounting</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link  collapsed" href="{% url 'customers_with_active_orders' %}">
+                      <i class="bi bi-bag"></i>
+                      <span>Customers With Orders</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link  collapsed" href="{% url 'all_dispatch_orders' %}">
+                      <i class="bi bi-bag"></i>
+                      <span>All Dispatch Orders</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link  collapsed" href="{% url 'add_dispatch' %}">
+                      <i class="bi bi-bag"></i>
+                      <span>Add Dispatch </span>
+                    </a>
+                </li>
+                {% endif %}
+                
+            </ul>
+        </div>
+    </div>
+    <!-- End Mobile Bottom -->
+    <!-- End Header -->
+    {% block content %}
+    {% endblock content%}
+    <!-- Footer -->
+    <footer class="bg-gray-100 footer border-top">
+        <div class="footer-top py-6">
+            <div class="container">
+                <!-- will add neswletter later -->
+                <!-- <div class="border p-4 bg-mode-re mb-6">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="h5">Newsletter subscription</h6>
+                            <p class="small m-0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group"><input type="email" class="form-control bg-gray-100" placeholder="Enter your email"> <button class="btn btn-primary" type="submit">Get Started</button></div>
+                        </div>
+                    </div>
+                </div> -->
+                <div class="row">
+                    <div class="col-sm-6 col-lg-3 my-3">
+                        <div class="pb-3"><img class="logo-dark" src="../../assets/img/logo.svg" title="" alt=""> <img class="logo-light" src="../../assets/img/logo-light.svg" title="" alt="">
+                        </div>
+                        <address class="dark-link mb-4">
+                            <p class="mb-2">{% if business %}{{business.address}} {{business.location}}, {{business.county}}, {{business.addresscountry}} {% else %}4th floor Delta Coner Westland Nairobi,<br>Kenya {% endif %}</p>
+                            <!-- <p class="mb-2">
+                            <a class="border-bottom border-secondary" href="mailto:support@domain.com">support@domain.com</a>
+                            </p> -->
+                            <p class="mb-2">
+                                <a class="border-bottom border-secondary" href="tel:{% if business %}{{business.phone_number}}{% else %}0706420043{%endif%}">{% if business %}{{business.phone_number}}{% else %}0706420043{%endif%}</a>
+                            </p>
+                        </address>
+                        <div
+                            class="nav dark-link fs-5"><a class="me-3" href="https://www.facebook.com/profile.php?id=61578112808096"><i class="bi bi-facebook"></i> </a><a class="me-3" href="https://x.com/JiranimallShop?t=r4XpFxJuMmovpdfQral1Iw&s=08">X </a><a class="me-3" href="https://www.instagram.com/jiranimall.shop?igsh=YzljYTk1ODg3Zg=="><i class="bi bi-instagram"></i> </a><a class="me-3" href="https://vm.tiktok.com/ZMStFbtoy/"><i class="bi bi-tiktok"></i></a></div>
+                </div>
+                
+                <div class="col-sm-6 col-lg-3 my-3">
+                    <h6 class="text-uppercase mb-5">Categories</h6>
+                    <ul class="list-unstyled dark-link footer-link-1 m-0">
+                        {% for sub in subcategories %}
+                        <li><a href="{% url 'all_Wholesale_products' %}?subcategory_id={{sub.id}}">{{ sub.sub_category_name }}</a></li>
+                        {% empty %}
+                        <li><a href="#">No subcategories</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-sm-6 col-lg-3 my-3">
+                  {% if request.user.is_authenticated and request.user.customer %}
+                    {% with referral_code=request.user.customer.refferal_code %}
+                      {% add_referral_param request.build_absolute_uri 'referral_code' referral_code as referral_url %}
+                      {% with message="🔥 Shop from wholesaler in otc, kamukunji, eastleigh and gikomba! 🛍️✨%0A%0A✅ Get 50 Points FREE on sign-up%0A🎯 Use my link to join:%0A👉  "|add:referral_url %}
+                
+                        📣 Share:
+                        <a href="https://wa.me/?text={{ message }}" target="_blank">WhatsApp</a> |
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ referral_url|urlencode }}" target="_blank">Facebook</a> |
+                        <a href="https://x.com/intent/tweet?text={{ message }}" target="_blank">X</a> |
+                        <a href="#" onclick="copyToClipboard(`{{ referral_url }}`); return false;">Copy Link</a>
+                
+                      {% endwith %}
+                    {% endwith %}
+                  {% else %}
+                    {% with referral_url=request.build_absolute_uri %}
+                      {% with message="🔥 Shop from wholesaler in otc, kamukunji, eastleigh and gikomba! 🛍️✨%0A%0A✅ Get 50 Points FREE on sign-up%0A🎯 Use my link to join:%0A👉 "|add:referral_url %}
+                
+                        📣 Share:
+                        <a href="https://wa.me/?text={{ message }}" target="_blank">WhatsApp</a> |
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ referral_url|urlencode }}" target="_blank">Facebook</a> |
+                        <a href="https://x.com/intent/tweet?text={{ message }}" target="_blank">X</a> |
+                        <a href="#" onclick="copyToClipboard(`{{ referral_url }}`); return false;">Copy Link</a>
+                
+                      {% endwith %}
+                    {% endwith %}
+                  {% endif %}
+                </div>
+
+                <div class="col-sm-6 col-lg-3 my-3">
+                    <ul class="list-unstyled dark-link footer-link-1 m-0">
+                        <li ><a class="border-bottom border-secondary" href="{% url 'register_user' %}?pricing_plan=fremium&wholesaler=wholesaler" target="_blank">Start as wholesaler </a></li>
+                        <li ><a class="border-bottom border-secondary" href="{% url 'register_user' %}?pricing_plan=fremium" target="_blank">join as a retailer</a></li>
+                        <li ><a class="border-bottom border-secondary" href="{% url 'register_user' %}?pricing_plan=fremium" target="_blank">join as a dropshipper</a></li>
+                        <li ><a class="border-bottom border-secondary" href="{% url 'register_user' %}?shop_patner=patner" target="_blank">join as an affiliate patner</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        </div>
+        <div class="footer-bottom py-3 border-top small">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start py-1">
+                        <p class="m-0">Â© 2025 copyright by <a href="https://jiranimall.shop/" target="_blank" class="text-reset">Jirani Mall</a></p>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-center justify-content-md-end py-1 align-items-center gap-3">
+                        <div class="nav-item h-switch dropdown"><button class="theme-switch btn btn-sm btn-outline-mode dropdown-toggle rounded-pill" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown"><span class="bi theme-icon-active"><i class="bi-circle-half"></i> </span><span class="ps-1 d-none">Theme Mode</span></button>
+                            <ul
+                                class="dropdown-menu" aria-labelledby="bd-theme">
+                                <li><button type="button" class="dropdown-item" data-bs-theme-value="light"><span class="bi me-2 opacity-50 theme-icon"><i class="bi-sun-fill"></i> </span>Light <span class="bi ms-auto d-none"><i class="bi-check2"></i></span></button></li>
+                                <li><button type="button" class="dropdown-item" data-bs-theme-value="dark"><span class="bi me-2 opacity-50 theme-icon"><i class="bi-moon-stars-fill"></i> </span>Dark <span class="bi ms-auto d-none"><i class="bi-check2"></i></span></button></li>
+                                <li><button type="button" class="dropdown-item active" data-bs-theme-value="auto"><span class="bi me-2 opacity-50 theme-icon"><i class="bi-circle-half"></i> </span>Auto <span class="bi ms-auto d-none"><i class="bi-check2"></i></span></button></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- End Footer -->
+    <!-- 
+    ========================
+       End Wrapper 
+    ========================
+    -->
+    <!-- LOGIN REQUIRED MODAL -->
+    <div class="modal fade" id="login-required-modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+    
+          <div class="modal-header">
+            <h5 class="modal-title">Login Required</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+    
+          <div class="modal-body">
+            <p>
+              To process your order, you must be logged in.<br>
+              If you don’t have an account, you will be asked to create one.
+            </p>
+          </div>
+    
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary" id="login-required-continue">Continue</button>
+          </div>
+    
+        </div>
+      </div>
+    </div>
+    
+    <!-- REDIRECTING MODAL -->
+    <div class="modal fade" id="redirecting-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+    
+          <div class="spinner-border text-primary mb-3" style="width:3rem;height:3rem;"></div>
+          <h5>Please wait...</h5>
+          <p>You are being redirected to the login page.</p>
+    
+        </div>
+      </div>
+    </div>
+
+    <!--script for checking if user is authenticated -->
+    <script>
+        const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+        const loginUrl = "{% url 'login_user' %}";  // Adjust 'login' to your actual login URL name
+    </script>
+
+    <!-- login -->
+     <script>
+      document.querySelectorAll('.login-to-pay').forEach(link => {
+        link.addEventListener('click', function(e) {
+
+              // Stop immediate navigation
+              e.preventDefault();
+
+              const targetUrl = this.href;
+
+              // Show login required modal
+              const loginModal = new bootstrap.Modal(
+                  document.getElementById("login-required-modal")
+              );
+
+              loginModal.show();
+
+              // Continue button
+              document.getElementById("login-required-continue").onclick = function() {
+
+                  loginModal.hide();
+
+                  const redirectModal = new bootstrap.Modal(
+                      document.getElementById("redirecting-modal")
+                  );
+
+                  redirectModal.show();
+
+                  setTimeout(() => {
+                      window.location.href =
+                          loginUrl + '?next=' + encodeURIComponent(targetUrl);
+                  }, 2000);
+              };
+
+          });
+
+      });
+     </script>
+    
+    <!-- add to cart script -->
+
+    <script>
+    const WHOLESALE_CART_KEY = 'wholesale_cart';
+    const WHOLESALE_OFFERS_CACHE = {};  
+    /* ================= CART STORAGE ================= */
+    
+    function getCart() {
+      return JSON.parse(localStorage.getItem(WHOLESALE_CART_KEY)) || [];
+    }
+    
+    function saveCart(cart) {
+      localStorage.setItem(WHOLESALE_CART_KEY, JSON.stringify(cart));
+      updateCartCount();
+      updateMiniCart();
+      
+    }
+    
+    /* ================= CART ACTIONS ================= */
+    
+    function addToCart(product) {
+      const cart = getCart();
+      const existing = cart.find(item => item.id === product.id);
+    
+      const minQty = product.minOrderQty || 1;
+      const qtyToAdd = Math.max(product.quantity, minQty);
+    
+      if (existing) {
+        existing.quantity += qtyToAdd;
+      } else {
+        cart.push({
+          ...product,
+          quantity: qtyToAdd,
+          earn_points: parseFloat(product.earn_points) || 0
+        });
+      }
+    
+      saveCart(cart);
+      toggleProductUI(product.id);
+      updateWholesaleProductPoints(product.id);
+      updateOfferUI(product.id, qtyToAdd, product.price);
+    }
+    
+    function updateCartQuantity(id, delta) {
+      let cart = getCart();
+      const item = cart.find(p => p.id === id);
+      if (!item) return;
+    
+      const minQty = item.minOrderQty || 1;
+      item.quantity += delta * minQty;
+    
+      if (item.quantity < minQty) {
+        cart = cart.filter(p => p.id !== id);
+        resetWholesaleProductPoints(id);
+      }
+    
+      saveCart(cart);
+      toggleProductUI(id);
+      updateWholesaleProductPoints(id);
+      updateOfferUI(id, item.quantity, item.price);
+    }
+    
+    function removeFromCart(id) {
+      const cart = getCart().filter(p => p.id !== id);
+      saveCart(cart);
+      toggleProductUI(id);
+      resetWholesaleProductPoints(id);
+    }
+    
+    /* ================= UI UPDATES ================= */
+    
+    function updateCartCount() {
+      const cart = getCart();
+      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const padded = count.toString().padStart(2, '0');
+    
+      document.querySelectorAll('[data-cart-items]').forEach(el => {
+        el.setAttribute('data-cart-items', padded);
+        const sub = el.querySelector('sub');
+        if (sub) sub.textContent = padded;
+        if (!el.querySelector('i') && !el.querySelector('sub')) {
+          el.textContent = padded;
+        }
+      });
+    
+      const cartLink = document.getElementById('cartLink');
+      if (cartLink) cartLink.style.display = count > 0 ? 'block' : 'none';
+    }
+    
+    /* ================= POINTS ================= */
+    
+    function updateWholesaleProductPoints(productId) {
+      const cart = getCart();
+      const item = cart.find(p => p.id === productId);
+      const el = document.getElementById(`wholesalePointsToEarn-${productId}`);
+      if (!el) return;
+    
+      const base = parseFloat(el.dataset.base || 0);
+      const value = item ? item.quantity * item.earn_points : base;
+    
+      el.textContent = Math.floor(value);
+    }
+    
+    function resetWholesaleProductPoints(productId) {
+      const el = document.getElementById(`wholesalePointsToEarn-${productId}`);
+      if (!el) return;
+      el.textContent = Math.floor(el.dataset.base || 0);
+    }
+    
+    async function loadWholesaleOffers(productId) {
+
+      if (WHOLESALE_OFFERS_CACHE[productId]) {
+        return WHOLESALE_OFFERS_CACHE[productId];
+      }
+    
+      try {
+        const res = await fetch(`/e-store/product-offers/${productId}/`);
+        const data = await res.json();
+    
+        WHOLESALE_OFFERS_CACHE[productId] = data.offers || [];
+        return WHOLESALE_OFFERS_CACHE[productId];
+    
+      } catch (err) {
+        WHOLESALE_OFFERS_CACHE[productId] = [];
+        return [];
+      }
+    }
+    
+    function calculateBestOffer(offers, quantity, basePrice) {
+    
+      let bestOffer = null;
+      let bestDiscount = 0;
+    
+      offers.forEach(offer => {
+    
+        const discount = offer.discount || offer.percentage_discount || 0;
+        const minQty = offer.min_qty || offer.min_quantity || 1;
+    
+        if (quantity >= minQty) {
+          if (discount > bestDiscount) {
+            bestDiscount = discount;
+            bestOffer = offer;
+          }
+        }
+    
+      });
+    
+      if (!bestOffer) return null;
+    
+      const finalPrice = basePrice - (basePrice * bestDiscount / 100);
+      const savingPerUnit = basePrice - finalPrice;
+      const totalSaving = savingPerUnit * quantity;
+    
+      return {
+        offer: bestOffer,
+        price: finalPrice,
+        saving: totalSaving
+      };
+    }
+    
+    async function updateOfferUI(productId, quantity, basePrice) {
+    
+      const offers = await loadWholesaleOffers(productId);
+      const result = calculateBestOffer(offers, quantity, basePrice);
+      let cart = getCart();
+      const item = cart.find(p => p.id === productId);
+        
+      if (item) {
+          item.base_price = parseFloat(basePrice);
+        
+          if (result) {
+            item.final_price = parseFloat(result.price);
+          } else {
+            item.final_price = parseFloat(basePrice);
+          }
+        
+          localStorage.setItem(WHOLESALE_CART_KEY, JSON.stringify(cart));
+          // ✅ FORCE UI UPDATE IMMEDIATELY AFTER OFFER IS SAVED
+          updateMiniCart();
+        }
+    
+      // PRODUCT CARD UI
+      const productBox = document.getElementById(`offerBox-product-${productId}`);
+      const productMsg = document.getElementById(`offerMessage-product-${productId}`);
+      const productPrice = document.getElementById(`offerPrice-product-${productId}`);
+      const productSaving = document.getElementById(`offerSaving-product-${productId}`);
+    
+      if (productBox && productMsg && productPrice && productSaving) {
+        if (!result) {
+          productBox.style.display = "none";
+        } else {
+          productBox.style.display = "block";
+          productMsg.innerText = result.offer.name || "Best Offer Available";
+          productPrice.innerText = result.price.toFixed(2);
+          productSaving.innerText = result.saving.toFixed(2);
+        }
+      }
+    
+      // MINI CART UI
+      const cartBox = document.getElementById(`offerBox-cart-${productId}`);
+      const cartMsg = document.getElementById(`offerMessage-cart-${productId}`);
+      const cartPrice = document.getElementById(`offerPrice-cart-${productId}`);
+      const cartSaving = document.getElementById(`offerSaving-cart-${productId}`);
+    
+      if (cartBox && cartMsg && cartPrice && cartSaving) {
+        if (!result) {
+          cartBox.style.display = "none";
+        } else {
+          cartBox.style.display = "block";
+          cartMsg.innerText = result.offer.name || "Best Offer Available";
+          cartPrice.innerText = result.price.toFixed(2);
+          cartSaving.innerText = result.saving.toFixed(2);
+        }
+      }
+      // ===== MAIN PRODUCT PRICE REPLACE (PRODUCT CARD) =====
+      const priceEl = document.getElementById(`productPriceText-${productId}`);
+        
+      if (priceEl) {
+          if (result) {
+            priceEl.innerHTML = `
+              <span class="text-muted text-decoration-line-through small">
+                Ksh ${basePrice.toFixed(2)}
+              </span>
+              <span class="fw-bold text-success ms-1">
+                Ksh ${result.price.toFixed(2)}
+              </span>
+            `;
+          } else {
+            priceEl.innerHTML = `<span class="fw-bold">Ksh ${basePrice.toFixed(2)}</span>`;
+          }
+        }
+    }
+    
+    /* ================= MINI CART ================= */
+    
+    function updateMiniCart() {
+      const cart = getCart();
+      const container = document.getElementById('cart-items');
+      const subtotalEl = document.getElementById('subtotal');
+      const pointsTotalEl = document.getElementById('total-earned-points-wholesale');
+    
+      if (!container || !subtotalEl) return;
+    
+      container.innerHTML = '';
+      let subtotal = 0;
+      let totalPoints = 0;
+    
+      cart.forEach(product => {
+        const unitPrice = parseFloat(product.final_price || product.price || 0);
+        const productTotal = unitPrice * product.quantity;
+        const productPoints = product.quantity * (product.earn_points || 0);
+    
+        subtotal += productTotal;
+        totalPoints += productPoints;
+        
+        
+    
+        container.innerHTML += `
+          <li class="py-2" data-id="${product.id}">
+            <div class="row align-items-center">
+              <div class="col-4">
+                <img class="img-fluid border" src="${product.image}" alt="${product.name}">
+              </div>
+              <div class="col-8">
+                <p class="mb-2">
+                  <b>${product.name}</b><br>
+                  Price: ${product.final_price && product.final_price < product.base_price ? `
+                          <span class="text-muted text-decoration-line-through small">
+                            Price: Ksh ${parseFloat(product.base_price).toFixed(2)}
+                          </span><br>
+                          <span class="small text-success" id="offerBox-cart-${product.id}" style="display:none;">
+                              <span id="offerMessage-cart-${product.id}"></span><br>
+                              Offer Price: <b>Ksh <span id="offerPrice-cart-${product.id}"></span></b><br>
+                              You Save: <b>Ksh <span id="offerSaving-cart-${product.id}"></span></b>
+                            </span>
+                        ` : `
+                          Price: Ksh ${parseFloat(product.base_price || product.price).toFixed(2)}<br>
+                        `}<br>
+                    
+                  Qty: ${product.quantity}<br>
+                  Total: ksh${productTotal.toFixed(2)}<br>
+                  <span class="text-success small">Earns: <b>${productPoints.toFixed(0)}</b> pts</span>
+                </p>
+        
+                
+        
+                <div class="d-flex align-items-center mt-2">
+                  <button class="btn btn-outline-secondary btn-sm minus-btn">−</button>
+                  <input class="form-control form-control-sm text-center mx-1" value="${product.quantity}" readonly>
+                  <button class="btn btn-outline-secondary btn-sm plus-btn">+</button>
+                  <a class="text-danger ms-auto remove-from-cart"><i class="bi bi-x"></i></a>
+                </div>
+              </div>
+            </div>
+          </li>`;
+      });
+    
+      subtotalEl.textContent = `ksh${subtotal.toFixed(2)}`;
+      if (pointsTotalEl) pointsTotalEl.textContent = totalPoints.toFixed(0);
+    }
+    
+    /* ================= PRODUCT UI ================= */
+    
+    function toggleProductUI(productId) {
+      const cart = getCart();
+      const item = cart.find(p => p.id === productId);
+      const wrappers = document.querySelectorAll(`.product-cart-btn [data-id="${productId}"]`);
+      
+      wrappers.forEach(el => {
+        const wrapper = el.closest('.product-cart-btn');
+        if (!wrapper) return;
+    
+        const addBtn = wrapper.querySelector('.wholesale-add-to-cart-btn');
+        const buyGroupBtn = wrapper.querySelector('.buy-group-btn');
+        const qtyControls = wrapper.querySelector('.quantity-control');
+        const input = wrapper.querySelector('.quantity-input');
+    
+        if (item) {
+          addBtn?.classList.add('d-none');
+          buyGroupBtn?.classList.add('d-none');
+          qtyControls?.classList.remove('d-none');
+          if (input) input.value = item.quantity;
+          updateOfferUI(productId, item.quantity, item.price);
+        } else {
+          addBtn?.classList.remove('d-none');
+          buyGroupBtn?.classList.remove('d-none');
+          qtyControls?.classList.add('d-none');
+          if (input) input.value = 1;
+          const basePrice = parseFloat(addBtn?.dataset.price || 0);
+          updateOfferUI(productId, 1, basePrice);
+        }
+      });
+    }
+    
+    /* ================= INIT ================= */
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('[id^="wholesalePointsToEarn-"]').forEach(el => {
+        el.dataset.base = el.textContent;
+      });
+    
+      updateCartCount();
+      updateMiniCart();
+    
+      // getCart().forEach(item => updateWholesaleProductPoints(item.id));
+      getCart().forEach(item => {
+        updateWholesaleProductPoints(item.id);
+        toggleProductUI(item.id); // ✅ persist + / - after reload
+        updateOfferUI(item.id, item.quantity, item.price);
+      });
+      document.querySelectorAll('.product-cart-btn').forEach(wrapper => {
+        const addBtn = wrapper.querySelector('.wholesale-add-to-cart-btn');
+        const minusBtn = wrapper.querySelector('.minus-btn');
+        const plusBtn = wrapper.querySelector('.plus-btn');
+        const qtyInput = wrapper.querySelector('.quantity-input');
+        if (!addBtn || !qtyInput) return;
+    
+        const productId = addBtn.dataset.id;
+        const minOrderQty = parseInt(addBtn.dataset.minOrderQuantity) || 1;
+    
+        addBtn.addEventListener('click', e => {
+          e.preventDefault();
+          addToCart({
+            id: productId,
+            name: addBtn.dataset.name,
+            price: parseFloat(addBtn.dataset.price),
+            image: addBtn.dataset.image,
+            quantity: parseInt(qtyInput.value) || minOrderQty,
+            minOrderQty: minOrderQty,
+            earn_points: parseFloat(addBtn.dataset.earnPoints) || 0
+          });
+        });
+    
+        plusBtn?.addEventListener('click', e => {
+          e.preventDefault();
+          updateCartQuantity(productId, 1);
+        });
+    
+        minusBtn?.addEventListener('click', e => {
+          e.preventDefault();
+          updateCartQuantity(productId, -1);
+        });
+      });
+    
+      document.addEventListener('click', e => {
+        const li = e.target.closest('li[data-id]');
+        if (!li) return;
+        const id = li.dataset.id;
+    
+        if (e.target.closest('.plus-btn')) updateCartQuantity(id, 1);
+        if (e.target.closest('.minus-btn')) updateCartQuantity(id, -1);
+        if (e.target.closest('.remove-from-cart')) removeFromCart(id);
+      });
+    });
+    </script>
+        
+    
+    <!--script for checkout-->
+    <script>
+        const csrfToken = "{{ csrf_token }}";
+        function getWholesaleCart() {
+        return JSON.parse(localStorage.getItem('wholesale_cart')) || [];
+        }
+        
+        function checkout(event) {
+        event.preventDefault();
+        
+        const checkoutBtn = document.getElementById("checkout-btn");
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = "Processing...";
+        
+        // Check if user is logged in
+        if (!isAuthenticated) {
+        
+            // Show login required modal
+            const loginModal = new bootstrap.Modal(document.getElementById("login-required-modal"));
+            loginModal.show();
+        
+            // When customer clicks continue
+            document.getElementById("login-required-continue").onclick = function () {
+        
+                // Show redirecting message
+                const redirectModal = new bootstrap.Modal(document.getElementById("redirecting-modal"));
+                redirectModal.show();
+        
+                // Delay (2 seconds) then redirect
+                setTimeout(() => {
+                    window.location.href = loginUrl + '?next=' + window.location.pathname;
+                }, 2000);
+            };
+        
+            return; // Stop further checkout
+        }
+
+        
+        const cart = getWholesaleCart();
+        
+        if (cart.length === 0) {
+          alert('Your cart is empty.');
+          checkoutBtn.disabled = false;
+          checkoutBtn.textContent = "Continue to Checkout";
+          return;
+        }
+        // 🔥 Pick up phone if staff
+        const customerNameInput = document.getElementById("customerNameInput");
+        const phoneInput = document.getElementById("customerPhone");
+        let customerName = null;
+        let customerPhone = null;
+        
+        // Get phone
+        if (phoneInput && phoneInput.value.trim() !== "") {
+            customerPhone = phoneInput.value.trim();
+        
+            // Enforce name ONLY if phone exists
+            if (!customerNameInput || customerNameInput.value.trim() === "") {
+                alert("Please enter customer's name");
+                return; // stop execution
+            }
+        
+            customerName = customerNameInput.value.trim();
+        }
+        fetch("{% url 'wholesale_checkout' %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({ 
+            cart: cart,
+            customer_phone: customerPhone,
+            customer_name: customerName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // ✅ Clear wholesale cart only
+            localStorage.removeItem('wholesale_cart');
+            // ✅ Redirect to orders page
+            const CustomerPhone = data.customer_phone_number;
+            window.location.href = `{% url 'customer_unpaid_orders' %}?phone_number=${CustomerPhone}`;
+          } else {
+            alert('Checkout failed: ' + data.message);
+            checkoutBtn.disabled = false;
+            checkoutBtn.textContent = "Continue to Checkout";
+          }
+        })
+        .catch(error => {
+          console.error('Checkout error:', error);
+          alert('Something went wrong during checkout.');
+          checkoutBtn.disabled = false;
+          checkoutBtn.textContent = "Continue to Checkout";
+        });
+        }
+    </script>
+    
+    <!-- script for quick view-->
+    <script>
+      function decodeHtmlEntities(str) {
+        const txt = document.createElement("textarea");
+        txt.innerHTML = str;
+        return txt.value;
+      }
+    
+      document.addEventListener("DOMContentLoaded", function () {
+        const quickViewButtons = document.querySelectorAll(".quick-view-btn");
+    
+        quickViewButtons.forEach(button => {
+          button.addEventListener("click", function () {
+    
+            // === BASIC PRODUCT FIELDS ===
+            const name = this.getAttribute("data-name") || "N/A";
+            const price = this.getAttribute("data-price") || "0.00";
+            const rawDescription = this.getAttribute("data-description") || "No description";
+            const seller = this.getAttribute("data-seller") || "Unknown Seller";
+    
+            // === EXTRA FIELDS ADDED ===
+            const itemsPerUnit = this.getAttribute("data-items-per-unit") || "N/A";
+            const pricePerItem = this.getAttribute("data-price-per-item") || "N/A";
+            const sellerLocation = this.getAttribute("data-seller-location") || "N/A";
+    
+            const sizesRaw = this.getAttribute("data-available-sizes") || "[]";
+            const coloursRaw = this.getAttribute("data-available-colours") || "[]";
+    
+            let availableSizes = [];
+            let availableColours = [];
+    
+            try {
+              availableSizes = JSON.parse(sizesRaw);
+            } catch (err) {
+              console.error("Invalid size data:", sizesRaw);
+            }
+    
+            try {
+              availableColours = JSON.parse(coloursRaw);
+            } catch (err) {
+              console.error("Invalid colour data:", coloursRaw);
+            }
+    
+            // Decode HTML entities
+            const description = decodeHtmlEntities(rawDescription);
+    
+            // === Inject basic product info ===
+            document.getElementById("modal-product-name").innerText = name;
+            document.getElementById("modal-price").innerText = parseFloat(price).toFixed(2);
+            document.getElementById("modal-product-seller").innerText = seller;
+            document.getElementById("modal-product-description").innerText = description;
+    
+            // === Inject extra fields ===
+            document.getElementById("modal-items-per-unit").innerText = itemsPerUnit;
+            document.getElementById("modal-price-per-item").innerText = pricePerItem;
+            document.getElementById("modal-seller-location").innerText = sellerLocation;
+    
+            // Sizes list
+            const sizeContainer = document.getElementById("modal-available-sizes");
+            sizeContainer.innerHTML = "";  
+            if (availableSizes.length === 0) {
+              sizeContainer.innerHTML = "<span>No sizes stated</span>";
+            } else {
+              availableSizes.forEach(size => {
+                sizeContainer.innerHTML += `<span class="me-1">${size}</span>`;
+              });
+            }
+    
+            // Colours list
+            const colourContainer = document.getElementById("modal-available-colours");
+            colourContainer.innerHTML = "";  
+            if (availableColours.length === 0) {
+              colourContainer.innerHTML = "<span>No colours stated</span>";
+            } else {
+              availableColours.forEach(colour => {
+                colourContainer.innerHTML += `<span class="me-1">${colour}</span>`;
+              });
+            }
+    
+            // === IMAGES ===
+            const imagesRaw = this.getAttribute("data-images") || "[]";
+            let imageList;
+    
+            try {
+              imageList = JSON.parse(imagesRaw);
+            } catch (e) {
+              console.error("Invalid JSON in data-images:", imagesRaw);
+              imageList = [];
+            }
+    
+            const carouselContainer = document.getElementById("carousel-images-container");
+            carouselContainer.innerHTML = "";
+    
+            if (imageList.length === 0) {
+              imageList = ["/static/images/placeholder.png"];
+            }
+    
+            imageList.forEach((imgUrl, index) => {
+              const itemDiv = document.createElement("div");
+              itemDiv.classList.add("carousel-item");
+              if (index === 0) itemDiv.classList.add("active");
+    
+              const img = document.createElement("img");
+              img.src = imgUrl;
+              img.className = "d-block w-100 img-fluid";
+    
+              img.onerror = function () {
+                this.src = "/static/images/placeholder.png";
+              };
+    
+              itemDiv.appendChild(img);
+              carouselContainer.appendChild(itemDiv);
+            });
+    
+          });
+        });
+      });
+    </script>
+    
+    
+    <!-- script fro copy to clip board-->
+    <script>
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+          alert("Link copied to clipboard!");
+        }, function(err) {
+          alert("Failed to copy: " + err);
+        });
+      }
+    </script>
+    <!--copy product link -->
+    <script>
+      function handleCopyClick(element) {
+        const slug = element.getAttribute('data-slug');
+        const url = `${window.location.origin}/wholesale/?product_slug=${encodeURIComponent(slug)}`;
+    
+        navigator.clipboard.writeText(url)
+          .then(() => {
+            alert("Link copied to clipboard!");
+          })
+          .catch(err => {
+            alert("Failed to copy: " + err);
+          });
+      }
+    </script>
+
+
+
+    <!-- Add to drop shipping modal -->
+    <!-- Modal -->
+    <div class="modal fade" id="dropshipModal" tabindex="-1" aria-labelledby="dropshipModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="dropshipModalLabel">Dropship Profit Calculation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="dropshipForm">
+              <div id="statusMessage" class="alert" style="display: none;"></div> <!-- Status message -->
+              
+              <!-- Profit percentage and other info -->
+              <div class="mb-3">
+                <select id="businessSelect" class="form-select">
+                  {% for b in business_accounts %}
+                    <option value="{{ b.id }}">{{ b.business_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="profitPercentage" class="form-label">Enter Your Profit Percentage</label>
+                <input type="number" class="form-control" id="profitPercentage" placeholder="e.g., 20" required>
+              </div>
+              <div id="profitWarning" class="alert alert-warning" style="display: none;">
+                <strong>Warning!</strong> Your profit is zero or negative. Please select a lower percentage.
+              </div>
+              
+              <div class="mb-3">
+                <p>Wholesale Price: <span id="wholesalePrice"></span></p>
+                <p>Calculated Selling Price: <span id="sellingPrice"></span></p>
+                <p>Platform Fee (0%): <span id="platformFee"></span></p>
+                <p>Amount You Keep: <span id="profitAmount"></span></p>
+              </div>
+    
+              <button type="submit" class="btn btn-primary" disabled>Add to Retail</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <!-- Script for add to retail -->
+    <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      // Attach event listeners to all "Dropship" buttons
+      document.querySelectorAll('.dropship-add-to-cart-btn').forEach(function (button) {
+        button.addEventListener('click', function (e) {
+          e.preventDefault();
+    
+          // Check if user is logged in
+          if (!isAuthenticated) {
+              window.location.href = loginUrl + '?next=' + window.location.pathname;
+              return;
+            }
+    
+          // Fetch product data from the dataset
+          const productId = this.dataset.id;
+          const productName = this.dataset.name;
+          const wholesalePrice = parseFloat(this.dataset.wholesalePrice);
+    
+          // Cache modal elements
+          const wholesalePriceEl = document.getElementById('wholesalePrice');
+          const profitInput = document.getElementById('profitPercentage');
+          const sellingPriceEl = document.getElementById('sellingPrice');
+          const platformFeeEl = document.getElementById('platformFee');
+          const profitAmountEl = document.getElementById('profitAmount');
+          const profitWarning = document.getElementById('profitWarning');
+          const statusMessage = document.getElementById('statusMessage');
+          const businessSelect = document.getElementById('businessSelect');
+          const form = document.getElementById('dropshipForm');
+          const submitBtn = form.querySelector('button[type="submit"]');
+    
+          // Reset modal fields
+          wholesalePriceEl.innerText = `Ksh ${wholesalePrice.toFixed(2)}`;
+          profitInput.value = '';
+          sellingPriceEl.innerText = '-';
+          platformFeeEl.innerText = '-';
+          profitAmountEl.innerText = '-';
+          profitWarning.style.display = 'none';
+          statusMessage.style.display = 'none';
+          submitBtn.disabled = true;
+    
+          // Show the modal
+          const modal = new bootstrap.Modal(document.getElementById('dropshipModal'));
+          modal.show();
+    
+          // Handle profit percentage input change
+          profitInput.addEventListener('input', function () {
+            const profitPercentage = parseFloat(this.value);
+    
+            if (!isNaN(profitPercentage)) {
+              const sellingPrice = wholesalePrice * (1 + profitPercentage / 100);
+              const platformFee = sellingPrice * 0;
+              const profitAmount = sellingPrice - platformFee - wholesalePrice;
+    
+              sellingPriceEl.innerText = `Ksh ${sellingPrice.toFixed(2)}`;
+              platformFeeEl.innerText = `Ksh ${platformFee.toFixed(2)}`;
+              profitAmountEl.innerText = `Ksh ${profitAmount.toFixed(2)}`;
+    
+              if (profitAmount <= 0) {
+                profitWarning.style.display = 'block';
+                submitBtn.disabled = true;
+              } else {
+                profitWarning.style.display = 'none';
+                submitBtn.disabled = false;
+              }
+            }
+          });
+    
+          // Handle form submission (only once per modal open)
+          form.addEventListener(
+            'submit',
+            function (e) {
+              e.preventDefault();
+              console.log("Form submission triggered");
+    
+              const profitPercentage = parseFloat(profitInput.value);
+              if (isNaN(profitPercentage) || profitPercentage <= 0) {
+                statusMessage.className = 'alert alert-danger';
+                statusMessage.innerText = 'Please enter a valid profit percentage.';
+                statusMessage.style.display = 'block';
+                return;
+              }
+    
+              statusMessage.className = 'alert alert-info';
+              statusMessage.innerText = 'Adding in progress...';
+              statusMessage.style.display = 'block';
+              submitBtn.disabled = true;
+    
+              fetch("{% url 'add_to_retail' %}", {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({
+                  product_id: productId,
+                  profit_percentage: profitPercentage,
+                  business_id: businessSelect.value,
+                }),
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    statusMessage.className = 'alert alert-success';
+                    statusMessage.innerText = 'Product added to your retail store!';
+                    setTimeout(() => modal.hide(), 2000);
+                  } else {
+                    statusMessage.className = 'alert alert-danger';
+                    statusMessage.innerText =
+                      data.message || 'Failed to add product. Please try again.';
+                    submitBtn.disabled = false;
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error:", error);
+                  statusMessage.className = 'alert alert-danger';
+                  statusMessage.innerText =
+                    'An error occurred. Please try again later.';
+                  submitBtn.disabled = false;
+                });
+            },
+            { once: true }
+          );
+        });
+      });
+    
+      // Function to get CSRF token
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + '=') {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+    });
+    </script>
+    
+    <!-- loading script for buy in group button -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Select all buttons with the class
+        const buyButtons = document.querySelectorAll('.buyGroupButton');
+    
+        buyButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault(); // prevent immediate navigation
+    
+                // Disable this button
+                button.disabled = true;
+    
+                // Change text
+                button.textContent = "loading...";
+    
+                // Navigate after a tiny delay
+                setTimeout(() => {
+                    window.location.href = button.href;
+                }, 100);
+            });
+        });
+    });
+    </script>
+
+    <!-- modal for showing availlable product offers-->
+    <div class="modal fade" id="offersModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+    
+          <div class="modal-header">
+            <h5 class="modal-title">Available Offers</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+    
+          <div class="modal-body">
+    
+            <div class="d-flex align-items-center mb-3">
+              <img id="modalProductImage" src="" class="rounded border" style="width:70px; height:70px; object-fit:cover;">
+              <div class="ms-3">
+                <h6 id="modalProductName" class="mb-1 fw-bold"></h6>
+                <p class="mb-0 text-muted">
+                  Base Price: <strong>KSh <span id="modalProductPrice"></span></strong>
+                </p>
+              </div>
+            </div>
+    
+            <div id="offersContainer"></div>
+    
+          </div>
+    
+        </div>
+      </div>
+    </div>
+
+    
+    <!--script for showing product offers-->
+    <script>
+    document.querySelectorAll(".view-product-offers-btn").forEach(btn => {
+    
+        btn.addEventListener("click", function(e){
+    
+            e.preventDefault()
+    
+            const productId = this.dataset.productId
+    
+            const modalEl = document.getElementById("offersModal")
+            const modal = new bootstrap.Modal(modalEl)
+    
+            // show modal immediately
+            modal.show()
+    
+            // loading state
+            const container = document.getElementById("offersContainer")
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-3">Loading best offers for you...</p>
+                </div>
+            `
+    
+            fetch(`/e-store/product-offers/${productId}/`)
+            .then(res => res.json())
+            .then(data => {
+    
+                document.getElementById("modalProductName").innerText = data.product_name
+                document.getElementById("modalProductPrice").innerText = data.product_price
+                document.getElementById("modalProductImage").src = data.product_image
+    
+                container.innerHTML = ""
+    
+                // ==========================
+                // ORDINARY PURCHASE OFFERS
+                // ==========================
+                if (data.offers && data.offers.length > 0) {
+    
+                    container.innerHTML += `
+                        <h6 class="fw-bold text-dark mb-2">Ordinary Purchase Offers</h6>
+                    `
+    
+                    data.offers.forEach(offer => {
+    
+                        container.innerHTML += `
+                        <div class="border rounded p-3 mb-3 bg-light">
+    
+                            <h6 class="text-dark mb-2">
+                                ${offer.name}
+                            </h6>
+    
+                            <p style="white-space:pre-line; font-size:14px;">
+                                ${offer.message}
+                            </p>
+    
+                            <div class="mb-2">
+                                <strong class="text-success fs-5">
+                                    Offer Price: KSh ${offer.final_price}
+                                </strong>
+                            </div>
+    
+                            <div class="alert alert-warning py-2 mb-2" style="font-size:13px;">
+                                ⚡ <strong>Act now!</strong>  
+                                Secure this price before the offer closes.
+                            </div>
+    
+                            <a href="https://garantiimall.shop/wholesale/?product_id=${data.product_id}"
+                                class="btn btn-success w-100">
+                               <i class="fi-shopping-cart"></i>
+                               Buy Now at KSh ${offer.final_price}
+                            </a>
+    
+                        </div>
+                        `
+                    })
+                }
+    
+                // ==========================
+                // GROUP PURCHASE OFFERS
+                // ==========================
+                if (data.group_offers && data.group_offers.length > 0) {
+    
+                    container.innerHTML += `
+                        <h6 class="fw-bold text-primary mt-4 mb-2">Group Purchase Offers</h6>
+                    `
+    
+                    data.group_offers.forEach(offer => {
+    
+                        container.innerHTML += `
+                        <div class="border rounded p-3 mb-3 bg-white shadow-sm">
+    
+                            <h6 class="text-dark mb-2">
+                                ${offer.name}
+                            </h6>
+    
+                            <p style="white-space:pre-line; font-size:14px;">
+                                ${offer.message}
+                            </p>
+    
+                            <div class="mb-2">
+                                <strong class="text-primary fs-5">
+                                    Group Price: KSh ${offer.final_price}
+                                </strong>
+                            </div>
+    
+                            <div class="alert alert-warning py-2 mb-2" style="font-size:13px;">
+                                👥 <strong>Group Offer:</strong> Join others to unlock this price.
+                            </div>
+                            
+    
+                            <a href="/e-store/buy-in-groups/?product_id=${data.product_id}"
+                               class="btn btn-primary w-100">
+                               <i class="fi-users"></i>
+                               Join Group & Buy at KSh ${offer.final_price}
+                            </a>
+    
+                        </div>
+                        `
+                    })
+                }
+    
+                // ==========================
+                // NO OFFERS AVAILABLE
+                // ==========================
+                if ((!data.offers || data.offers.length === 0) && (!data.group_offers || data.group_offers.length === 0)) {
+    
+                    container.innerHTML = `
+                        <a href="https://garantiimall.shop/wholesale/?product_id=${data.product_id}"
+                            class="btn btn-success w-100">
+                           <i class="fi-shopping-cart"></i>
+                           Buy Now
+                        </a>
+                    `
+                }
+    
+            })
+            .catch(err => {
+    
+                container.innerHTML = `
+                    <a href="https://garantiimall.shop/wholesale/?product_id=${data.product_id}"
+                        class="btn btn-success w-100">
+                       <i class="fi-shopping-cart"></i>
+                       Buy Now
+                    </a>
+                `
+    
+            })
+    
+        })
+    
+    })
+    </script>
+    
+    <!-- script for showing availlable group offer-->
+    <script>
+    document.querySelectorAll(".view-offers-btn").forEach(btn => {
+    
+        btn.addEventListener("click", function(e){
+    
+            e.preventDefault()
+    
+            const groupId = this.dataset.groupId
+    
+            const modalEl = document.getElementById('offersModal')
+            const modal = new bootstrap.Modal(modalEl)
+    
+            // Show modal immediately
+            modal.show()
+    
+            // Show loading state
+            const container = document.getElementById("offersContainer")
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-3">Loading best offers for you...</p>
+                </div>
+            `
+    
+            fetch(`/e-store/group-offers/${groupId}/`)
+            .then(res => res.json())
+            .then(data => {
+    
+                document.getElementById("modalProductName").innerText = data.product_name
+                document.getElementById("modalProductPrice").innerText = data.product_price
+                document.getElementById("modalProductImage").src = data.product_image
+    
+                container.innerHTML = ""
+    
+                data.offers.forEach(offer => {
+    
+                    container.innerHTML += `
+                    <div class="border rounded p-3 mb-3 bg-light">
+    
+                        <h6 class="text-dark mb-2">
+                            ${offer.name}
+                        </h6>
+    
+                        <p style="white-space:pre-line; font-size:14px;">
+                            ${offer.message}
+                        </p>
+    
+                        <div class="mb-2">
+                            <strong class="text-success fs-5">
+                                Your offer price: KSh ${offer.final_price}
+                            </strong>
+                        </div>
+    
+                        <div class="alert alert-warning py-2 mb-2" style="font-size:13px;">
+                            ⚡ <strong>Act now!</strong>  
+                            Secure this price before the offer closes.
+                        </div>
+    
+                        <a href="javascript:void(0)"
+                           class="btn btn-primary join-group-btn w-100"
+                           data-group-id="${data.group_id}"
+                           data-name="${data.product_name}"
+                           data-price="${offer.final_price}"
+                           data-min-order-quantity="${data.minimum_order_quantity}"
+                           data-image="${data.product_image}"
+                           data-offer-id="${offer.offer_id}">
+                           
+                           <i class="fi-shopping-cart"></i>
+                           Use This Offer & Buy at KSh ${offer.final_price}
+                        </a>
+    
+                    </div>
+                    `
+                })
+            })
+    
+        })
+    
+    })
+    </script>
+    
+
+    <!-- Join Group Modal -->
+    <div class="modal fade" id="joinGroupModal" tabindex="-1" aria-labelledby="joinGroupModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+    
+          <div class="modal-header">
+            <h5 class="modal-title" id="joinGroupModalLabel">Join Group Order</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+    
+          <div class="modal-body text-center">
+    
+            <img id="groupProductImage" src="" class="img-fluid mb-3" style="max-height:150px;">
+            <h5 id="groupProductName"></h5>
+    
+            <p class="text-muted">
+              Price per unit: KSH<span id="groupProductPrice"></span>
+            </p>
+    
+            <!-- OFFER DISPLAY -->
+            <div id="offersContainer" class="mb-3">
+    
+              <div class="text-success fw-bold" id="offerPriceBox" style="display:none;">
+                Offer Price: KSh <span id="offerPrice"></span>
+              </div>
+    
+              <div class="text-danger small" id="offerSavingBox" style="display:none;">
+                You Save: KSh <span id="offerSaving"></span>
+              </div>
+    
+              <div class="small text-muted" id="offerMessage"></div>
+    
+            </div>
+    
+            <div class="quantity-control mt-2">
+              <label class="form-label">Quantity</label>
+    
+              <div class="d-flex align-items-center justify-content-center gap-2 quantity-wrapper">
+    
+                <button class="btn btn-danger btn-sm" id="groupMinusBtn" type="button">-</button>
+    
+                <input type="text"
+                       id="groupQuantityInput"
+                       class="form-control text-center"
+                       value="1"
+                       readonly
+                       style="width:60px;">
+    
+                <button class="btn btn-danger btn-sm" id="groupPlusBtn" type="button">+</button>
+    
+              </div>
+    
+              <small class="text-muted d-block mt-2">
+                Minimum order quantity: <span id="groupMOQ"></span>
+              </small>
+            </div>
+    
+            {% if request.user.is_staff %}
+            <div class="mt-3">
+    
+              <label class="form-label">Customer Info:</label>
+    
+              <input type="text"
+                     id="groupBuyNameInput"
+                     class="form-control text-center"
+                     placeholder="Enter customer name">
+    
+              <input type="tel"
+                     id="groupBuyPhoneInput"
+                     class="form-control text-center"
+                     placeholder="e.g. 0712345678">
+    
+              <small class="text-muted">
+                order will be linked to the customer with above phone number.
+              </small>
+    
+            </div>
+            {% endif %}
+    
+          </div>
+    
+          <div id="groupFeedback"></div>
+    
+          <div class="modal-footer">
+    
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancel
+            </button>
+    
+            <a href="#" id="groupCheckoutBtn" class="btn btn-primary">
+              Proceed to Checkout
+            </a>
+    
+          </div>
+    
+        </div>
+      </div>
+    </div>
+    <!-- script for joining group-->
+    <script>
+    document.addEventListener("click", function(e){
+    
+      const btn = e.target.closest(".join-group-btn");
+      if (!btn) return;
+    
+      e.preventDefault();
+    
+      const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+      const loginUrl = "{% url 'login_user' %}";
+    
+      const modalElement = document.getElementById('joinGroupModal');
+      const modal = new bootstrap.Modal(modalElement);
+    
+      const imgEl = document.getElementById('groupProductImage');
+      const nameEl = document.getElementById('groupProductName');
+      const priceEl = document.getElementById('groupProductPrice');
+      const moqEl = document.getElementById('groupMOQ');
+      const qtyInput = document.getElementById('groupQuantityInput');
+      const minusBtn = document.getElementById('groupMinusBtn');
+      const plusBtn = document.getElementById('groupPlusBtn');
+      const checkoutBtn = document.getElementById('groupCheckoutBtn');
+      const feedbackEl = document.getElementById('groupFeedback');
+    
+      const phoneInput = document.getElementById('groupBuyPhoneInput');
+      const customerNameInput = document.getElementById("groupBuyNameInput");
+    
+      let activeOffers = [];
+      let currentMOQ = 1;
+      let currentGroupId = null;
+      let currentPrice = 0;
+    
+      /* ---------------- OFFER ENGINE ---------------- */
+    
+      function calculateBestOffer(quantity, basePrice){
+    
+        let bestOffer = null;
+        let bestDiscount = 0;
+    
+        activeOffers.forEach(offer => {
+    
+          const discount = offer.discount || offer.percentage_discount || 0;
+          const minQty = offer.min_qty || offer.min_quantity || 1;
+    
+          if(quantity >= minQty){
+    
+            if(discount > bestDiscount){
+    
+              bestDiscount = discount;
+              bestOffer = offer;
+    
+            }
+    
+          }
+    
+        });
+    
+        if(!bestOffer) return null;
+    
+        const finalPrice = basePrice - (basePrice * bestDiscount / 100);
+        const savingPerUnit = basePrice - finalPrice;
+        const totalSaving = savingPerUnit * quantity;
+    
+        return {
+          offer: bestOffer,
+          price: finalPrice,
+          saving: totalSaving
+        };
+    
+      }
+    
+      function updateOfferDisplay(quantity, price){
+    
+        const result = calculateBestOffer(quantity, price);
+    
+        const offerPriceBox = document.getElementById("offerPriceBox");
+        const offerSavingBox = document.getElementById("offerSavingBox");
+    
+        if(!result){
+    
+          offerPriceBox.style.display = "none";
+          offerSavingBox.style.display = "none";
+          document.getElementById("offerMessage").innerText = "";
+    
+          return;
+    
+        }
+    
+        offerPriceBox.style.display = "block";
+        offerSavingBox.style.display = "block";
+    
+        document.getElementById("offerPrice").innerText = result.price.toFixed(2);
+        document.getElementById("offerSaving").innerText = result.saving.toFixed(2);
+    
+        document.getElementById("offerMessage").innerText = result.offer.name || "";
+    
+      }
+    
+      /* ---------------- AUTH CHECK ---------------- */
+    
+      function setCheckoutState(isDisabled, text) {
+        checkoutBtn.disabled = isDisabled;
+        checkoutBtn.innerHTML = text;
+      }
+    
+      function showFeedback(message, type = 'info') {
+        feedbackEl.innerHTML = `<div class="alert alert-${type} mt-2 mb-0">${message}</div>`;
+      }
+    
+      if (!isAuthenticated) {
+    
+        const loginModal = new bootstrap.Modal(document.getElementById("login-required-modal"));
+        loginModal.show();
+    
+        document.getElementById("login-required-continue").onclick = function () {
+    
+          const redirectModal = new bootstrap.Modal(document.getElementById("redirecting-modal"));
+          redirectModal.show();
+    
+          setTimeout(() => {
+            window.location.href = loginUrl + '?next=' + window.location.pathname;
+          }, 2000);
+    
+        };
+    
+        return;
+      }
+    
+      /* ---------------- LOAD PRODUCT ---------------- */
+    
+      currentGroupId = btn.dataset.groupId;
+      currentPrice = parseFloat(btn.dataset.price);
+      const productName = btn.dataset.name;
+      const image = btn.dataset.image;
+      currentMOQ = parseInt(btn.dataset.minOrderQuantity);
+    
+      imgEl.src = image;
+      nameEl.textContent = productName;
+      priceEl.textContent = currentPrice.toFixed(2);
+      moqEl.textContent = currentMOQ;
+      qtyInput.value = currentMOQ;
+    
+      feedbackEl.innerHTML = '';
+      setCheckoutState(false, 'Proceed to Checkout');
+    
+      modal.show();
+    
+      /* ---------------- LOAD OFFERS ---------------- */
+    
+      fetch(`/e-store/group-offers/${currentGroupId}/`)
+      .then(res => res.json())
+      .then(data => {
+    
+          activeOffers = data.offers || [];
+    
+          updateOfferDisplay(parseInt(qtyInput.value), currentPrice);
+    
+      })
+      .catch(()=>{});
+    
+      /* ---------------- QUANTITY ---------------- */
+    
+      function updateQuantityButtons() {
+    
+        const qty = parseInt(qtyInput.value);
+        minusBtn.disabled = qty <= currentMOQ;
+    
+      }
+    
+      plusBtn.onclick = () => {
+    
+        qtyInput.value = parseInt(qtyInput.value) + 1;
+        updateQuantityButtons();
+        updateOfferDisplay(parseInt(qtyInput.value), currentPrice);
+    
+      };
+    
+      minusBtn.onclick = () => {
+    
+        let currentQty = parseInt(qtyInput.value);
+    
+        if (currentQty > currentMOQ) {
+    
+          qtyInput.value = currentQty - 1;
+    
+          updateQuantityButtons();
+          updateOfferDisplay(parseInt(qtyInput.value), currentPrice);
+    
+        }
+    
+      };
+    
+      /* ---------------- CHECKOUT ---------------- */
+    
+      checkoutBtn.onclick = async function(ev){
+    
+        ev.preventDefault();
+    
+        const quantity = parseInt(qtyInput.value);
+    
+        setCheckoutState(true, 'Joining group...');
+        showFeedback('Processing your request...', 'info');
+    
+        const payload = { quantity: quantity };
+    
+        if (phoneInput && phoneInput.value.trim() !== "") {
+    
+          payload.phone_number = phoneInput.value.trim();
+    
+          if (!customerNameInput || customerNameInput.value.trim() === "") {
+    
+            alert("Please enter customer's name");
+            setCheckoutState(false, 'Proceed to Checkout');
+            return;
+    
+          }
+    
+          payload.customer_name = customerNameInput.value.trim();
+        }
+    
+        try {
+    
+          const response = await fetch(`/e-store/join-group-order/${currentGroupId}/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(payload)
+          });
+    
+          const data = await response.json();
+    
+          if (response.ok && data.success) {
+    
+            showFeedback('Successfully joined the group!', 'success');
+    
+            const CustomerPhoneNumber = data.customer_phone_number;
+    
+            setTimeout(() => {
+    
+              modal.hide();
+              window.location.href = `{% url 'customer_unpaid_orders' %}?phone_number=${CustomerPhoneNumber}`;
+    
+            }, 800);
+    
+          } else {
+    
+            showFeedback(data.error || 'Something went wrong.', 'danger');
+            setCheckoutState(false, 'Proceed to Checkout');
+    
+          }
+    
+        } catch (err) {
+    
+          showFeedback('Could not join group. Please try again.', 'danger');
+          setCheckoutState(false, 'Proceed to Checkout');
+    
+        }
+    
+      };
+    
+    });
+    
+    /* ---------------- CSRF ---------------- */
+    
+    function getCookie(name) {
+    
+      let cookieValue = null;
+    
+      if (document.cookie && document.cookie !== '') {
+    
+        const cookies = document.cookie.split(';');
+    
+        for (let i = 0; i < cookies.length; i++) {
+    
+          const cookie = cookies[i].trim();
+    
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+    
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+    
+          }
+    
+        }
+    
+      }
+    
+      return cookieValue;
+    
+    }
+    </script>
+    
+
+    <!-- jquery -->
+    <script src="{% static 'assets-shopap/js/jquery-3.5.1.min.js' %}"></script>
+    <!--bootstrap-->
+    <script src="{% static 'assets-shopap/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- swiper carousel -->
+    <script src="{% static 'assets-shopap/vendor/swiper/swiper-bundle.min.js' %}"></script>
+    <!-- magnific -->
+    <script src="{% static 'assets-shopap/vendor/magnific/jquery.magnific-popup.min.js' %}"></script>
+    <!-- isotope -->
+    <script src="{% static 'assets-shopap/vendor/isotope/isotope.pkgd.min.js' %}"></script>
+    <!-- count-down -->
+    <script src="{% static 'assets-shopap/vendor/count-down/jquery.countdown.min.js' %}"></script>
+    <!-- count-down -->
+    <script src="{% static 'assets-shopap/vendor/jarallax/jarallax-all.js' %}"></script>
+    <!-- simple datatables-->
+    <script src="{% static 'assets-shopap/vendor/simple-datatables/simple-datatables.js' %}"></script>
+    <!-- Theme Js -->
+    <script src="{% static 'assets-shopap/js/custom.js' %}"></script>
+    <script src="{% static 'assets-shopap/js/theme.js' %}"></script>
+    <script src="{% static 'assets-shopap/js/color-modes.js' %}"></script>
+    <!-- End script start -->
+</body>
+
+</html>

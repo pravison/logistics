@@ -1,0 +1,186 @@
+<!-- Product Box -->
+<div class="col-6 col-md-4 col-xl-3 my-3">
+    <div class="product-card-7">
+        <div class="product-card-image">
+            
+            <div class="badge-ribbon">
+            <!--{% if product.quantity_units >= 1 %}-->
+            <!--<span class="badge bg-danger">available stock: {{product.quantity_units}}</span>-->
+            <!--{% endif %}-->
+            {% with sizes=product.available_sizes.all %}
+                {% if sizes %}
+                    {% with first_size=sizes.first last_size=sizes.last %}
+                        <span class="badge bg-secondary">
+                            sizes:
+                            {% if sizes|length > 1 %}
+                                {{ first_size.size }} – {{ last_size.size }}
+                            {% else %}
+                                {{ first_size.size }}
+                            {% endif %}
+                        </span>
+                    {% endwith %}
+                {% endif %}
+            {% endwith %}
+            </div>
+        
+            <div class="product-action">
+                <!--<a href="#" class="btn btn-dark" title="add to wishlist"><i class="fi-heart"></i></a>-->
+                 <a href="javascript:void(0)" 
+                   class="btn btn-dark" 
+                   data-slug="{{product.slug}}" 
+                   onclick="handleCopyClick(this)">
+                   <i class="fi-repeat"></i>
+                </a>
+                {% if request.user.is_staff %}
+                <a href="{% url 'edit_wholesale_product' product.business.slug product.slug %}"
+                   class="btn btn-dark">
+                   edit
+                </a>
+                {% else %}
+                
+                <a 
+                  title="quick view"
+                  href="javascript:void(0)"
+                  class="btn btn-dark quick-view-btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#px-quick-view"
+                
+                  data-name="{{ product.product_name }}"
+                  data-price="{{ product.price_per_unit }}"
+                  data-description="{{ product.description|default:'No description available'|escapejs }}"
+                  data-seller="{{ product.business.business_name }}"
+                  data-images='[{% if product.imageUrl %}"{{ product.imageUrl }}"{% if product.other_images.all %},{% endif %}{% endif %}{% for img in product.other_images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+                
+                  data-items-per-unit="{{ edit_wholesale_productitems_per_unit }}"
+                  data-price-per-item="{{ product.price_per_item }}"
+                  data-seller-location="{{ product.business.ward }}, {{ product.business.location }}"
+                
+                  data-available-sizes='[{% for size in product.available_sizes.all %}"{{ size.size }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                  data-available-colours='[{% for colour in product.available_colours.all %}"{{ colour.colour }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                >
+                  <i class="fi-eye"></i>
+                </a>
+                {% endif %}
+                <a href="javascript:void(0)"
+                   class="btn btn-dark view-product-offers-btn"
+                   data-product-id="{{ product.id }}">
+                   <i class="fi-plus"></i>
+                </a>
+            </div>
+
+            <div class="product-media">
+                <a 
+                  title="quick view"
+                  href="javascript:void(0)"
+                  class="quick-view-btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#px-quick-view"
+                
+                  data-name="{{ product.product_name }}"
+                  data-price="{{ product.price_per_unit }}"
+                  data-description="{{ product.description|default:'No description available'|escapejs }}"
+                  data-seller="{{ product.business.business_name }}"
+                  data-images='[{% if product.imageUrl %}"{{ product.imageUrl }}"{% if product.other_images.all %},{% endif %}{% endif %}{% for img in product.other_images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+                
+                  data-items-per-unit="{{ product.items_per_unit }}"
+                  data-price-per-item="{{ product.price_per_item }}"
+                  data-seller-location="{{ product.business.ward }}, {{ product.business.location }}"
+                
+                  data-available-sizes='[{% for size in product.available_sizes.all %}"{{ size.size }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                  data-available-colours='[{% for colour in product.available_colours.all %}"{{ colour.colour }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                >
+                <img class="img-fluid" src="{{ product.imageUrl }}" title="{{ product.product_name }}" alt="{{ product.product_name }}" loading="lazy">
+                </a>
+            </div>
+
+            <div class="product-cart-btn">
+                {% if product.allow_sell_per_item %}
+                    <a href="#" class="btn btn-primary dropship-add-to-cart-btn mb-1"
+                       data-id="{{ product.id }}"
+                       data-name="{{ product.product_name }}"
+                       data-wholesale-price="{{ product.price_per_unit }}">
+                       <i class="fi-shopping-cart"></i> Dropship
+                    </a>
+
+                {% endif %}
+                
+                {% if product.quantity_units >= 1 %}
+              <a href="javascript:void(0)" class="btn btn-primary wholesale-add-to-cart-btn mb-1"
+                 data-id="{{ product.id }}"
+                 data-name="{{ product.product_name }}"
+                 data-price="{{ product.price_per_unit }}"
+                 data-min-order-quantity="{{ product.minimum_order_quantity }}"
+                 data-image="{{ product.imageUrl }}"
+                 data-earn-points="{{ product.earn_points }}">
+                 <i class="fi-shopping-cart"></i> Add to cart
+              </a>
+              {% if product.pre_oder_only and product.pre_oder_closed %}
+              <a href="javascript:void(0)" 
+                   class="btn btn-primary buy-group-btn mb-1 buyGroupButton">
+                   <i class="fi-shopping-cart"></i> Not taking orders
+                </a>
+              {% else %}
+              <a href="{% url 'buy_in_groups' %}?product_id={{ product.id }}" 
+                   class="btn btn-primary buy-group-btn mb-1 buyGroupButton">
+                   <i class="fi-shopping-cart"></i> Buy in Group
+                </a>
+                {% endif %}
+              {% endif %}
+              <div class="quantity-control d-none mt-2">
+                <div class="d-flex align-items-center gap-2 quantity-wrapper">
+                  <button class="btn btn-danger btn-sm minus-btn" type="button">−</button>
+                  <input type="text" class="form-control text-center quantity-input" value="1" readonly>
+                  <button class="btn btn-danger btn-sm plus-btn" type="button">+</button>
+                </div>
+              </div>
+            </div>
+
+
+
+        </div>
+        
+        <div class="product-card-info">
+            <span class="text-primary">
+              Earn <b id="wholesalePointsToEarn-{{ product.id }}" style="color:black">{{ product.earn_points|floatformat:0 }}</b> points
+            </span>
+
+            <h6 class="product-title">
+                <a 
+                  title="quick view"
+                  href="javascript:void(0)"
+                  class="quick-view-btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#px-quick-view"
+                
+                  data-name="{{ product.product_name }}"
+                  data-price="{{ product.price_per_unit }}"
+                  data-description="{{ product.description|default:'No description available'|escapejs }}"
+                  data-seller="{{ product.business.business_name }}"
+                  data-images='[{% if product.imageUrl %}"{{ product.imageUrl }}"{% if product.other_images.all %},{% endif %}{% endif %}{% for img in product.other_images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+                
+                  data-items-per-unit="{{ product.items_per_unit }}"
+                  data-price-per-item="{{ product.price_per_item }}"
+                  data-seller-location="{{ product.business.ward }}, {{ product.business.location }}"
+                
+                  data-available-sizes='[{% for size in product.available_sizes.all %}"{{ size.size }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                  data-available-colours='[{% for colour in product.available_colours.all %}"{{ colour.colour }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                ><b>{{ product.product_name }} | {{ product.product_condition }}</b>
+                </a></h6>
+            <div class="mt-1 small text-success" id="offerBox-product-{{product.id}}" style="display:none;">
+              <span id="offerMessage-product-{{product.id}}"></span><br>
+              Offer Price: <b>Ksh <span id="offerPrice-product-{{product.id}}"></span></b><br>
+              You Save: <b>Ksh <span id="offerSaving-product-{{product.id}}"></span></b>
+            </div>
+            <div class="product-price">
+                <span id="productPriceText-{{product.id}}">ksh{{ product.price_per_unit }}</span><br/>
+                <span class="fs-sm text-warning" title="sold as"> from {{ product.minimum_order_quantity }} {{ product.sold_as }}{% if product.minimum_order_quantity > 1 %}s{% endif %}</span><br/>
+                <span class="fs-sm text-muted text-small text-warning"> {% if product.pre_oder_only %}pre-oder from {{product.country_from }} {% else %} availlable at thes shop{% endif %}</span><br/>
+
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+
+

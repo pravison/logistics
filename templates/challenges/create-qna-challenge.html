@@ -1,0 +1,230 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% block title %}Create Q&A Challenge{% endblock %}
+{% block content %}
+<style>
+.popup {
+  display: none;
+  position: fixed;
+  z-index: 1050;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-content {
+  background-color: #fff;
+  margin: auto;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 700px;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+</style>
+
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1>Create Question & Answer Challenge</h1>
+  </div>
+
+  <section class="section">
+    <div class="card">
+        <div class="card-body">
+        <form method="POST" action="{% url 'create_qna_challenge' %}?business_id={{ business.id }}" enctype="multipart/form-data">
+          {% csrf_token %}
+          {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+          {% endif %}
+          <div class="mb-3">
+            <label>Challenge Title</label>
+            <input type="text" class="form-control" name="challenge_name" required>
+          </div>
+          <div class="row mb-3">
+            <div class="col-sm-10 justify-content-center">
+              <label>Upload Challenge poster/banner</label>
+              <input class="form-control" name="challenge_poster" type="file" accept="image/*" />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label>Challenge Type</label>
+            <select name="type" class="form-control" required>
+              <option value="instant">Instant</option>
+              <option value="live">Live</option>
+            </select>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-sm-10">
+              <label>Select Subtopic</label>
+              <div class="input-group">
+                <select class="form-select" name="subtopic" id="subtopicSelect" required>
+                  <option value="">-- Select Subtopic --</option>
+                  {% for sub in subtopics %}
+                    <option value="{{ sub.id }}">{{ sub.name }}</option>
+                  {% endfor %}
+                </select>
+                <button type="button" class="btn btn-outline-info" onclick="openQuestionPopup()">
+                  View Questions
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+          <!--<div class="mb-3">-->
+          <!--  <label>Duration (Seconds)</label>-->
+          <!--  <input type="number" name="duration_seconds" class="form-control" value="20" required>-->
+          <!--</div>-->
+
+          <!--<div class="mb-3">-->
+          <!--  <label><input type="checkbox" name="requires_group"> Requires Group Participation</label>-->
+          <!--</div>-->
+
+          <div class="mb-3">
+            <label>Challenge Reward</label>
+            <input type="text" name="challenge_reward" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label>Reward Monetary Value</label>
+            <input type="number" name="challenge_reward_monetary_value" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label>Challenge Brief</label>
+            <textarea name="challenge_brief" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label>Challenge Guidelines</label>
+            <textarea name="challenge_guidelines" class="form-control" rows="3">
+                You have a maximum of 5 seconds to answer a question
+                The faster you answer the more the score, 
+                if you answer correct but take more than 5 seconds you get 10% score
+                if you answer wrong you get 0% score
+                and if you answer correct and within 0 millisecond you get 100% score
+            </textarea>
+          </div>
+
+          <div class="mb-3">
+            <label>Target Winners</label>
+            <input type="number" name="target_winners" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label>End Date</label>
+            <input type="datetime-local" name="end_date" class="form-control" required>
+          </div>
+
+          <!--<div class="mb-3">-->
+          <!--  <label>Start Time (Only for Live)</label>-->
+          <!--  <input type="datetime-local" name="start_time" class="form-control">-->
+          <!--</div>-->
+
+          <button type="submit" class="btn btn-primary" id="createChallengeBtn">Create Challenge</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const button = document.getElementById('createChallengeBtn');
+    const form = button.closest('form');
+
+    form.addEventListener('submit', function () {
+      button.disabled = true;
+      button.textContent = 'Creating challenge...';
+    });
+  });
+</script>
+<!-- Modal for viewing questions for selected subtopic -->
+<!-- Custom Modal for viewing questions -->
+<div id="question-popup" class="popup">
+  <div class="popup-content">
+    <h5>Subtopic Questions</h5>
+    <button type="button" onclick="closeQuestionPopup()" class="close-btn">×</button>
+    <div id="question-body">
+      {% for sub in subtopics %}
+        <div class="subtopic-questions" id="questions-for-{{ sub.id }}" style="display: none;">
+          {% if sub.questions.all %}
+            <ul class="list-group mb-3">
+              {% for q in sub.questions.all %}
+                <li class="list-group-item">{{ q.order }}. {{ q.text }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No questions for this subtopic.</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <div id="no-subtopic-selected" class="text-muted">Select a subtopic to view its questions.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- script for showing modal with questions -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('subtopicSelect');
+    const questionBlocks = document.querySelectorAll('.subtopic-questions');
+    const noSubtopicText = document.getElementById('no-subtopic-selected');
+    const popup = document.getElementById('question-popup');
+
+    window.openQuestionPopup = function () {
+      const selected = select.value;
+
+      // Reset all question blocks
+      questionBlocks.forEach(div => div.style.display = 'none');
+
+      if (selected) {
+        const targetDiv = document.getElementById(`questions-for-${selected}`);
+        if (targetDiv) {
+          targetDiv.style.display = 'block';
+          noSubtopicText.style.display = 'none';
+        } else {
+          noSubtopicText.textContent = 'No questions available.';
+          noSubtopicText.style.display = 'block';
+        }
+      } else {
+        noSubtopicText.textContent = 'Select a subtopic to view its questions.';
+        noSubtopicText.style.display = 'block';
+      }
+
+      popup.style.display = 'flex';
+    }
+
+    window.closeQuestionPopup = function () {
+      popup.style.display = 'none';
+      // Reset content
+      questionBlocks.forEach(div => div.style.display = 'none');
+      noSubtopicText.textContent = 'Select a subtopic to view its questions.';
+      noSubtopicText.style.display = 'block';
+    }
+  });
+</script>
+
+{% endblock %}

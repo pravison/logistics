@@ -1,0 +1,140 @@
+{% extends 'profile-main.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load humanize%}
+{% block title %} Challenge Opportunities {% endblock%}
+{% block content %}
+<style>
+  .category {
+    position: relative;
+    overflow: hidden; /* Ensure the strip doesn't go outside the box */
+    height: 20px;
+}
+
+
+.diagonal-strip {
+    position: absolute;
+    top: 1%; /* Adjust as needed */
+    left: -5%;
+    width: 200%; /* Make it wide enough to cover the box */
+    transform: rotate(-1deg); /* Creates the diagonal effect */
+    background: #cc922e; /* Semi-transparent red for the "SOLD" strip */
+    color: white;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 10; /* Ensure it appears on top of other content */
+    pointer-events: none; /* Makes the strip non-interactive */
+    padding: 10px 0; /* Adjust padding as needed */
+}
+</style>
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Invite Patners</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+          
+          <li class="breadcrumb-item"><a href="{% url 'business_vote_challenges' business.slug %}">Challenges</a></li>
+         
+          <li class="breadcrumb-item active">Welcome {% if request.user.is_authenticated %}{{ request.user.first_name }} {{ request.user.last_name }} {% endif %}</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+    <div class="row align-items-top">
+      {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {% endfor %}
+      {% endif %}
+      <!-- Card with an image on top -->
+      {% for patner in all_businesses %}
+
+      <div class="card  ms-3 col-lg-4" style="padding: 5x;">
+        <div class="card-body">
+          <h5 class="card-title" style="margin-bottom :5px;"><b>{{ patner.business_name }} </b>
+            <br/><span>Address: {{patner.address}},  {{patner.ward}}, {{patner.location}}, {{patner.county}}, {{patner.country}}</span></h5>
+          <div>
+           <h5 class="card-title" style="margin-bottom :5px;"><b>Business Brief</b>
+            <p><span>{{patner.description|safe}}</span></p>
+          </h5> 
+          </div>
+        </div>
+        <div class="card-body">
+          {% if patner in challenge.challenge_patners.all %}
+          <span class="btn btn-primary">Already Invited</span>
+          {% else %}
+          <a class="btn btn-primary invite-btn" id="inviteButton-{{ patner.id }}" href="{% url 'invite_vote_challenge_patners' %}?business_slug={{business.slug}}&challenge_id={{challenge.id}}&patner_id={{patner.id}}" class="btn btn-primary">Invite</a>
+          {% endif %}
+        </div>
+      </div><!-- End Card with an image on top -->
+      
+      {% endfor %}
+
+    </div>
+  </section>
+
+  </main><!-- End #main -->
+  
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inviteButtons = document.querySelectorAll('.invite-btn');
+
+        inviteButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                // Disable the button
+                button.classList.add('disabled');
+                button.textContent = "Sending invitation request...";
+            });
+        });
+    });
+</script>
+
+<script>
+  function showPopup(event) {
+      event.preventDefault(); // Prevent default link behavior
+      const popup = document.getElementById('popup');
+      popup.style.display = 'flex'; // Show the popup
+  }
+  
+  function closePopup() {
+      const popup = document.getElementById('popup');
+      popup.style.display = 'none'; // Hide the popup
+  }
+  
+  function copyToClipboard() {
+      const urlField = document.getElementById('share-url');
+      urlField.select(); // Select the text
+      document.execCommand('copy'); // Copy the text to the clipboard
+      alert('URL copied to clipboard!');
+  }
+</script>
+
+<script>
+  function showPopupBusiness(event) {
+      event.preventDefault(); // Prevent default link behavior
+      const popup = document.getElementById('popupBusiness');
+      popup.style.display = 'flex'; // Show the popup
+  }
+  
+  function closeBusinessPopup() {
+      const popup = document.getElementById('popupBusiness');
+      popup.style.display = 'none'; // Hide the popup
+  }
+  
+  function copyBusinessToClipboard() {
+      const urlField = document.getElementById('share-url-business');
+      urlField.select(); // Select the text
+      document.execCommand('copy'); // Copy the text to the clipboard
+      alert('URL copied to clipboard!');
+  }
+</script>
+
+{% endblock %}

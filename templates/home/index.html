@@ -1,0 +1,28 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block title %} -Get More customer for you gas refil business!{% endblock %}
+
+{% block content %}
+
+<!-- Banner Area -->
+<section class="banner_area banner_a2">
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+
+            {% endfor %}
+        {% endif %}
+        <h1 class="wow fadeIn" style="color: white; font-size: xxx-large;">Bring More Customers to Your Store and Keep Them Coming Back! </h1>
+        <p class="wow fadeIn" data-wow-delay="0.2s">At Challenge, we specialize in helping retail businesses attract foot traffic and turn every vistor into aloyal cutomer. From innovative marketing to gamefied loyalty programs, we make sure your store stays busy and your customers keep coming back.</p>
+        <a href="{% url 'index' %}#pricing" class="theme_btn wow fadeIn" data-wow-delay="0.4s">Start Driving Traffic Today  </a>
+    </div>
+</section>
+<!-- Banner Area -->
+
+
+{% endblock %}

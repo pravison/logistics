@@ -1,0 +1,109 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% load math_filters %}  <!-- Load the custom filter module -->
+{% block title %} Customer Orders{% endblock%}
+{% block content %}
+
+<main id="main" class="main">
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+{% endif %}
+
+    <div class="pagetitle">
+      <h1>Customer Orders</h1>
+      
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Customer Orders</h5>
+              <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                search anything 
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              <!-- Table with stripped rows -->
+              <table class="table datatable">
+              <thead>
+                <tr>
+                  
+                  <th>Order</th>
+                  <th>Image</th>
+                  <th>Products Ordered</th>
+                  <th>Customer</th>
+                  <th>customer Mobile</th>
+                  <th>Total</th>
+                  <th>Paid</th>
+                  <th>Received</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in orders %}
+                <tr>
+                  <td>#{{ order.id }}</td>
+                  <td>
+                        {% for order_product in order.wholesale_products.all %}
+                            {% if forloop.first %}
+                                <a href="{% url 'order-detail' order.id %}">
+                                    <img src="{{ order_product.product.imageUrl }}" alt="Product Image" width="100">
+                                </a>
+                            {% endif %}
+                        {% endfor %}   
+                  </td>
+                  <td>
+                  <a class="text-dark text-decoration-none" href="{% url 'order-detail' order.id %}">
+                  {% for order_product in order.wholesale_products.all %}{% if forloop.first %} {{order_product.product.product_name}} ...{% endif %}  {% endfor %}
+                  </a>
+                  </td>
+                  <td>{{ order.customer }}</td>
+                  <td>{{ order.customer.phone_number }}</td>
+                  <td>{{ order.update_total_price }}</td>
+                  <td>{% if order.is_paid %} paid {% else %}not paid {% endif %}</td>
+                  <td>
+                     {% if order.received %} received {% else %}not received {% endif %} 
+                  </td>
+                  
+                  <td>
+                      <a href="{% url 'order-detail' order.id %}" class="btn btn-sm btn-primary">View details</a>
+                  </td>
+                </tr>
+                {% empty %}
+                  <p>No orders found.</p>
+                {% endfor %}
+              </tbody>
+            </table>
+
+              <!-- End Table with stripped rows -->
+            <p class="text-center">
+                <a href="{% url 'group_orders_list' %}" 
+                        class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i>Group Purchases
+                </a>
+                <a href="{% url 'all_Wholesale_products' %}" 
+                    class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> head shopping
+                </a>
+                <a href="{% url 'business' %}" 
+                    class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> Dashboard
+                </a>
+            </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% block title %}Business Dashboard {% endblock%}
+{% block content %}
+<main id="main" class="main">
+
+  <div class="pagetitle">
+    <h1>Your Businesses</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item active">Business Dashboard</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+
+  <section class="section dashboard">
+    <div class="row">
+      {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+
+          {% endfor %}
+      {% endif %}
+      <!-- Left side columns -->
+      <div class="col-lg-12">
+         <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          you are accessing information of your first created business account 
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          select below the business account you want to visit 
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div class="row">
+          {% for business in businesses %}
+          <!-- Business Card -->
+          <div class="col-xxl-4 col-md-4">
+            <div class="card info-card revenue-card">
+
+              <div class="filter">
+                <a class="icon" href="{% url 'dashboard' business.slug %}">visit</a>
+                
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title"></h5>
+
+                <div class="d-flex align-items-center">
+                  <div class="ps-3">
+                    <h6><a href="{% url 'dashboard' business.slug %}" style="color: #000;;">{{ business.business_name }}</a></h6>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div><!-- End Card -->
+          {% endfor %}
+          <!-- add business card Card -->
+          <div class="col-xxl-4 col-md-4">
+            <div class="card info-card revenue-card">
+
+              <div class="filter">
+                <a class="icon" href="{% url 'add_business' %}?pricing_plan=fremium">create</a>
+                
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title"></h5>
+
+                <div class="d-flex align-items-center">
+                  <div class="ps-3">
+                    <h6><a href="{% url 'add_business' %}?pricing_plan=fremium" style="color: #000;;">Create New Business Account</a></h6>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div><!-- End Revenue Card -->
+        </div>
+      </div><!-- End Left side columns -->
+
+    </div>
+  </section>
+
+</main><!-- End #main -->
+{% endblock %}

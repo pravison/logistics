@@ -1,0 +1,170 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<!-- popup register -->
+<style>
+    /* popup styling  */
+/* Popup container (hidden by default) */
+.popup {
+    display: none; /* Hidden by default */
+    /*position: fixed; /*Ensures the popup stays on the screen*/
+    top: 10px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff; /* rgba(0, 0, 0, 0.5); Dark overlay */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Higher z-index to appear on top of other elements */
+}
+
+/* Popup content box */
+.popup-content {
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    max-width: 100%;
+    width: 100%;
+    z-index: 10000; /* Ensures the content box stays above the overlay */
+}
+/* #cc922e */ 
+/* #1563df blue color */
+
+.popup-content input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.popup-content button {
+    margin: 5px;
+    padding: 8px 16px;
+    background: #1563df;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.popup-content button:hover {
+    background: #1563df;
+}
+</style>
+<!-- Get In Touch With Us Area -->
+<section class="get_touch_area" style="padding-top: 120px;">
+    <div class="row" style="justify-content: center;">
+        
+        <div class="col-lg-6 " >
+            <div class="row" style="justify-content: center;"><b>Redeem Loyalty Points</b></div>
+            
+            
+            <div class="from_area">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                <form class="from_main" action="#" method="POST" id="loginForm">
+                    {% csrf_token %}
+                    <div class="form-group" style="cursor: pointer; align-items: center;">
+                        Redeem Loyalty Points
+                    </div>
+                    {% if business_customer == None %}
+                    <div class="form-group">
+                        <input type="email" name="coupone" class="form-control" id="couponInput" placeholder="Enter customers email" required>
+                    </div>
+                    
+                    <div class="form-group m-0 btn_g">
+                        <button class="theme_btn btn" id="loginButton" type="button"> 
+                            <a href="#" id="couponLink" style="color: white;">submit</a>
+                        </button>
+                    </div>
+                    {% endif %}
+                    <div class="form-group" style="cursor: pointer; align-items: center;">
+                        <h4>Customer: {{business_customer.customer.user.first_name}} {{business_customer.customer.user.last_name}}</h4>
+                        <p>Email: {{business_customer.customer.user.email}}</p>
+                        <p> Total Points: <b>{{business_customer.total_loyal_points}}</b> Points Value: </p>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="coupone" class="form-control" id="couponInput" placeholder="Enter points to redeem" required>
+                    </div>
+                    
+                    <div class="form-group m-0 btn_g">
+                        <button class="theme_btn btn" id="loginButton" type="button"> 
+                            <a href="#" id="couponLink" style="color: white;">submit</a>
+                        </button>
+                    </div>
+                </form>
+        </div>
+
+        
+    </div>
+</section>
+<!-- Get In Touch With Us Area -->
+
+<!-- Popup Modal -->
+
+<script>
+    // Add an event listener to the form submission
+    document.addEventListener('DOMContentLoaded', function () {
+        const loginButton = document.getElementById('loginButton');
+        loginButton.addEventListener('click', function () {
+                // Disable the button
+                loginButton.disabled = true;
+
+                // Update the button text
+                loginButton.textContent = "redirecting you...";
+            });
+
+        
+    });
+</script>
+
+<script>
+    document.getElementById('loginButton').addEventListener('click', function() {
+        var couponCode = document.getElementById('couponInput').value;
+        var link = document.getElementById('couponLink');
+        
+        // Check if the coupon code is provided
+        if (couponCode) {
+            // If there is a coupon code, append it to the URL
+            var url = "{% url 'redeemed_loyalty_points' business.slug %}?customer_email=" + couponCode;
+            link.href = url;
+        } else {
+            alert('please enter customers email')
+        }
+    });
+</script>
+
+<script>
+    function showPopup(event) {
+        event.preventDefault(); // Prevent default link behavior
+        const popup = document.getElementById('popup');
+        popup.style.display = 'flex'; // Show the popup
+    }
+    
+    function closePopup() {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'none'; // Hide the popup
+    }
+    
+    function copyToClipboard() {
+        const urlField = document.getElementById('share-url');
+        urlField.select(); // Select the text
+        document.execCommand('copy'); // Copy the text to the clipboard
+        alert('URL copied to clipboard!');
+    }
+</script>
+
+{% endblock %}
+
+

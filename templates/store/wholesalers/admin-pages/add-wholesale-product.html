@@ -1,0 +1,344 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %} {% if edit %} Edit {% else %} Add {% endif %} Product {% endblock%}
+{% block content %}
+<style>
+/* Upload Area Styling */
+.uploadfile {
+    border: 2px dashed #d3d3d3;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    background-color: #fafafa;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    position: relative;
+}
+
+.uploadfile.dragover {
+    border-color: #007bff;
+    background-color: #f0f8ff;
+}
+
+.btn-upload {
+    display: inline-block;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    background-color: #007bff;
+    color: white;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-upload:hover {
+    background-color: #0056b3;
+}
+
+.btn-upload input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+}
+
+.file-name {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Preview Area */
+.box-img-upload {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.item-upload {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #fff;
+    transition: border 0.2s ease;
+}
+
+.item-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.item-upload .remove-file {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(255, 0, 0, 0.8);
+    color: #fff;
+    padding: 4px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.item-upload.dragging {
+    opacity: 0.6;
+}
+
+.item-upload.over {
+    border: 2px dashed #007bff;
+}
+
+/* Responsive tweaks */
+@media (max-width: 576px) {
+    .item-upload {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+</style>
+<main id="main" class="main">
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+{% endif %}
+
+    <div class="pagetitle">
+      <h1>{% if edit %} Edit {% else %} Add {% endif %} Products</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' business.slug %}">Dashboard</a></li>
+          <li class="breadcrumb-item active">{% if edit %} Edit {% else %} Add {% endif %}</li>
+          
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">{% if edit %} Edit {{product.product_name}} {% else %} Add Product or service{% endif %}</h5>
+              <div class="container mt-4">
+              {% if category or edit %}
+              <form method="post" enctype="multipart/form-data" action=".">
+                {% csrf_token %}
+                {{ form.media }}  {# Important for TinyMCE #}
+                
+                {% for field in form %}
+                  <div class="mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                
+                    {% if field.help_text %}
+                      <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                      <div class="text-danger">{{ field.errors }}</div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+                <h5 class="title">Add More Product Images *</h5>
+                <div class="form-label">
+                    <div class="uploadfile">
+                        <div class="btn-upload tf-btn primary">
+                            <!-- SVG omitted for brevity -->
+                            Select photos
+                            <input type="file" class="ip-file" id="image-upload" name="upload_image" multiple accept="image/*" onchange="handleFileSelect()">
+                        </div>
+                        <p class="file-name fw-5">
+                            or drag photos here <br>
+                            <span>(max 15 photos)</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="box-img-upload" id="preview-container">
+                    <!-- Preview images will be appended here dynamically -->
+                </div>
+            
+                <button type="submit" class="btn btn-primary" id="RegisteringAccount">Save</button>
+                
+                <a href="{% url 'wholesale_products' slug=business.slug %}" class="btn btn-secondary">Cancel</a>
+              </form>
+              {% else %}
+              <h4 class="text-center mt-4 mb-3"><strong>Select a Product Category to Continue</strong></h4>
+              <div class="d-flex flex-wrap gap-3 justify-content-center">
+                {% for cat in categories %}
+                  <a href="{% url 'add_wholesale_product' business.slug %}?category_id={{ cat.id }}" class="btn btn-outline-primary">
+                    {{ cat.category_name }}
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
+            </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const loginButton = document.getElementById('RegisteringAccount');
+    const form = loginButton?.closest('form');
+    if (form) {
+      form.addEventListener('submit', function () {
+        loginButton.disabled = true;
+        loginButton.textContent = "save in progress...";
+      });
+    }
+  });
+</script>
+
+<script>
+    let selectedFiles = [];
+
+    const input = document.getElementById('image-upload');
+    const dropZone = document.getElementById('drop-zone');
+    const previewContainer = document.getElementById('preview-container');
+
+    // Input change handler
+    function handleFileSelect() {
+        const files = Array.from(input.files);
+
+        if (selectedFiles.length + files.length > 15) {
+            alert('You can upload a maximum of 15 photos.');
+            input.value = '';
+            return;
+        }
+
+        for (const file of files) {
+            if (file.type.startsWith('image/')) {
+                selectedFiles.push(file);
+            }
+        }
+
+        renderPreviews();
+    }
+
+    // Drag-and-drop events
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+
+        const files = Array.from(e.dataTransfer.files);
+
+        if (selectedFiles.length + files.length > 15) {
+            alert('You can upload a maximum of 15 photos.');
+            return;
+        }
+
+        for (const file of files) {
+            if (file.type.startsWith('image/')) {
+                selectedFiles.push(file);
+            }
+        }
+
+        renderPreviews();
+    });
+
+    // Preview renderer
+    function renderPreviews() {
+        previewContainer.innerHTML = '';
+
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'item-upload file-delete';
+                div.setAttribute('draggable', true);
+                div.dataset.index = index;
+
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="Image Preview">
+                    <span class="remove-file" onclick="removeImage(${index})">×</span>
+                `;
+
+                // Drag events
+                div.addEventListener('dragstart', handleDragStart);
+                div.addEventListener('dragover', handleDragOver);
+                div.addEventListener('drop', handleDrop);
+                div.addEventListener('dragend', handleDragEnd);
+
+                previewContainer.appendChild(div);
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Remove image
+    function removeImage(index) {
+        selectedFiles.splice(index, 1);
+        renderPreviews();
+    }
+
+    // Drag-and-drop sorting
+    let dragSrcIndex = null;
+
+    function handleDragStart(e) {
+        dragSrcIndex = +this.dataset.index;
+        this.classList.add('dragging');
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        this.classList.add('over');
+    }
+
+    function handleDrop(e) {
+        const targetIndex = +this.dataset.index;
+        if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
+            const draggedItem = selectedFiles.splice(dragSrcIndex, 1)[0];
+            selectedFiles.splice(targetIndex, 0, draggedItem);
+            renderPreviews();
+        }
+    }
+
+    function handleDragEnd(e) {
+        const items = document.querySelectorAll('.item-upload');
+        items.forEach(item => item.classList.remove('dragging', 'over'));
+    }
+
+    // Form submit handler: sync files back to input
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        input.files = dataTransfer.files;
+    });
+</script>
+
+{% endblock %}

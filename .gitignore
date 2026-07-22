@@ -1,0 +1,11 @@
+.env
+env
+venv
+vercel.json
+tmp
+passenger_wsgi.py
+db.json
+staticfiles
+media
+
+db.sqlite3

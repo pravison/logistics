@@ -1,0 +1,131 @@
+
+{% extends 'main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %} {{ coupon.customer}} {% endblock%}
+{% block content %}
+<style>
+        .coupon-card {
+            width: 100%;
+            border-radius: 5px;
+            background: linear-gradient(135deg, #007bff, #ffcc00);
+            padding: 10px;
+            color: white;
+            margin: auto;
+            text-align: center;
+        }
+        .coupon-code {
+            background-color: white;
+            color: black;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+        .qr-code {
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+
+
+<main id="main" class="main">
+    {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+    {% endif %}
+    <div class="pagetitle" style="margin-bottom: 40px;">
+      <h1>{{ business.business_name }}</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+        <div class="row">
+            <div class="container mt-5">
+                <div class="coupon-card" id="couponCardId">
+                    <h3 style="color: black;"><b>{{ business.business_name|title }}</b></h3>
+                    <h3><b>Scan and WIN a free gas refill <span style="color: rgb(94, 255, 0);">plus </span>join Jirani Gas Club - Earn points and win prizes</b></h3>
+                    <h1><b><span style="color: black;">Affordable Refills </span><span style="color: rgb(94, 255, 0);">Big Rewards</span></b></h1>
+                    <!-- <p ><b>Refil your gas for only Ksh. {% if products %}{{products.price}}{% else %}1,000{% endif %}</b></p> -->
+                    <h4 style="margin-bottom: 5px; color: black;"><b>Every 20th customer gets a free gas refill!</b></h4>
+                    <p style="color: rgb(94, 255, 0);"><b>Scan or Click the qr-code below to see your number or if you stand a chance for a free gas refill</b></p>
+                    <p><b>no WIN no PROBLEM, Join the Jirani Gas Club and earn point for refills and refferals</b></p>
+
+                    <div class="qr-code">
+                        <a href="{% url 'loyalty_membership' %}?referral_code={{code_reffered}}">
+                        <img src="data:image/png;base64,{{ qr_code_image }}" alt="QR Code" class="img-fluid"></a>
+                    </div>
+                    <h6 style="margin-bottom: 5px; color: rgb(0, 17, 255)"><b>Scan or Click Now!!! Your FREE refill could be waiting!</b></h6>
+                    <h3 style="color: black;"><b>Why Jirani Gas Delivery</b></h3>
+                    <p style="margin-bottom: 5px;">Affordable Refills in Nairobi</p>
+                    <p style="margin-bottom: 5px;">Free delivery to your door.</p>
+                    <p style="margin-bottom: 5px;">Safe, Fast, Reliable</p>
+    
+                </div>
+                
+                <canvas id="canvas" style="display: none;"></canvas>
+
+            </div>
+            <button class="coupon-card btn btn-primary mt-3" id="downloadBtn">Download Image</button>
+            <a class="coupon-card btn btn-primary mt-3"href="tel:0706420043" style=" color: white"><b>Call 0706420043 to request gas refill and earn 100 points</b></a>
+            
+        </div>
+    </section>
+
+</main><!-- End #main -->
+
+<script>
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+        const downloadBtn = document.getElementById('downloadBtn');
+        const targetDiv = document.getElementById('couponCardId');
+
+        // Display download progress message
+        downloadBtn.innerText = 'Download in Progress...';
+        downloadBtn.disabled = true;
+
+        domtoimage.toPng(targetDiv, { 
+            quality: 1,
+            bgcolor: "white",
+            style: {
+                width: '100%',
+                borderRadius: '5px',
+                background: 'linear-gradient(135deg, #007bff, #ffcc00)',
+                padding: '10px',
+                color: 'white',
+                margin: 'auto',
+                textAlign: 'center',
+                fontFamily: 'Arial, sans-serif'
+            }
+        })
+        .then(function (dataUrl) {
+            const link = document.createElement('a');
+            link.download = `qr-code-{{business.business_name}}.png`;
+            link.href = dataUrl;
+            link.click();
+
+            // Reset download button text after download
+            downloadBtn.innerText = 'Download Image';
+            downloadBtn.disabled = false;
+        })
+        .catch(function (error) {
+            console.error('Oops, something went wrong!', error);
+
+            // Reset download button text if an error occurs
+            downloadBtn.innerText = 'Download Image';
+            downloadBtn.disabled = false;
+        });
+    });
+</script>
+
+  {% endblock %}

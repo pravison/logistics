@@ -1,0 +1,175 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %} Create Challenge {% endblock%}
+{% block content %}
+
+<main id="main" class="main">
+    {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+    
+    
+        {% endfor %}
+    {% endif %}
+    
+        <div class="pagetitle">
+          <h1>Create Challenge</h1>
+          <nav>
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'dashboard' business.slug %}">Dashboard</a></li>
+            </ol>
+          </nav>
+        </div><!-- End Page Title -->
+    
+        <section class="section">
+          <div class="row">
+            <div class="col-lg-12">
+    
+              <div class="card">
+                <div class="card-body">
+                  
+                  <h5>Create Challenge</h5>
+                  {% if form.errors or form.non_field_errors %}
+                      <div class="mb-3 p-6 bg-red-100 rounded-xl">
+                          {% for field in form %}
+                              {{ field.errors }}
+                          {% endfor %}
+    
+                          {{ form.non_field_errors }}
+                      </div>
+                  {% endif %}
+                  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        points rewarded to customers for participating in a challenge will be deducted from your business points acount
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+    
+                  <!-- General Form Elements -->
+                  <form method="POST", action="{% url 'create_vote_challenge' %}?business_id={{business.id}}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% if form.errors %}
+                      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        Your Form Has Errors
+                        {% for field in form %}
+                          {% if field.errors %}
+                            {{ field.errors }}
+                          {% endif %}
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endif %}
+                    <div class="row mb-3">
+                        <div class="col-sm-10 justify-content-center">
+                          <label>Name of the challenge</label>
+                          <input class="form-control" name="challenge_name" type="text" value="" placeholder="" required/>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                      <div class="col-sm-10 justify-content-center">
+                        <label>Upload Challenge poster/banner</label>
+                        <input class="form-control" name="challenge_poster" type="file" accept="image/*" />
+                      </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-10 justify-content-center">
+                          <label>How many points will you reward your customers for participating in the challenge</label>
+                          <input class="form-control" name="participating_reward" type="number" max="50" value="50" placeholder="" required/>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-10 justify-content-center">
+                          <label>What's the reward for the challenge</label>
+                          <input class="form-control" name="challenge_reward" type="text" value="" placeholder="" required/>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-10 justify-content-center">
+                          <label>What's the monetary value for the above reward</label>
+                          <input class="form-control" name="challenge_reward_monetary_value" type="number" value="" placeholder="" required/>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-10 justify-content-center">
+                          <label>What's the challenge brief/description</label>
+                          <textarea class="form-control" name="challenge_brief" type="text" value=""></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-10 justify-content-center">
+                          <label>What's the challenge participating guidelines</label>
+                          <textarea class="form-control" name="challenge_guidelines" type="text" value=""></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-10 justify-content-center">
+                          <select class="form-select" name="type_of_results" id="type_of_results_select" required>
+                          <option value="">-- Select type of response you want --</option>
+                            <option value="text">text</option>
+                            <option value="image">image</option>
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-10 justify-content-center">
+                          <label>How many winners will you be rewarding</label>
+                          <input class="form-control" name="target_winners" type="number" value="" required/>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-10 justify-content-center">
+                          <label>What's the Challenge End Date</label>
+                          <input class="form-control" name="end_date" type="date" value="" placeholder="challenge end date" required/>
+                        </div>
+                    </div>
+                
+                    <div class="row mb-3">
+                      <div class="col-sm-10 justify-content-center">
+                        <button type="submit" class="btn btn-primary " id="RegisteringAccount">Save</button>
+                      </div>
+                    </div>
+    
+                  </form><!-- End General Form Elements -->
+    
+                </div>
+              </div>
+    
+            </div>
+          </div>
+        </section>
+    
+      </main><!-- End #main -->
+    
+      <script>
+        src="https://code.jquery.com/jquery-3.6.0.min.js"
+      </script>
+      <script>
+        $(document).ready(function(){
+          $('.autocomplete').autocomplete(
+            {
+              source:'/customer-autocomplete/',
+            }
+          );
+        });
+      </script>
+      <script>
+        // Add an event listener to the form submission
+        document.addEventListener('DOMContentLoaded', function () {
+            const loginButton = document.getElementById('RegisteringAccount');
+            const form = loginButton.closest('form'); // Find the closest form element
+    
+            if (form) {
+                form.addEventListener('submit', function () {
+                    // Disable the button
+                    loginButton.disabled = true;
+    
+                    // Update the button text
+                    loginButton.textContent = "creating challenge...";
+                });
+            }
+        });
+      </script>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends 'store/wholesalers/wholesale-main.html' %}
+{% load static %}
+{% load query_append %}
+{% load custom_product_filters %}
+{% load to_filter %}
+{% load url_filters %}
+{% load math_extras %}
+
+{% block content %}
+<main>
+    <!-- Page Title -->
+    <div class="bg-no-repeat bg-cover bg-right-center position-relative" style="background-image: url(../../assets/img/fashion2/home-banner-3.jpg);">
+        <div class="position-absolute top-0 end-0 start-0 bottom-0 opacity-3 bg-dark"></div>
+        <!-- Header Height Bar -->
+        <div class="header-height-bar border-bottom opacity-3"></div>
+        <div class="container-fluid px-container py-6 position-relative">
+            <div class="row align-items-center">
+                <div class="col-lg-6 my-2">
+                    <h1 class="m-0 h4 text-center text-lg-start text-white">My Group Purchases </h1>
+                </div>
+                <div class="col-lg-6 my-2">
+                    <ol class="breadcrumb breadcrumb-light m-0 small justify-content-center justify-content-lg-end">
+                        <!-- <li class="breadcrumb-item"><a class="text-nowrap" href="#">Home</a></li>
+                        <li class="breadcrumb-item text-nowrap active" aria-current="page">My Account</li> -->
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Page Title -->
+     <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Groups AV Purchased with</h5>
+              <!-- Sidebar -->
+                <div class="col shop-sidebar-option-02 offcanvas-lg offcanvas-start px-0 px-lg-3" tabindex="-1" id="shop_filter" aria-labelledby="shop_filterLabel">
+                    <div class="offcanvas-header border-bottom">
+                        <h5 class="offcanvas-title" id="shop_filterLabel">Shop Filter</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#shop_filter" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body flex-column">
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 " href="{% url 'all_Wholesale_products' %}" >Go Shopping<i class="bi bi-bag"></i></a></div>
+                        </div>
+                        
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 " href="{% url 'my_wholesale_orders' %}" >My Wholesale Orders<i class="bi bi-bag"></i></a></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Sidebar -->
+                <div class="shortby-dropdown ms-auto">
+                    <div class="dropdown"><a class="btn btn-none btn-sm border dropdown-toggle text-mode" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">Short by</a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow"
+                            aria-labelledby="dropdownMenuLink">
+                            <li><a class="dropdown-item {% if sort == 'date_old' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=date_old' }}">Date, old to new</a></li>
+                            <li><a class="dropdown-item {% if sort == 'date_new' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=date_new' }}">Date, new to old</a></li>
+                            <li><a class="dropdown-item {% if sort == 'target_hit' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=target_hit' }}">Target, hit</a></li>
+                            <li><a class="dropdown-item {% if sort == 'target_not_hit' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=target_not_hit' }}">Target, not hit</a></li>
+                            <li><a class="dropdown-item {% if sort == 'not_closed' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=closed' }}">Closed</a></li>
+                            <li><a class="dropdown-item {% if sort == 'closed' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=not_closed' }}">Not Closed</a></li>
+                        </ul>
+                    </div>
+                </div>
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+              <!-- Table with stripped rows -->
+                <table class="table datatable">
+                    <thead>
+                        <tr>
+                        <th>Group Id</th>
+                        <th>Group Name</th>
+                        <th>Created By</th>
+                        <th>Product Ordered</th>
+                        <th>Product Image</th>
+                        <th>Target hit</th>
+                        <th>Closed</th>
+                        <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for group_order in group_orders %}
+                        <tr>
+                        <td>#{{ group_order.id }}</td>
+                        <td>{{ group_order.name }}</td>
+                        <td>{{ group_order.created_by }}</td>
+                        <td>{{ group_order.product.product_name }}</td>
+                        <td>
+                            <a href="{% url 'group_order_detail' group_order.id %}">
+                            <img src="{{ group_order.product.imageUrl }}" alt="Product Image" width="60">
+                            </a>
+                        </td>
+                        <td>{% if group_order.target_quantity <= group_order.current_quantity %} Yes {% else %}NO {% endif %}</td>
+                        <td>{% if group_order.closed %} Yes {% else %}NO {% endif %}</td>
+                        <td><a href="{% url 'group_order_detail' group_order.id %}" class="btn btn-primary btn-sm">View Details</a></td>
+                        </tr>
+                        {% empty %}
+                            <p>You've not purchased anything in a group</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+              <!-- End Table with stripped rows -->
+                <p class="text-center">
+                    <a href="{% url 'my_wholesale_orders' %}" 
+                            class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> My orders
+                    </a>
+                    <a href="{% url 'all_Wholesale_products' %}" 
+                        class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> head shopping
+                    </a>
+                </p>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+</main>
+{% endblock content %}

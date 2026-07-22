@@ -1,0 +1,90 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %} Q&A Challenges {% endblock %}
+{% block content %}
+<main id="main" class="main">
+
+  <div class="pagetitle">
+    <h1>Q&A Challenge Opportunities</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'refferal_challenge_opportunities' %}">Refferal Challenges</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">Creative Challenges</a></li>
+        <li class="breadcrumb-item active">Welcome {% if request.user.is_authenticated %}{{ request.user.first_name }} {{ request.user.last_name }}{% endif %}</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row g-4">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-warning alert-dismissible fade show w-100" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+    
+        {% for challenge in challenges %}
+          <div class="col-lg-4">
+            <div class="card shadow-sm h-100 border-0">
+    
+              <!-- Challenge Header Badge -->
+              <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <span class="badge bg-warning text-dark text-uppercase">
+                  {{ challenge.business.business_name|default:"Jirani Mall" }}
+                </span>
+                <small class="text-muted">Q&A Challenge</small>
+              </div>
+    
+              <!-- Challenge Info -->
+              <div class="card-body">
+                <h5 class="fw-bold text-dark mb-2">{{ challenge.challenge_name }}</h5>
+    
+                <ul class="list-unstyled small text-muted mb-3">
+                  <li><strong>Start:</strong> {% if challenge.start_time %} {{ challenge.start_time|naturaltime }} {% else %} now {% endif %}</li>
+                  <li><strong>End:</strong> {{ challenge.end_date|naturaltime }}</li>
+                  <li><strong>Target Winners:</strong> {{ challenge.target_winners }}</li>
+                  <li><strong>Type:</strong> {{ challenge.get_type_display }}</li>
+                </ul>
+    
+                <!-- Reward Section -->
+                <div class="bg-success bg-opacity-10 p-3 rounded mb-3">
+                  <p class="mb-1 text-dark fw-semibold">🏆 Challenge Reward:</p>
+                  <p class="h6 text-dark mb-0">{{ challenge.challenge_reward }}</p>
+                  {% if challenge.challenge_reward_monetary_value %}
+                    <p class="mb-0 mt-1 text-success">💰 Worth KES {{ challenge.challenge_reward_monetary_value|intcomma }}</p>
+                  {% endif %}
+                  {% if challenge.participating_reward %}
+                    <p class="mb-3 text-success">
+                      🎁 Earn <strong>{{ challenge.participating_reward }} points</strong> just for participating!
+                    </p>
+                  {% endif %}
+                </div>
+    
+                {% if challenge.requires_group %}
+                  <span class="badge bg-info text-dark">👥 Group Required</span>
+                {% endif %}
+              </div>
+    
+              <!-- CTA -->
+              <div class="card-footer bg-white border-0 text-center">
+                <a href="{% url 'view_qna_challenge' challenge.id %}" class="btn btn-primary w-100 fw-bold">
+                  🚀 View & Participate
+                </a>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted">No Q&A challenges available right now.</p>
+        {% endfor %}
+      </div>
+    </section>
+
+
+</main><!-- End #main -->
+
+{% endblock %}

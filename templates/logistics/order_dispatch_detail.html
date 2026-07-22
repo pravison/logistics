@@ -1,0 +1,218 @@
+{% extends 'main.html' %}
+{% load static %}
+{% load humanize %}
+{% load math_filters %}
+
+{% block title %} Dispatch Details{% endblock %}
+
+{% block content %}
+<style>
+    section { background: #f6f7fb; }
+    .card { border: none; border-radius: 14px; }
+    .dispatch-item { transition: 0.2s ease-in-out; }
+    .dispatch-item.ready { border-left: 6px solid #198754; }
+    .dispatch-item.not-ready { border-left: 6px solid #dc3545; opacity: 0.95; }
+    .small-label { font-size: 12px; color: #6c757d; margin-bottom: 3px; }
+</style>
+
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+{% endif %}
+
+<section>
+<div class="container py-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h5 class="mb-0">Customer Dispatch Details</h5>
+            <small class="text-muted">{{ dispatch.customer.name }} - {{ dispatch.customer.phone_number }}</small>
+        </div>
+
+        {% if dispatch.status == "SENT" %}
+            <span class="badge bg-success">SENT</span>
+        {% else %}
+            <span class="badge bg-warning text-dark">OPEN</span>
+        {% endif %}
+    </div>
+
+    <!-- TOP BUTTON -->
+    <div class="mb-3">
+        <a href="{% url 'all_customer_orders' dispatch.customer.id %}" class="btn btn-dark w-100 fw-bold">
+            View All Customer Orders
+        </a>
+    </div>
+
+    <!-- Delivery Details -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h6 class="mb-3">Delivery Details</h6>
+
+            <div class="mb-3">
+                <div class="small-label">Delivery Address</div>
+                <div class="form-control bg-light">
+                    {{ dispatch.delivery_address|default:"Not Provided" }}
+                </div>
+            </div>
+
+            <div class="row g-2">
+                <div class="col-6">
+                    <div class="small-label">Phone</div>
+                    <div class="form-control bg-light">
+                        {{ dispatch.delivery_phone|default:dispatch.customer.phone_number }}
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div class="small-label">Vehicle Used</div>
+                    <div class="form-control bg-light">
+                        {{ dispatch.vehicle_used|default:"Not Set" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Confirmation -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h6 class="mb-3">Payment Confirmation</h6>
+
+            <div class="row g-2">
+                <div class="col-4">
+                    <div class="small-label">Transport</div>
+                    <div class="form-control bg-light">
+                        Ksh {{ dispatch.approx_transport_cost|floatformat:2|intcomma }}
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="small-label">Packaging Bag</div>
+                    <div class="form-control bg-light">
+                        Ksh {{ dispatch.packaging_bag_cost|floatformat:2|intcomma }}
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="small-label">Beba</div>
+                    <div class="form-control bg-light">
+                        Ksh {{ dispatch.beba_cost|floatformat:2|intcomma }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-secondary mt-3 mb-0 small">
+                Dispatch created: <b>{{ dispatch.created_at|date:"M d, Y H:i" }}</b><br>
+                Last updated: <b>{{ dispatch.updated_at|date:"M d, Y H:i" }}</b><br>
+                {% if dispatch.sent_at %}
+                    Sent at: <b>{{ dispatch.sent_at|date:"M d, Y H:i" }}</b>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Items -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Packed Items</h6>
+                <small class="text-muted">{{ dispatch_items.count }} items</small>
+            </div>
+
+            <input type="text" id="searchInput" class="form-control mb-3"
+                   placeholder="Search product name...">
+
+            <div id="itemsContainer">
+                {% for item in dispatch_items %}
+                <div class="card mb-2 dispatch-item {% if item.ready_to_dispatch %}ready{% else %}not-ready{% endif %}"
+                     data-product="{{ item.product.product_name|lower }}">
+                    <div class="card-body py-2">
+
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" 
+                                         alt="{{ item.product.product_name }}"
+                                         style="width:40px; height:40px; object-fit:cover; border-radius:6px;">
+                                {% endif %}
+                            </div>
+
+                            <div style="flex:1; padding-left:10px;">
+                                <strong>{{ item.product.product_name }}</strong><br>
+                                <small class="text-muted">
+                                    Paid for: {{ item.quantity_paid_for }} | Packed: {{ item.quantity_packed }}
+                                </small>
+                            </div>
+
+                            <div>
+                                {% if item.ready_to_dispatch %}
+                                    <span class="badge bg-success">READY</span>
+                                {% else %}
+                                    <span class="badge bg-danger">NOT READY</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                {% empty %}
+                    <div class="alert alert-info mb-0">
+                        No packed items found for this dispatch.
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MARK AS SENT (ONLY SHOW IF OPEN) -->
+    {% if dispatch.status != "SENT" %}
+    <div style="padding:12px;">
+        <a href="{% url 'mark_dispatch_sent' dispatch.id %}" class="btn btn-dark w-100 mb-2 py-2 fw-bold">
+            Mark Dispatch as SENT
+        </a>
+    </div>
+    <div style="padding:12px;">
+        <a href="{% url 'dispatch_customer_orders' dispatch.customer.id %}" class="btn btn-dark w-100 mb-2 py-2 fw-bold">
+            Edit Dispatch
+        </a>
+    </div>
+    {% endif %}
+    
+
+    <p class="text-center">
+        <a href="{% url 'all_dispatch_orders' %}" class="btn btn-primary p-2 mt-3">
+            <i class="fi-arrow-left"></i> Back to Dispatches
+        </a>
+
+        <a href="{% url 'customers_with_active_orders' %}" class="btn btn-primary p-2 mt-3">
+            Customer with orders
+        </a>
+
+        <a href="{% url 'all_Wholesale_products' %}" class="btn btn-primary p-2 mt-3">
+            Head shopping
+        </a>
+
+        <a href="{% url 'business' %}" class="btn btn-primary p-2 mt-3">
+            Dashboard
+        </a>
+    </p>
+
+</div>
+
+<script>
+    document.getElementById("searchInput").addEventListener("keyup", function () {
+        const search = this.value.toLowerCase();
+        document.querySelectorAll(".dispatch-item").forEach(item => {
+            const product = item.getAttribute("data-product");
+            item.style.display = product.includes(search) ? "block" : "none";
+        });
+    });
+</script>
+
+</section>
+{% endblock %}

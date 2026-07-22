@@ -1,0 +1,77 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %} Challenges {% endblock%}
+{% block content %}
+
+<main id="main" class="main">
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+{% endif %}
+
+    <div class="pagetitle">
+      <h1>Challenges Tables</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' business.slug %}">Dashboard</a></li>
+          <li class="breadcrumb-item active">Data</li>
+          
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Challenges</h5>
+              <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                search anything 
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              <!-- Table with stripped rows -->
+              <table class="table datatable">
+                <thead>
+                  <tr>
+                    <th scope="col">Challenge </th>
+                    <th scope="col">Participating Reward</th>
+                    <th scope="col">Reward</th>
+                    <th scope="col">Total Participants</th>
+                    <th scope="col">Total Partners</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for challenge in challenges %}
+                  <tr>
+                    <th scope="row"><a href="{% url 'view_vote_challenge' challenge.id %}" title='view' style="color:black;">{{ challenge.challenge_name}}</a></th>
+                    <td>{{ challenge.participating_reward }}</td>
+                    <td>{{ challenge.challenge_reward}}; worth ({{challenge.challenge_reward_monetary_value}})</td>
+                    <td>{{ challenge.total_applications }}</td>
+                    <td>{{ challenge.challenge_patners.all.count }}</td>
+                    <td><span class="badge bg-warning"><a href="{% url 'invite_vote_challenge_patners' %}?business_slug={{business.slug}}&challenge_id={{challenge.id}}" title='invite' style="color:black;">invite patners</a></span> <span class="badge bg-warning"><a href="{% url 'view_vote_challenge' challenge.id %}" title='view' style="color:black;">view</a></span></td>
+                  </tr>
+                  {% endfor %}
+                  
+                </tbody>
+              </table>
+              <!-- End Table with stripped rows -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+{% endblock %}

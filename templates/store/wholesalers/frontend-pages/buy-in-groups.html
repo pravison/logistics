@@ -1,0 +1,854 @@
+{% extends 'store/wholesalers/wholesale-main.html' %}
+{% load static %}
+{% load query_append %}
+{% load custom_product_filters %}
+{% load to_filter %}
+{% load url_filters %}
+{% load math_extras %}
+
+{% block content %}
+<main>
+    <!-- Page Title -->
+    <div class="bg-no-repeat bg-cover bg-right-center position-relative" style="background-image: url(../../assets/img/fashion2/home-banner-3.jpg);">
+        <div class="position-absolute top-0 end-0 start-0 bottom-0 opacity-3 bg-dark"></div>
+        <!-- Header Height Bar -->
+        <div class="header-height-bar border-bottom opacity-3"></div>
+        <div class="container-fluid px-container py-6 position-relative">
+            <div class="row align-items-center">
+                <div class="col-lg-6 my-2">
+                    <h1 class="m-0 h4 text-center text-lg-start text-white">Welcome To Group Purchasing</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Page Title -->
+    <!-- Shop Section -->
+    <section class="pt-6 pb-12">
+        <div class="container-fluid px-container">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col shop-sidebar-option-02 offcanvas-lg offcanvas-start px-0 px-lg-3" tabindex="-1" id="shop_filter" aria-labelledby="shop_filterLabel">
+                    <div class="offcanvas-header border-bottom">
+                        <h5 class="offcanvas-title" id="shop_filterLabel">Shop Filter</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#shop_filter" aria-label="Close"></button>
+                    </div>
+                    
+                    <div class="offcanvas-body flex-column">
+                        <form method="get" action="{{ request.build_absolute_uri}}{% if business and business.subscription_plan == 'premium' %}?seller_id={{business.id}} {% endif %}">
+                            <div class="shop-attributes-box">
+                                <div class="shop-sidebar-title">
+                                    <a class="h5 collapsed" data-bs-toggle="collapse" href="#shop_price" role="button" aria-expanded="false" aria-controls="shop_price">
+                                        Search <i class="bi bi-chevron-up"></i>
+                                    </a>
+                                </div>
+                                <div class="shop-attributes-list collapse" id="shop_price">
+                                    <div class="shop-attr-body">
+                                        <div class="d-flex align-items-center pt-3">
+                                            <input type="text" name="q" class="form-control form-control-sm" placeholder="search by code, name .." min="0">
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary mt-2">search</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 " href="{% url 'group_orders_list' %}" >See Your Group Purchases<i class="bi bi-bag"></i></a></div>
+                        </div>
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 login-to-pay" href="{% url 'customer_orders_redirect' %}" >See Your Orders<i class="bi bi-bag"></i></a></div>
+                        </div>
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 " href="{% url 'buy_in_groups' %}" >See active groups<i class="bi bi-bag"></i></a></div>
+                        </div>
+                        {% if product %}
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 " href="{% url 'buy_in_groups' %}?product_id={{product.id}}" >See other groups for this product<i class="bi bi-bag"></i></a></div>
+                        </div>
+                        {% endif %}
+                        <!--dropship link-->
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 " href="{% url 'all_Wholesale_products' %}?dropship=dropship" >Dropshiped Products<i class="bi bi-bag"></i></a></div>
+                        </div>
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 " href="{% url 'all_Wholesale_products' %}" >All Products<i class="bi bi-bag"></i></a></div>
+                        </div>
+                        
+                        <!-- MOQ Filter -->
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 collapsed" data-bs-toggle="collapse" href="#shop_moq" role="button" aria-expanded="false" aria-controls="shop_type">Minimum Order Quantity <i class="bi bi-chevron-up"></i></a></div>
+                            <div class="shop-attributes-list collapse"
+                                id="shop_moq">
+                                <div class="shop-attr-body">
+                                    {% with request.build_absolute_uri as base_url %}
+
+                                    <ul class="list-unstyled">
+                                      {% for i in 1|to:21 %}
+                                        <li class="nav-item">
+                                          <a href="{% add_query_param base_url 'moq' i %}">{{ i }}</a>
+                                        </li>
+                                      {% endfor %}
+                                    </ul>
+                                    {% endwith %}
+
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end MOQ types  -->
+                    </div>
+                </div>
+                <!-- End Sidebar -->
+                <!-- Product Box -->
+                <div class="col">
+                    <div class="shop-top-bar-02 d-flex pb-3">
+                        {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                        <div class="layout-change">
+                            <!-- Mobile Toggle --> <button class="btn btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#shop_filter" aria-controls="shop_filter"><i class="fs-4 lh-1 bi bi-justify-left"></i></button>
+                            <!-- End Mobile Toggle <a class="btn btn-sm active" href="shop-fw.html"><i class="bi bi-grid"></i></a> <a class="btn btn-sm" href="shop-list-fw.html"><i class="bi bi-view-stacked"></i></a>-->
+                            </div>
+                            
+                        <div class="shortby-dropdown ms-auto">
+                            <div class="dropdown">
+                                <button class="btn btn-light border dropdown-toggle p-2"
+                                      type="button"
+                                      id="groupBuyingInfoDropdown"
+                                      data-bs-toggle="dropdown"
+                                      aria-expanded="false"
+                                      style="border-radius:50%;">
+                                <i class="bi bi-info-circle-fill text-dark"></i>Group buying
+                              </button>
+                              <div class="dropdown-menu p-3 shadow"
+                                   aria-labelledby="groupBuyingInfoDropdown"
+                                   style="width: 350px; max-width: 95vw;">
+                                
+                                <h6 class="fw-bold text-center mb-2">
+                                  GROUP BUYING (Kununua kwa Kikundi) – Garantimall
+                                </h6>
+                            
+                                <p class="small mb-2">
+                                  <strong>Group buying</strong> means many people join together to buy the same product,
+                                  so the price becomes cheaper because you are buying in bulk.
+                                </p>
+                            
+                                <p class="fw-bold mb-1">✅ How it works (Simple):</p>
+                                <ol class="small ps-3 mb-2">
+                                  <li>Create a group order.</li>
+                                  <li>Share the group link on WhatsApp.</li>
+                                  <li>People join until target is reached.</li>
+                                  <li>Garantimall contacts you to pay.</li>
+                                  <li>We source directly from the supplier.</li>
+                                  <li>Pick your items at our pickup point.</li>
+                                </ol>
+                            
+                                <div class="bg-light p-2 rounded mb-2">
+                                  <p class="fw-bold mb-1">📍 Pickup Point:</p>
+                                  <p class="small mb-0">
+                                    Afya Centre, Travis Building, 3rd Floor, Shop A8
+                                  </p>
+                                </div>
+                            
+                                <p class="fw-bold mb-1">💡 Why it is good:</p>
+                                <ul class="small ps-3 mb-2">
+                                  <li>Cheaper prices</li>
+                                  <li>Direct from suppliers</li>
+                                  <li>Less risk buying alone</li>
+                                </ul>
+                            
+                                <p class="small mb-0">
+                                  We are <strong>Garantimall</strong> — we connect buyers with suppliers directly and help you source from suppliers.
+                                </p>
+                            
+                                <p class="text-center fw-bold mt-2 mb-0">
+                                  join or Start your own group today, share it, and save money!
+                                </p>
+                            
+                              </div>
+                            </div>
+                                
+                        </div>
+                        <div class="shortby-dropdown ms-auto">
+                            <div class="dropdown">
+                                <a class="btn btn-none btn-sm border dropdown-toggle text-mode" href="#"
+                                   role="button" id="dropdownMenuLink" data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+                                    Filter / Sort
+                                </a>
+                        
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownMenuLink">
+                        
+                                    <li class="dropdown-header">Sort</li>
+                                    <li>
+                                        <a class="dropdown-item {% if sort == 'date_old' %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'sort=date_old' }}">
+                                            Date, old to new
+                                        </a>
+                                    </li>
+                        
+                                    <li>
+                                        <a class="dropdown-item {% if sort == 'date_new' %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'sort=date_new' }}">
+                                            Date, new to old
+                                        </a>
+                                    </li>
+                        
+                                    <li><hr class="dropdown-divider"></li>
+                        
+                                    <li class="dropdown-header">Filter</li>
+                        
+                                    <li>
+                                        <a class="dropdown-item {% if status == 'target_hit' %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'status=target_hit' }}">
+                                            Target Hit
+                                        </a>
+                                    </li>
+                        
+                                    <li>
+                                        <a class="dropdown-item {% if status == 'target_almost' %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'status=target_almost' }}">
+                                            Target Almost Hit
+                                        </a>
+                                    </li>
+                        
+                                    <li>
+                                        <a class="dropdown-item {% if status == 'target_surpassed' %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'status=target_surpassed' }}">
+                                            Target Surpassed
+                                        </a>
+                                    </li>
+                        
+                                    <li>
+                                        <a class="dropdown-item {% if status == 'started_paying' %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'status=started_paying' }}">
+                                            Started Paying
+                                        </a>
+                                    </li>
+                        
+                                    <li>
+                                        <a class="dropdown-item {% if status == 'complete_paid' %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'status=complete_paid' }}">
+                                            Complete Paid
+                                        </a>
+                                    </li>
+                        
+                                    <li>
+                                        <a class="dropdown-item {% if status == 'closed' %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'status=closed' }}">
+                                            Closed
+                                        </a>
+                                    </li>
+                        
+                                    <li>
+                                        <a class="dropdown-item {% if status == 'not_closed' %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'status=not_closed' }}">
+                                            Not Closed
+                                        </a>
+                                    </li>
+                        
+                                    <li>
+                                        <a class="dropdown-item {% if status == 'not_closed_target_hit' %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'status=not_closed_target_hit' }}">
+                                            Not Closed + Target Hit
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {% if processed_this_month %}active{% endif %}"
+                                           href="{{ request.build_absolute_uri|add_query_param:'this_month=1' }}">
+                                            Processed This Month
+                                        </a>
+                                    </li>
+                        
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        {% for group_order in group_orders %}
+                        <!-- Product Box -->
+                        <div class="col-6 col-md-4 col-xl-3 my-3">
+                            <div class="product-card-7">
+                                <div class="product-card-image">
+                                    {% if group_order.product.product_type == 'service' %}
+
+                                        <div class="badge-ribbon">
+                                            <span class="badge bg-success">
+                                                {{ group_order.product.service_delivery }} services
+                                            </span>
+                                        </div>
+                                    
+                                    {% else %}
+                                    
+                                        <div class="badge-ribbon">
+                                            <span class="badge bg-success">
+                                                {% if group_order.last_fully_paid_date %}
+                                                    {{ group_order.last_fully_paid_date|date:"M d, Y" }}
+                                                {% else %}
+                                                    
+                                                {% endif %}
+                                            </span>
+                                            <br/>
+                                    
+                                            {% if group_order.closed %}
+                                                <span class="badge bg-warning">sold out</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">
+                                                    customers joined: {{ group_order.total_customers }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    
+                                    {% endif %}
+                                    <div class="product-action">
+                                        <!--<a href="#" class="btn btn-dark" title="add to wishlist"><i class="fi-heart"></i></a>-->
+                                        <a href="javascript:void(0)" 
+                                           class="btn btn-dark" 
+                                           data-product-id="{{ group_order.product.id }}" 
+                                           data-group-id="{{ group_order.id }}" 
+                                           onclick="handleCopyClickUnique(this)">
+                                           <i class="fi-link"></i>
+                                        </a>
+                                        {% if request.user.is_staff %}
+                                        <a href="https://garantiimall.com/admin/store/grouporder/{{group_order.id}}/change/"
+                                           class="btn btn-dark">
+                                           edit
+                                        </a>
+                                        {% else %}
+                                        <a 
+                                          title="quick view"
+                                          href="javascript:void(0)"
+                                          class="btn btn-dark quick-view-btn"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#px-quick-view"
+                                        
+                                          data-name="{{ group_order.product.product_name }}"
+                                          data-price="{{ group_order.product.price_per_unit }}"
+                                          data-description="{{ group_order.product.description|default:'No description available'|escapejs }}"
+                                          data-seller="{{ group_order.product.business.business_name }}"
+                                          data-images='[{% if group_order.product.imageUrl %}"{{ group_order.product.imageUrl }}"{% if group_order.product.other_images.all %},{% endif %}{% endif %}{% for img in group_order.product.other_images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+                                        
+                                          data-items-per-unit="{{ group_order.product.items_per_unit }}"
+                                          data-price-per-item="{{ group_order.product.price_per_item }}"
+                                          data-seller-location="{{ group_order.product.business.ward }}, {{ group_order.product.business.location }}"
+                                        
+                                          data-available-sizes='[{% for size in group_order.product.available_sizes.all %}"{{ size.size }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                                          data-available-colours='[{% for colour in group_order.product.available_colours.all %}"{{ colour.colour }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                                        >
+                                          <i class="fi-eye"></i>
+                                        </a>
+                                        {% endif %}
+                                        <a href="javascript:void(0)"
+                                           class="btn btn-dark view-offers-btn"
+                                           data-group-id="{{ group_order.id }}">
+                                           <i class="fi-plus"></i>
+                                        </a>
+                                        
+                                    </div>
+                        
+                                    <div class="product-media">
+                                        
+                                        <a 
+                                          title="quick view"
+                                          href="javascript:void(0)"
+                                          class="quick-view-btn"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#px-quick-view"
+                                        
+                                          data-name="{{ group_order.product.product_name }}"
+                                          data-price="{{ group_order.product.price_per_unit }}"
+                                          data-description="{{ group_order.product.description|default:'No description available'|escapejs }}"
+                                          data-seller="{{ group_order.product.business.business_name }}"
+                                          data-images='[{% if group_order.product.imageUrl %}"{{ group_order.product.imageUrl }}"{% if group_order.product.other_images.all %},{% endif %}{% endif %}{% for img in group_order.product.other_images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+                                        
+                                          data-items-per-unit="{{ group_order.product.items_per_unit }}"
+                                          data-price-per-item="{{ group_order.product.price_per_item }}"
+                                          data-seller-location="{{ group_order.product.business.ward }}, {{ group_order.product.business.location }}"
+                                        
+                                          data-available-sizes='[{% for size in group_order.product.available_sizes.all %}"{{ size.size }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                                          data-available-colours='[{% for colour in group_order.product.available_colours.all %}"{{ colour.colour }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                                        >
+                                        <img class="img-fluid" src="{{ group_order.product.imageUrl }}" title="{{ group_order.product.product_name }}" alt="{{ group_order.product.product_name }}" loading="lazy">
+                                        </a>
+                                    </div>
+                        
+                                    <div class="product-cart-btn">
+                                        
+                                        <a href="{% url 'group_order_detail' group_order.id %}"
+                                           class="btn btn-primary mb-1">
+                                           <i class="fi-shopping-cart"></i> view Group
+                                        </a>
+                                        {% if not  group_order.closed   %}
+                                        <a href="javascript:void(0)"
+                                           class="btn btn-primary join-group-btn mb-1"
+                                           data-group-id="{{ group_order.id }}"
+                                           data-name="{{ group_order.product.product_name }}"
+                                           data-price="{{ group_order.product.price_per_unit }}"
+                                           data-min-order-quantity="{{ group_order.minimum_order_quantity }}"
+                                           data-image="{{ group_order.product.imageUrl }}">
+                                           <i class="fi-shopping-cart"></i> Join & Buy 
+                                        </a>
+                                       {% endif %}
+                                      
+                                      
+                                    </div>
+                        
+                        
+                        
+                                </div>
+                                
+                                <div class="product-card-info">
+                                    <h6 class="product-title">
+                                        <a 
+                                          title="quick view"
+                                          href="javascript:void(0)"
+                                          class="quick-view-btn"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#px-quick-view"
+                                        
+                                          data-name="{{ group_order.product.product_name }}"
+                                          data-price="{{ group_order.product.price_per_unit }}"
+                                          data-description="{{ group_order.product.description|default:'No description available'|escapejs }}"
+                                          data-seller="{{ group_order.product.business.business_name }}"
+                                          data-images='[{% if group_order.product.imageUrl %}"{{ group_order.product.imageUrl }}"{% if group_order.product.other_images.all %},{% endif %}{% endif %}{% for img in group_order.product.other_images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+                                        
+                                          data-items-per-unit="{{ group_order.product.items_per_unit }}"
+                                          data-price-per-item="{{ group_order.product.price_per_item }}"
+                                          data-seller-location="{{ group_order.product.business.ward }}, {{ group_order.product.business.location }}"
+                                        
+                                          data-available-sizes='[{% for size in group_order.product.available_sizes.all %}"{{ size.size }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                                          data-available-colours='[{% for colour in group_order.product.available_colours.all %}"{{ colour.colour }}"{% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}]'
+                                        >
+                                        <b>(#{{ group_order.id }}) {{ group_order.name }} created by {{ group_order.created_by }}({{group_order.product.product_condition}})</b></a></h6>
+                                    <div class="product-price">
+                                        
+                                        <span class="text-primary">ksh{{ group_order.product.price_per_unit }}</span> <br/>
+                                        <span class="fs-sm text-muted" title="items per unit"> target quantity: {{ group_order.target_quantity }}</span><br/>
+                                        <span class="fs-sm text-warning" title="sold as"> from {{ group_order.minimum_order_quantity }} {{ group_order.product.sold_as }}{% if product.minimum_order_quantity > 1 %}s{% endif %}</span><br/>
+                                        <span class="fs-sm text-muted text-small text-warning"> {% if group_order.product.pre_oder_only %}pre-oder from {{group_order.product.country_from }} {% else %} availlable at thes shop{% endif %}</span><br/>
+                        
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+                        {% empty %}
+                        <div style="max-width:700px; margin:auto; padding:20px; font-family:Arial, sans-serif; background:#f9f9f9; border-radius:10px; border:1px solid #ddd; line-height:1.6;">
+
+                          <h2 style="color:#222; text-align:center;">
+                            GROUP BUYING (Kununua kwa Kikundi) – Garantimall
+                          </h2>
+                        
+                          <p style="font-size:16px; color:#333;">
+                            <strong>Group buying</strong> means many people join together to buy the same product,
+                            so the price becomes cheaper because you are buying in bulk.
+                          </p>
+                        
+                          <h3 style="color:#222;">✅ How it works (Simple):</h3>
+                          <ol style="font-size:16px; color:#333;">
+                            <li>You <strong>create a group order</strong> for a product you want.</li>
+                            <li>You <strong>share the group link</strong> with friends, customers, or WhatsApp groups.</li>
+                            <li>People <strong>join and order</strong> until the group reaches the supplier target (minimum quantity).</li>
+                            <li>Once the target is reached, <strong>Garantimall contacts you to pay</strong>.</li>
+                            <li>After payment, we <strong>source the product directly from the supplier</strong>.</li>
+                            <li>You <strong>collect your items at our pickup point</strong>.</li>
+                          </ol>
+                        
+                          <div style="background:#fff; padding:15px; border-radius:8px; border:1px solid #ddd; margin-top:15px;">
+                            <h3 style="margin:0; color:#222;">📍 Pickup Point:</h3>
+                            <p style="margin:5px 0; font-size:16px; color:#333;">
+                              Afya Centre, Travis Building, 3rd Floor, Shop A8
+                            </p>
+                          </div>
+                        
+                          <h3 style="color:#222; margin-top:20px;">💡 Why group buying is good:</h3>
+                          <ul style="font-size:16px; color:#333;">
+                            <li>You get <strong>cheaper prices</strong></li>
+                            <li>You buy <strong>directly from suppliers</strong></li>
+                            <li>You reduce risk of buying alone</li>
+                          </ul>
+                        
+                          <p style="font-size:16px; color:#333;">
+                            We are <strong>Garantimall</strong> — we connect buyers with suppliers directly and help you source quality products.
+                          </p>
+                        
+                          <p style="font-size:18px; font-weight:bold; color:#111; text-align:center; margin-top:20px;">
+                            Start a group today, share it, and save money!
+                          </p>
+                        
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Trigger Button -->
+                        {% if product %}
+                        <p class="text-center">
+                          <a href="#" 
+                             class="btn btn-outline-primary create-group-btn mb-1"
+                             data-id="{{ product.id }}"
+                             data-name="{{ product.product_name }}"
+                             data-minorder="{{ product.minimum_order_quantity }}"
+                             data-image="{{ product.imageUrl }}">
+                             <i class="fi-users"></i> Create Group
+                          </a>
+                        </p>
+                        {% endif %}
+
+
+                    </div>
+
+                    <div class="shop-bottom-bar-02 d-flex align-items-center mt-3">
+                        <div>Showing: {{ group_orders.start_index }} - {{ group_orders.end_index }} of {{ group_orders.paginator.count }}</div>
+                        <div class="ms-auto">
+                            <ul class="pagination">
+                                {% if group_orders.has_previous %}
+                                    {% with request.build_absolute_uri as base_url %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{% add_query_param base_url 'page' group_orders.previous_page_number %}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    {% endwith %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&laquo;</span>
+                                    </li>
+                                {% endif %}
+                                    
+
+
+
+                                {% for num in group_orders.paginator.page_range %}
+                                    {% if group_orders.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > group_orders.number|add:-3 and num < group_orders.number|add:3 %}
+                                        {% with request.build_absolute_uri as base_url %}
+                                        <li class="page-item"><a class="page-link" href="{% add_query_param base_url 'page' num %}">{{ num }}</a></li>
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if group_orders.has_next %}
+                                    <li class="page-item">
+                                        {% with request.build_absolute_uri as base_url %}
+                                            <a class="page-link" href="{% add_query_param base_url 'page' group_orders.next_page_number %}" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        {% endwith %}
+
+                                        
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&raquo;</span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+
+
+                </div>
+                <!-- End Product Box -->
+            </div>
+        </div>
+    </section>
+    <!-- End Shop Section -->
+</main>
+
+<!-- Create Group Modal -->
+<div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header bg-light border-bottom">
+        <h5 class="modal-title fw-bold" id="createGroupModalLabel">Create Your Own Group And Invite Friends</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="text-center mb-3">
+          <img id="createGroupProductImage" src="" alt="Product Image" class="img-fluid rounded" style="max-height:200px; display:none;">
+        </div>
+        <p class="text-center mb-3">Product: <strong id="createGroupProductName"></strong></p>
+
+        <form id="createGroupForm" class="mb-3" novalidate>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Target Quantity (MOQ Total)</label>
+            <input type="number" class="form-control" id="createGroupTargetMOQ" min="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Minimum Quantity per Member</label>
+            <input type="number" class="form-control" id="createGroupMemberMOQ" min="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Deadline</label>
+            <input type="date" class="form-control" id="createGroupDeadline">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description or Note</label>
+            <textarea class="form-control" id="createGroupNote" rows="2" placeholder="Optional note..."></textarea>
+          </div>
+          <div id="createGroupStatus" class="alert small text-center mt-3" style="display:none;"></div>
+          <div class="d-grid mt-3">
+            <button type="submit" class="btn btn-primary" id="createGroupSubmit">
+              <span id="createGroupSpinner" class="spinner-border spinner-border-sm me-2" style="display:none;"></span>
+              <span id="createGroupText">Create Group</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+  const loginUrl = "{% url 'login_user' %}";
+
+  const modalEl = document.getElementById('createGroupModal');
+  const modal = new bootstrap.Modal(modalEl);
+  const form = document.getElementById('createGroupForm');
+  const statusBox = document.getElementById('createGroupStatus');
+
+  const productNameEl = document.getElementById('createGroupProductName');
+  const productImageEl = document.getElementById('createGroupProductImage');
+  const targetInput = document.getElementById('createGroupTargetMOQ');
+  const memberMOQInput = document.getElementById('createGroupMemberMOQ');
+  const submitBtn = document.getElementById('createGroupSubmit');
+  const spinnerEl = document.getElementById('createGroupSpinner');
+  const submitText = document.getElementById('createGroupText');
+
+  let currentProductId = null;
+  let productMOQ = 1;
+
+  // ----------------- Helpers -----------------
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      document.cookie.split(';').forEach(cookie => {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        }
+      });
+    }
+    return cookieValue;
+  }
+
+  function setStatus(message, type='info') {
+    statusBox.className = `alert alert-${type} small text-center`;
+    statusBox.textContent = message;
+    statusBox.style.display = 'block';
+    statusBox.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+
+  function clearStatus() {
+    statusBox.style.display = 'none';
+    statusBox.textContent = '';
+  }
+
+  function setLoading(loading) {
+    submitBtn.disabled = loading;
+    spinnerEl.style.display = loading ? 'inline-block' : 'none';
+    submitText.textContent = loading ? 'Creating...' : 'Create Group';
+  }
+
+  // ----------------- Open modal -----------------
+  document.querySelectorAll('.create-group-btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+
+      // Check if user is logged in
+      if (!isAuthenticated) {
+        
+            // Show login required modal
+            const loginModal = new bootstrap.Modal(document.getElementById("login-required-modal"));
+            loginModal.show();
+        
+            // When customer clicks continue
+            document.getElementById("login-required-continue").onclick = function () {
+        
+                // Show redirecting message
+                const redirectModal = new bootstrap.Modal(document.getElementById("redirecting-modal"));
+                redirectModal.show();
+        
+                // Delay (2 seconds) then redirect
+                setTimeout(() => {
+                    window.location.href = loginUrl + '?next=' + window.location.pathname;
+                }, 2000);
+            };
+        
+            return; // Stop further checkout
+        }
+
+
+      currentProductId = this.dataset.id;
+      const productName = this.dataset.name || '';
+      const imageUrl = this.dataset.image || '';
+      productMOQ = parseInt(this.dataset.minorder) || 1;
+
+      form.reset();
+      clearStatus();
+      setLoading(false);
+
+      productNameEl.textContent = productName;
+      if (imageUrl) {
+        productImageEl.src = imageUrl;
+        productImageEl.style.display = 'block';
+      } else {
+        productImageEl.style.display = 'none';
+      }
+
+      targetInput.value = productMOQ;
+      targetInput.min = productMOQ;
+      memberMOQInput.value = 1;
+      memberMOQInput.min = 1;
+
+      modal.show();
+    });
+  });
+
+  // ----------------- Submit handler -----------------
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    clearStatus();
+
+    const targetRaw = targetInput.value.trim();
+    const memberRaw = memberMOQInput.value.trim();
+    const deadline = document.getElementById('createGroupDeadline').value.trim();
+    const note = document.getElementById('createGroupNote').value.trim();
+
+    if (!targetRaw || !memberRaw) {
+      setStatus('Please fill in both target quantity and minimum per member.', 'danger');
+      return;
+    }
+
+    const targetMOQ = parseInt(targetRaw);
+    const memberMOQ = parseInt(memberRaw);
+    const errors = [];
+    if (isNaN(targetMOQ) || targetMOQ < productMOQ) errors.push(`Target quantity cannot be less than ${productMOQ}.`);
+    if (isNaN(memberMOQ) || memberMOQ < 1) errors.push('Minimum quantity per member must be at least 1.');
+    if (memberMOQ > targetMOQ) errors.push('Minimum per-member cannot exceed target quantity.');
+
+    if (errors.length > 0) {
+      setStatus(errors.join(' '), 'danger');
+      return;
+    }
+
+    setLoading(true);
+    setStatus('Creating group... Please wait.', 'info');
+
+    try {
+      const response = await fetch("{% url 'create_group_order' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({
+          product_id: currentProductId,
+          target_moq: targetMOQ,
+          moq: memberMOQ,
+          deadline: deadline || null,
+          notes: note
+        })
+      });
+
+      const payload = await response.json();
+
+      if (response.ok && payload.success) {
+        setStatus(payload.message || 'Group created successfully!', 'success');
+        setLoading(false);
+        setTimeout(() => {
+          modal.hide();
+          const redirectUrl = `/e-store/buy-in-groups/?product_id=${encodeURIComponent(payload.product_id)}&group_id=${encodeURIComponent(payload.group_id)}`;
+          window.location.href = redirectUrl;
+        }, 900);
+      } else {
+        setStatus(payload.message || 'Failed to create group.', 'danger');
+        setLoading(false);
+      }
+
+    } catch (err) {
+      console.error('create_group_order error', err);
+      setStatus('An unexpected error occurred. Please try again.', 'danger');
+      setLoading(false);
+    }
+  });
+});
+</script>
+
+<!--script for copying group order link-->
+<script>
+function handleCopyClickUnique(element) {
+  const productId = element.getAttribute('data-product-id');
+  const groupId = element.getAttribute('data-group-id');
+
+  const url = `${window.location.origin}/e-store/buy-in-groups/?product_id=${encodeURIComponent(productId)}&group_id=${encodeURIComponent(groupId)}`;
+
+  navigator.clipboard.writeText(url)
+    .then(() => {
+      alert("Link copied to clipboard!");
+    })
+    .catch(err => {
+      alert("Failed to copy: " + err);
+    });
+}
+</script>
+
+{% endblock content %}
+
+                  <div class="dropdown-menu p-3 shadow"
+                       aria-labelledby="groupBuyingInfoDropdown"
+                       style="width: 350px; max-width: 95vw;">
+                    
+                    <h6 class="fw-bold text-center mb-2">
+                      GROUP BUYING (Kununua kwa Kikundi) – Garantimall
+                    </h6>
+                
+                    <p class="small mb-2">
+                      <strong>Group buying</strong> means many people join together to buy the same product,
+                      so the price becomes cheaper because you are buying in bulk.
+                    </p>
+                
+                    <p class="fw-bold mb-1">✅ How it works (Simple):</p>
+                    <ol class="small ps-3 mb-2">
+                      <li>Create a group order.</li>
+                      <li>Share the group link on WhatsApp.</li>
+                      <li>People join until target is reached.</li>
+                      <li>Garantimall contacts you to pay.</li>
+                      <li>We source directly from the supplier.</li>
+                      <li>Pick your items at our pickup point.</li>
+                    </ol>
+                
+                    <div class="bg-light p-2 rounded mb-2">
+                      <p class="fw-bold mb-1">📍 Pickup Point:</p>
+                      <p class="small mb-0">
+                        Afya Centre, Travis Building, 3rd Floor, Shop A8
+                      </p>
+                    </div>
+                
+                    <p class="fw-bold mb-1">💡 Why it is good:</p>
+                    <ul class="small ps-3 mb-2">
+                      <li>Cheaper prices</li>
+                      <li>Direct from suppliers</li>
+                      <li>Less risk buying alone</li>
+                    </ul>
+                
+                    <p class="small mb-0">
+                      We are <strong>Garantimall</strong> — we connect buyers with suppliers directly and help you source from suppliers.
+                    </p>
+                
+                    <p class="text-center fw-bold mt-2 mb-0">
+                      Start a group today, share it, and save money!
+                    </p>
+                
+                  </div>
+                </div>
+                
+

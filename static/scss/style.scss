@@ -1,0 +1,92 @@
+/* ------------------------------------------------------
+@File: Default Styles
+@Author: Template_mr.
+@Developed By: Emran Khan
+@Developer Email: fed.emran@gmail.com
+@Developer URL: http://emran-khan.com
+
+This file contains the styling for the actual theme, this
+is the file you need to edit to change the look of the
+theme.
+------------------------------------------------------- */
+
+/* ======================================================
+@Template Name: Momo Html Template 
+@Author: Template_mr. 
+@Default Styles
+
+Table of Content: 
+01/ Variables
+02/ Prefix
+03/ Header
+04/ Banner
+05/ Service
+06/ Agency
+07/ counter
+08/ solutions
+09/ pricing
+10/ testimonials
+11/ blog
+12/ software
+13/ team
+14/ portfolio
+15/ shop 
+16/ Footer 
+17/ Responsive    
+===================================================== */ 
+
+/*----------------------------------------------------*/
+@import "variables";
+/*----------------------------------------------------*/  
+@import "prefix";
+/*----------------------------------------------------*/ 
+@import "animat";
+/*----------------------------------------------------*/   
+@import "header";
+/*----------------------------------------------------*/  
+@import "banner";
+/*----------------------------------------------------*/    
+@import "service";
+/*----------------------------------------------------*/    
+@import "agency";
+/*----------------------------------------------------*/  
+@import "counter";
+/*----------------------------------------------------*/    
+@import "solutions";
+/*----------------------------------------------------*/  
+@import "pricing";
+/*----------------------------------------------------*/ 
+@import "testimonials";   
+/*----------------------------------------------------*/ 
+@import "blog";   
+/*----------------------------------------------------*/ 
+@import "software";   
+/*----------------------------------------------------*/ 
+@import "team";   
+/*----------------------------------------------------*/ 
+@import "portfolio";   
+/*----------------------------------------------------*/ 
+@import "from";    
+/*----------------------------------------------------*/ 
+@import "shop";    
+/*----------------------------------------------------*/       
+@import "footer";
+/*----------------------------------------------------*/    
+@import "responsive";
+/*----------------------------------------------------*/    
+
+/*All CSS call*/
+@import "../css/bootstrap.min.css"; /* Bootstrap CSS */
+/* Icon CSS */
+@import url("https://use.fontawesome.com/releases/v5.5.0/css/all.css");
+@import "../css/font-awesome.min.css"; 
+@import "../vendors/flat-icon/flaticon.css"; 
+/* Extra Plugins CSS */ 
+@import "../vendors/animate-css/animate.css"; 
+@import "../vendors/magnify-popup/magnific-popup.css";  
+@import "../vendors/owl-carousel/owl.carousel.min.css";     
+@import "../vendors/bootstrap-selector/nice-select.css";     
+@import "../vendors/jquery-ui/jquery-ui.min.css";     
+/* Font family link */
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700,800');
+@import url('https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800,900');

@@ -1,0 +1,146 @@
+{% extends 'main.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %} Dispatch Details #{{ dispatch.id }} {% endblock %}
+
+{% block content %}
+<style>
+    section { min-height: 100vh; }
+    .card { border: none; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); }
+    .section-title { font-size: 0.9rem; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 15px; }
+    .info-label { font-size: 0.8rem; font-weight: 600; color: #6c757d; text-transform: uppercase; }
+    .info-value { font-size: 1rem; font-weight: 600; color: #212529; }
+    .table-container { background: #fff; border-radius: 16px; padding: 20px; }
+    .badge-status { padding: 6px 12px; font-weight: 600; border-radius: 6px; font-size: 0.75rem; text-transform: uppercase; }
+</style>
+
+<section class="get_touch_area py-4">
+<div class="container from_area">
+    
+    <!-- PAGE HEADER & BACK LINK -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'agent_dispatch_list' %}" class="text-decoration-none text-muted fw-bold mb-1 d-block" style="font-size: 0.85rem;"><i class="fa fa-arrow-left"></i> &larr; Back to Dispatches</a>
+            <h4 class="mb-0 fw-bold">Dispatch Summary #{{ dispatch.id }}</h4>
+        </div>
+        <span class="badge-status 
+            {% if dispatch.status == 'OPEN' %}bg-secondary text-white
+            {% elif dispatch.status == 'SENT' %}bg-info text-dark
+            {% elif dispatch.status == 'ON_ROAD' %}bg-warning text-dark
+            {% elif dispatch.status == 'ARRIVED' %}bg-primary text-white
+            {% elif dispatch.status == 'PICKED' %}bg-success text-white{% endif %}">
+            {{ dispatch.get_status_display }}
+        </span>
+    </div>
+
+    <!-- AGENT & VEHICLE INFO CARD -->
+    <div class="card">
+        <div class="card-body">
+            <div class="section-title">Agent & Logistic Specifications</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="info-label">Assigned Agent</div>
+                    <div class="info-value">{{ dispatch.agent.shop_name }}</div>
+                    <small class="text-muted">{{ dispatch.agent.location.name }}, {{ dispatch.agent.location.county.name }}</small>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-label">Delivery Address</div>
+                    <div class="info-value">{{ dispatch.delivery_address|default:"N/A" }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-label">Delivery Phone</div>
+                    <div class="info-value">{{ dispatch.delivery_phone|default:"N/A" }}</div>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <div class="info-label">Vehicle Used</div>
+                    <div class="info-value"><i class="fa fa-truck"></i> {{ dispatch.vehicle_used|default:"Not Assigned" }}</div>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <div class="info-label">Vehicle Phone Number</div>
+                    <div class="info-value"><i class="fa fa-phone"></i> {{ dispatch.vehicle_used_phone_number|default:"N/A" }}</div>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <div class="info-label">Transport Cost</div>
+                    <div class="info-value">KES {{ dispatch.transport_cost|floatformat:2|intcomma }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTION BUTTONS CARD -->
+    <div class="card">
+        <div class="card-body">
+            <div class="section-title">Update Dispatch Status</div>
+            <form method="POST" class="d-flex flex-wrap gap-2">
+                {% csrf_token %}
+                <button type="submit" name="action" value="mark_sent" class="btn btn-info text-dark fw-bold px-4 {% if dispatch.dispatch_send %}opacity-50{% endif %}">
+                    <i class="fa fa-paper-plane"></i> Confirm Sent
+                </button>
+                <button type="submit" name="action" value="mark_arrived" class="btn btn-primary fw-bold px-4 {% if dispatch.arrived_at_the_receiving_agent %}opacity-50{% endif %}">
+                    <i class="fa fa-check-circle"></i> Confirm Arrived
+                </button>
+                <button type="submit" name="action" value="mark_picked" class="btn btn-success fw-bold px-4 {% if dispatch.all_luggages_picked %}opacity-50{% endif %}">
+                    <i class="fa fa-box-open"></i> Confirm Picked
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PACKAGE DISPATCHES LIST -->
+    <div class="table-container shadow-sm">
+        <div class="section-title">Associated Package Dispatches</div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#Pkg ID</th>
+                        <th>Customer (Sender / Receiver)</th>
+                        <th>Payment Status</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pkg in packages %}
+                    <tr>
+                        <td><strong>#{{ pkg.id }}</strong></td>
+                        <td>
+                            <div><strong>Sender:</strong> {{ pkg.sending_customer.username|default:"Walk-in / Guest" }}</div>
+                            <small class="text-muted"><strong>Receiver:</strong> {{ pkg.receiving_customer.username|default:pkg.delivery_phone|default:"N/A" }}</small>
+                        </td>
+                        <td>
+                            {% if pkg.fully_paid %}
+                                <span class="badge bg-success">Fully Paid</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Balance: KES {{ pkg.total_transport_cost|add:"-"|add:pkg.amount_paid|floatformat:2 }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge-status 
+                                {% if pkg.status == 'OPEN' %}bg-secondary text-white
+                                {% elif pkg.status == 'SENT' %}bg-info text-dark
+                                {% elif pkg.status == 'ON_ROAD' %}bg-warning text-dark
+                                {% elif pkg.status == 'ARRIVED' %}bg-primary text-white
+                                {% elif pkg.status == 'PICKED' %}bg-success text-white{% endif %}">
+                                {{ pkg.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <!-- Link to individual package dispatch details view if you have one -->
+                            <a href="{% url 'package_dispatch_detail' pkg.id %}" class="btn btn-sm btn-outline-dark">View More</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No package dispatches are linked to this agent dispatch batch yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</section>
+{% endblock %}

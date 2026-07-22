@@ -1,0 +1,85 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %} Patners Invite {% endblock%}
+{% block content %}
+
+<main id="main" class="main">
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+{% endif %}
+
+    <div class="pagetitle">
+      <h1>Invites Tables</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' business.slug %}">Dashboard</a></li>
+          <li class="breadcrumb-item active">Data</li>
+          
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Partners Invites</h5>
+              <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                search anything 
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              <!-- Table with stripped rows -->
+              <table class="table datatable">
+                <thead>
+                  <tr>
+                    <th scope="col">Patner</th>
+                    <th scope="col">Invite Status</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for partner in partner_challenges %}
+                  <tr>
+                    <th scope="row">{{ partner.partner}}</th>
+                    <td>{% if partner.accepted %} <span class="badge bg-success">approved</span>  {% else %} <span class="badge bg-secondary">waiting for approval</span>{% endif %}</td>
+                    <td>{% if partner.partner.id == business.id and not partner.accepted %}<span class="badge bg-warning"><a class="btn btn-warning invite-btn" id="inviteButton-{{ partner.id }}" href="{% url 'challenge_patnership_invite' business.slug %}?challenge_partner_id={{partner.id}}" title='invite' style="color:black;">accept invite</a></span>{% endif %}</td>
+                  </tr>
+                  {% endfor %}
+                  
+                </tbody>
+              </table>
+              <!-- End Table with stripped rows -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inviteButtons = document.querySelectorAll('.invite-btn');
+
+        inviteButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                // Disable the button
+                button.classList.add('disabled');
+                button.textContent = "proccessing your request...";
+            });
+        });
+    });
+</script>
+{% endblock %}

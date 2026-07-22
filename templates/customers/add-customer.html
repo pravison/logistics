@@ -1,0 +1,204 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<!-- popup register -->
+<style>
+    /* popup styling  */
+/* Popup container (hidden by default) */
+.popup {
+    display: none; /* Hidden by default */
+    /*position: fixed; /*Ensures the popup stays on the screen*/
+    top: 10px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff; /* rgba(0, 0, 0, 0.5); Dark overlay */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Higher z-index to appear on top of other elements */
+}
+
+/* Popup content box */
+.popup-content {
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    max-width: 100%;
+    width: 100%;
+    z-index: 10000; /* Ensures the content box stays above the overlay */
+}
+/* #cc922e */ 
+/* #1563df blue color */
+
+.popup-content input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.popup-content button {
+    margin: 5px;
+    padding: 8px 16px;
+    background: #1563df;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.popup-content button:hover {
+    background: #1563df;
+}
+</style>
+<!-- Get In Touch With Us Area -->
+<section class="get_touch_area" style="padding-top: 120px;">
+    <div class="row" style="justify-content: center;">
+        
+        <div class="col-lg-6 " >
+            {% if bussiness_slug %}
+            <div class="row text-center"><b>Add Customer To Your Lists</b></div>
+            {% else %}
+            <div class="row text-center"><b>Invite a Neighbor or a Friend</b></div>
+            {% endif %}
+            <div>
+                <div id="popup" class="popup">
+                    <div class="popup-content">
+                        <p>Share this URL:</p>
+                        <input type="text" id="share-url" value="{{request.build_absolute_uri}}" readonly />
+                        <button onclick="copyToClipboard()">Copy</button>
+                        <button onclick="closePopup()">Close</button>
+                    </div>
+                </div>
+            </div>
+            <div class="from_area">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                    {% if reffered_customer_number %}
+                    <div class="row text-center">
+                        <a class="btn btn-primary mt-3" href="sms:?&body=⛽️ Hey! I just sent you 50 points for free gas refill with Jirani Gas 🚚💨%0A%0AI have reffered you — all you need to do is sign up with your phone number[{{reffered_customer_number}}] and the points are waiting for you. It’s super easy.%0A%0A👉 Claim your free gas here: {{ request.scheme }}://{{ request.get_host }}/points/loyalty-qr-code/%0A%0ALet me know when you’re in — it’s totally worth it. Free gas = good vibes 😄">
+                            tell your a {% if bussiness_slug %} customer {% else %}neighbor{% endif %} about this via SMS
+                        </a>
+                            
+                    </div>
+                    <div class="row text-center" style="width: auto;">
+                    <a class="btn btn-primary mt-3" href="{{request.get_absolute_uri}}">
+                    add another one
+                    </a>
+                    </div>
+                    {% if bussiness_slug %}
+                    <div class="row text-center"> 
+                    <a class="btn btn-primary mt-3" href="{% url 'customers' bussiness_slug %}">
+                       or view customers lists
+                    </a>
+                    </div>
+                    <div class="row text-center" style="width: auto;">
+                        <a class="btn btn-primary mt-3" href="{{request.get_absolute_uri}}">
+                        or add another one
+                        </a>
+                        </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="row text-center" style="width: auto;">
+                    <a class="btn btn-primary mt-3" href="{{request.get_absolute_uri}}">
+                    add another one
+                    </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <form class="from_main" action="{% url 'add_customer' %}?refferal_code={{refferal_code}}&bussiness_slug={{bussiness_slug}}" method="POST" id="loginForm">
+                        {% csrf_token %}
+                        <div class="form-group text-center" onclick="showPopup(event)" style="cursor: pointer; align-items: center;">
+                            <a href="">click share this page </a>
+                        </div>
+                        
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            Your {% if bussiness_slug %} customer {% else %}neighbor{% endif %} will get <b>50 points welcome bonus</b>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% if not  bussiness_slug %} 
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            And you will be getting 1.5% cashback as points everytime the neighbor buys from us plus you can borrow points from your neighbor
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endif %}
+                        <div class="input-group mb-3">
+                            <input type="text" name="name" class="form-control" id="nameInput"  placeholder="Enter Your {% if bussiness_slug %} customer's {% else %}neighbor's{% endif %} first Name" required>
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">+254</span>
+                            <input type="number" name="phone_number" class="form-control" placeholder="ex.706420043 (phone number)" required aria-describedby="basic-addon1">
+                        </div>
+                        <div class="form-group">
+                            {% if refferal_code %}
+                            <label>Refferal Code</label>
+                            {% endif %}
+                            <input type="text" name="refferal_code" class="form-control" id="refferalCodeInput" value="{{refferal_code}}" placeholder="Enter Refferal Code" >
+                        </div>
+                        <div class="row mb-3 text-center">
+                            <div class="col-sm-10 justify-content-center">
+                              <button type="submit" class="btn btn-primary " id="RegisteringAccount">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+            
+        </div>
+
+        
+    </div>
+</section>
+<!-- Get In Touch With Us Area -->
+
+<!-- Popup Modal -->
+
+<script>
+    // Add an event listener to the form submission
+    document.addEventListener('DOMContentLoaded', function () {
+        const loginButton = document.getElementById('RegisteringAccount');
+        const form = loginButton.closest('form'); // Find the closest form element
+
+        if (form) {
+            form.addEventListener('submit', function () {
+                // Disable the button
+                loginButton.disabled = true;
+
+                // Update the button text
+                loginButton.textContent = "save in progress...";
+            });
+        }
+    });
+  </script>
+
+<script>
+    function showPopup(event) {
+        event.preventDefault(); // Prevent default link behavior
+        const popup = document.getElementById('popup');
+        popup.style.display = 'flex'; // Show the popup
+    }
+    
+    function closePopup() {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'none'; // Hide the popup
+    }
+    
+    function copyToClipboard() {
+        const urlField = document.getElementById('share-url');
+        urlField.select(); // Select the text
+        document.execCommand('copy'); // Copy the text to the clipboard
+        alert('URL copied to clipboard!');
+    }
+</script>
+
+{% endblock %}

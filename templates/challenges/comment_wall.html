@@ -1,0 +1,185 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+<style>
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin: 1.5rem 0;
+        align-items: center;
+    }
+
+    .filters select {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        border: none;
+        background-color: #1c1c1c;
+        color: #fff;
+    }
+
+    .comment-card {
+        background: #222;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 5px solid #ff007f;
+        border-radius: 0.5rem;
+    }
+
+    .comment-card.hug {
+        border-left-color: #66ffcc;
+    }
+
+    .comment-meta {
+        font-size: 0.9rem;
+        color: #aaa;
+        margin-bottom: 0.3rem;
+    }
+
+    .comment-text {
+        font-size: 1rem;
+        color: #fff;
+    }
+
+    .pagination {
+        margin-top: 2rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .pagination a {
+        padding: 0.4rem 0.8rem;
+        background-color: #444;
+        color: white;
+        text-decoration: none;
+        border-radius: 0.3rem;
+    }
+
+    .pagination span {
+        padding: 0.4rem 0.8rem;
+        background-color: #888;
+        color: white;
+        border-radius: 0.3rem;
+    }
+    .share-link {
+        margin-top: 2rem;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+
+    .share-icons {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .share-icons a, .share-icons button {
+        background: #eee;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        text-decoration: none;
+        color: #333;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+    }
+</style>
+<style>
+.highlighted {
+    border: 2px solid yellow;
+    background-color: #2d2d2d;
+}
+</style>
+
+
+<h2>🗣️️ Slap or Hug — Read the Reactions</h2> 
+<div class="share-link">
+    📊 <a href="{% url 'analytics_page' %}">See who got most hugs or slaps</a> | 
+    💬 <a href="{% url 'hug_or_slap_view' %}">want to hug or slap</a> |
+    📣 Share:
+    <a href="https://wa.me/?text={{ request.build_absolute_uri }}" target="_blank">WhatsApp</a> |
+    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank">Facebook</a> |
+    <a href="https://x.com/intent/tweet?url={{ request.build_absolute_uri }}" target="_blank">X</a> |
+    <a href="#" onclick="navigator.clipboard.writeText('{{ request.build_absolute_uri }}'); alert('Link copied!'); return false;">Copy Link</a>
+</div>
+<form method="get" class="filters">
+    <select name="politician">
+        <option value="">All</option>
+        {% for p in politicians %}
+            <option value="{{ p.id }}" {% if p.id == selected_id %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="reaction">
+        <option value="">All Reactions</option>
+        <option value="hug" {% if selected_reaction == 'hug' %}selected{% endif %}>🤗 Hug</option>
+        <option value="slap" {% if selected_reaction == 'slap' %}selected{% endif %}>🖐️ Slap</option>
+    </select>
+
+    <button type="submit" class="next-button">Filter 🔍</button>
+</form>
+
+{% for comment in comments %}
+<div id="comment-{{ comment.id }}" class="comment-card {{ comment.reaction }} {% if comment.id|stringformat:"s" == highlight_id %}highlighted{% endif %}">
+    <div class="comment-meta">
+        {{ comment.politician.name }} — {{ comment.reaction }} — {{ comment.timestamp|date:'M d, H:i' }}
+    </div>
+    <div class="comment-text">
+        {{ comment.comment|linebreaks }}
+    </div>
+    <div class="share-buttons" style="margin-top: 0.5rem;">
+        <small style="color: #aaa;">Share:</small>
+        {% with comment_id=comment.id|stringformat:"s" %}
+            {% with comment_url=request.build_absolute_uri|add:"?highlight="|add:comment_id %}
+                {% with message=comment.politician.name|stringformat:"s"|add:" was "|add:comment.reaction|add:"ed.%0A%0AHere’s what someone said:%0A%0A\""|add:comment.comment|truncatewords:20|add:"\"%0A%0ACheck it out 👉 "|add:comment_url %}
+                    
+                    <a href="https://wa.me/?text={{ message }}" target="_blank">WhatsApp</a> |
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ comment_url|urlencode }}" target="_blank">Facebook</a> |
+                    <a href="https://x.com/intent/tweet?text={{ message }}" target="_blank">X</a> |
+                    <a href="#" onclick="copyToClipboard(decodeURIComponent(`{{ message }}`)); return false;">Copy Link</a>
+    
+                {% endwith %}
+            {% endwith %}
+        {% endwith %}
+    </div>
+    <div class="react-links" style="margin-top: 0.3rem;">
+    <a href="{% url 'hug_or_slap' comment.politician.id %}" style="color: #66ccff;">
+        Want to Hug or Slap {{ comment.politician.name }}? 👉
+    </a>
+</div>
+    
+</div>
+{% empty %}
+    <p>No comments yet for this filter.</p>
+{% endfor %}
+
+<div class="pagination">
+    {% if comments.has_previous %}
+        <a href="?{% if selected_id %}politician={{ selected_id }}&{% endif %}{% if selected_reaction %}reaction={{ selected_reaction }}&{% endif %}page={{ comments.previous_page_number }}">Previous</a>
+    {% endif %}
+    <span>Page {{ comments.number }} of {{ comments.paginator.num_pages }}</span>
+    {% if comments.has_next %}
+        <a href="?{% if selected_id %}politician={{ selected_id }}&{% endif %}{% if selected_reaction %}reaction={{ selected_reaction }}&{% endif %}page={{ comments.next_page_number }}">Next</a>
+    {% endif %}
+</div>
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlight = urlParams.get('highlight');
+    if (highlight) {
+        const comment = document.getElementById(`comment-${highlight}`);
+        if (comment) {
+            comment.scrollIntoView({ behavior: "smooth", block: "start" });
+            comment.classList.add("highlighted");
+        }
+    }
+});
+</script>
+
+{% endblock %}

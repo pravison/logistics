@@ -1,0 +1,333 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% load query_append %}
+{% block title %}add Products{% endblock%}
+{% block content %}
+<style>
+.item-upload.dragging {
+    opacity: 0.4;
+}
+
+.item-upload.over {
+    border: 2px dashed #007bff;
+}
+</style>
+<main id="main" class="main">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="pagetitle">
+    <h1>Add {% if product_type %}{{product_type}}{% endif %}</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' business.slug %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'products' business.slug %}">My Products</a></li>
+      </ol>
+    </nav>
+  </div>
+
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+
+            {% if category %}
+            {% if product_type %}
+              <h5 class="card-title">Category: {{ category.category_name }}</h5>
+                <form method="POST" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <input type="hidden" name="product_type" value="{{ product_type }}">
+                  <input type="hidden" name="category_id" value="{{ category.id }}">
+                
+                  <!-- Product Name -->
+                  <div class="mb-3">
+                    <label>Product Name</label>
+                    <input class="form-control" name="product_name" required />
+                  </div>
+                
+                  <!-- Images -->
+                  <div class="mb-3">
+                    <label>Product Image</label>
+                    <input class="form-control" name="image" type="file" accept="image/*" required />
+                  </div>
+                  <h5 class="title">Add More Product Images *</h5>
+                    <div class="box-uploadfile">
+                        <div class="uploadfile">
+                            <div class="btn-upload tf-btn primary">
+                                <!-- SVG omitted for brevity -->
+                                Select photos
+                                <input type="file" class="ip-file" id="image-upload" name="upload_image" multiple accept="image/*" onchange="handleFileSelect()">
+                            </div>
+                            <p class="file-name fw-5">
+                                or drag photos here <br>
+                                <span>(max 15 photos)</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="box-img-upload" id="preview-container">
+                        <!-- Preview images will be appended here dynamically -->
+                    </div>
+                
+                  <!-- Price -->
+                  <div class="mb-3">
+                    <label>Price</label>
+                    <input class="form-control" name="price" type="number" step="0.01" required />
+                  </div>
+                
+                  <!-- Product Condition -->
+                  <div class="mb-3 hide-on-service" id="product_condition_field">
+                    <label>Product Condition</label>
+                    <select class="form-select" name="product_condition">
+                      <option value="">-- Select Condition --</option>
+                      {% for val, label in condition_choices %}
+                        <option value="{{ val }}">{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                
+                  <!-- Quantity -->
+                  <div class="mb-3 hide-on-service hide-on-digital" id="quantity_field">
+                    <label>Quantity</label>
+                    <input class="form-control" name="quantity" type="number" required />
+                  </div>
+                
+                  <!-- Service Delivery -->
+                  <div class="mb-3 only-on-service" id="service_delivery_field">
+                    <label>Service Delivery</label>
+                    <select class="form-select" name="service_delivery">
+                      <option value="">-- Select Delivery Mode --</option>
+                      {% for val, label in service_delivery_choices %}
+                        <option value="{{ val }}">{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                
+                  <!-- Payment Period (only for rental) -->
+                  <div class="mb-3 only-on-rental" id="payment_period_field">
+                    <label>Payment Period</label>
+                    <select class="form-select" name="payment_period">
+                      <option value="">-- Select Period --</option>
+                      {% for val, label in payment_period_choices %}
+                        <option value="{{ val }}">{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                
+                  <!-- Digital Product File -->
+                  <div class="mb-3 only-on-digital" id="digital_product_file_field">
+                    <label>Upload Digital File</label>
+                    <input class="form-control" name="digital_product_file" type="file" />
+                  </div>
+                
+                  <!-- Subcategory -->
+                  <div class="mb-3">
+                    <label>Subcategory</label>
+                    <select class="form-select" name="subcategory_id" required>
+                      <option value="">-- Select Sub Category --</option>
+                      {% for sub in subcategories %}
+                        <option value="{{ sub.id }}">{{ sub.sub_category_name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                
+                  <!-- Description -->
+                  <div class="mb-3">
+                    <label>Description</label>
+                    <textarea class="form-control" name="description"></textarea>
+                  </div>
+                
+                  <div class="text-center mb-3">
+                    <button type="submit" class="btn btn-primary" id="RegisteringAccount">Save </button>
+                  </div>
+                </form>
+
+            {% else %} 
+            <!-- product_type_selection.html -->
+            <div class="card-body">
+              <h5 class="card-title">Category Selected: {{ category.category_name }}</h5>
+              <h4 class="text-center mt-4 mb-3"><strong>Now Select Product Type</strong></h4>
+              <div class="d-flex flex-wrap gap-3 justify-content-center">
+                {% for type, label in product_type_choices %}
+                  <a href="{% url 'add_product' business.slug %}?category_id={{ category.id }}&product_type={{ type }}" class="btn btn-outline-primary">
+                    {{ label }}
+                  </a>
+                {% endfor %}
+              </div>
+              
+            </div>
+            {% endif %}
+            {% else %}
+              <h4 class="text-center mt-4 mb-3"><strong>Select a Product Category to Continue</strong></h4>
+              <div class="d-flex flex-wrap gap-3 justify-content-center">
+                {% for cat in product_categories %}
+                  <a href="{% url 'add_product' business.slug %}?category_id={{ cat.id }}" class="btn btn-outline-primary">
+                    {{ cat.category_name }}
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- Updated JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const productType = "{{ product_type|escapejs }}";
+
+    const hideElements = (selector) => {
+      document.querySelectorAll(selector).forEach(el => el.style.display = 'none');
+    };
+    const showElements = (selector) => {
+      document.querySelectorAll(selector).forEach(el => el.style.display = '');
+    };
+
+    // Apply logic based on product type
+    switch (productType) {
+      case 'service':
+        hideElements('.hide-on-service');
+        showElements('.only-on-service');
+        hideElements('.only-on-digital');
+        hideElements('.only-on-rental');
+        break;
+      case 'digital':
+        hideElements('.hide-on-digital');
+        hideElements('.hide-on-service');
+        showElements('.only-on-digital');
+        hideElements('.only-on-service');
+        hideElements('.only-on-rental');
+        break;
+      case 'rental':
+        showElements('.only-on-rental');
+        showElements('.hide-on-service');  // keep condition/quantity visible
+        break;
+      default:
+        // Show everything not specifically restricted
+        showElements('.hide-on-service');
+        showElements('.hide-on-digital');
+        hideElements('.only-on-service');
+        hideElements('.only-on-digital');
+        hideElements('.only-on-rental');
+    }
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const loginButton = document.getElementById('RegisteringAccount');
+    const form = loginButton?.closest('form');
+    if (form) {
+      form.addEventListener('submit', function () {
+        loginButton.disabled = true;
+        loginButton.textContent = "save in progress...";
+      });
+    }
+  });
+</script>
+
+
+<script>
+    let selectedFiles = [];
+
+    function handleFileSelect() {
+        const input = document.getElementById('image-upload');
+        const files = Array.from(input.files);
+
+        if (selectedFiles.length + files.length > 25) {
+            alert('You can upload a maximum of 25 photos.');
+            return input.value = ""; // Reset input
+        }
+
+        for (const file of files) {
+            if (file.type.startsWith('image/')) {
+                selectedFiles.push(file);
+            }
+        }
+
+        renderPreviews();
+    }
+
+    function renderPreviews() {
+        const container = document.getElementById('preview-container');
+        container.innerHTML = '';
+
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'item-upload file-delete';
+                div.setAttribute('draggable', true);
+                div.dataset.index = index;
+
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="img">
+                    <span class="icon icon-trash remove-file" onclick="removeImage(${index})"></span>
+                `;
+
+                // Drag Events
+                div.addEventListener('dragstart', handleDragStart);
+                div.addEventListener('dragover', handleDragOver);
+                div.addEventListener('drop', handleDrop);
+                div.addEventListener('dragend', handleDragEnd);
+
+                container.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function removeImage(index) {
+        selectedFiles.splice(index, 1);
+        renderPreviews();
+    }
+
+    // Drag and Drop handlers
+    let dragSrcIndex = null;
+
+    function handleDragStart(e) {
+        dragSrcIndex = +this.dataset.index;
+        this.classList.add('dragging');
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault(); // Allow drop
+        this.classList.add('over');
+    }
+
+    function handleDrop(e) {
+        const targetIndex = +this.dataset.index;
+
+        if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
+            const movedItem = selectedFiles.splice(dragSrcIndex, 1)[0];
+            selectedFiles.splice(targetIndex, 0, movedItem);
+            renderPreviews();
+        }
+    }
+
+    function handleDragEnd(e) {
+        const items = document.querySelectorAll('.item-upload');
+        items.forEach(item => item.classList.remove('dragging', 'over'));
+    }
+
+    // Before submitting the form, create a new DataTransfer object to preserve order
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const input = document.getElementById('image-upload');
+        const dataTransfer = new DataTransfer();
+
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        input.files = dataTransfer.files;
+    });
+</script>
+
+
+{% endblock %}

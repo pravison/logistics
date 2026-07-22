@@ -1,0 +1,626 @@
+{% extends 'main.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load humanize%}
+{% block title %} {{ request.user.first_name }} {{ request.user.last_name }} {% endblock%}
+{% block content %}
+
+<style>
+.popup {
+    display: none; /* Hidden by default */
+    position: fixed; /* Ensures the popup stays on the screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Higher z-index to appear on top of other elements */
+}
+
+/* Popup content box */
+.popup-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 90%;
+    z-index: 10000; /* Ensures the content box stays above the overlay */
+}
+/* #cc922e */ 
+/* #1563df blue color */
+
+.popup-content input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.popup-content button {
+    margin: 5px;
+    padding: 8px 16px;
+    background: #1563df;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.popup-content button:hover {
+    background: #1563df;
+}
+
+</style>
+
+<main id="main" class="main">
+    
+    <div class="pagetitle">
+      <h1>Welcome {{ request.user.first_name }} {{ request.user.last_name }}</h1>
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% if not customer.profile_image  %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <a href="#" class="btn btn-primary text-white" onclick="showUploadPopup(event)">
+                    upload profile image
+                </a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+    </div><!-- End Page Title -->
+
+
+
+    <section class="section profile">
+      <div class="row">
+        
+        <div class="col-xl-4 mb-3 text-center">
+          <div class="card">
+            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+                <img src="{{ request.user.customer.imageUrl }}" alt="Profile" class="rounded-circle">
+            
+              <h2>Your</h2>
+              <!--<h3 class="text-center">Total Points: {{ total_points|intcomma }}</h3>-->
+              <h3 class="text-center">Total Points: {{ total_approved_points|intcomma }}</h3>
+              <h3 class="text-center">Points Awaiting Apporoval: {{ total_points_awaiting_approval|intcomma }}</h3>
+            </div>
+            {% if shop_patner %}
+            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+              <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  <a class="badge bg-primary" href="#" onclick="submitReferralCode(event, `{{customer.id}}`)" style=" color: white"><b>Create Refferal code</b></a>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          
+            
+          <span><a class="btn btn-primary text-white mb-1" href="{% url 'all_Wholesale_products' %}" style="color: #000;;">Go Shopping</a></span>
+          
+          
+          <span><a class="btn btn-primary text-white mb-1" href="{% url 'my_wholesale_orders' %}" style="color: #000;;">My Wholesale Purchases</a></span>
+          
+
+          <span><a class="btn btn-primary text-white mb-1" href="{% url 'group_orders_list' %}" style="color: #000;;">My Group Purchases</a></span>
+          <span><a class="btn btn-primary text-white mb-1" href="{% url 'business' %}" style="color: #000;">My Business</a></span>
+          <span><a class="btn btn-primary text-white mb-1" href="{% url 'add_business' %}?pricing_plan=fremium" style="color: #000;;">Create New Business</a></span>
+          
+          
+        </div>
+
+        <div class="col-xl-8">
+
+          <div class="card">
+            <div class="card-body pt-3">
+              <!-- Bordered Tabs -->
+              <ul class="nav nav-tabs nav-tabs-bordered">
+                <li class="nav-item">
+                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#loyalty-points"> Loyalty Points </button>
+                </li>
+
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#Refferals"> Your Refferals </button>
+                </li>
+                {% if loaned_points %}
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#loaned-points"> Lend Points </button>
+                </li>
+                {% endif %}
+                {% if borrowed_points %}
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#borrowed-points">Borrowed Points </button>
+                </li>
+                {% endif %}
+
+              </ul>
+              <div class="tab-content pt-2">
+                
+                <!-- loyalty points  -->
+                <div class="tab-pane show active  fade pt-3" id="loyalty-points">
+                  <div class="row">
+                    <div class="accordion-body">
+                      <div class="card-body">
+                        <div class="card">
+                          <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+                            <b class="text-center">Every 20th customer gets a free gas refill!</b>
+                            <a class="btn btn-primary mt-3" href="{% url 'loyalty_membership'%}" style=" color: white"><b>Click to see your number or if you stand a chance for a free gas refill</b></a>
+                            <a class="btn btn-primary mt-3" href="tel:0706420043" style=" color: white"><b>Call 0706420043 to request gas refill and earn 100 points</b></a>
+                          </div>
+                        </div>
+                        
+                      </div>
+
+                      <div class="card-body overflow-auto">
+                        <h3 class="card-title"><b>Your Loyalty Points</b></h3>
+                        <!-- Table with stripped rows -->
+                        <table class="table datatable">
+                          <thead>
+                            <tr>
+                              <th scope="col">Points Category</th>
+                              <th scope="col">Purchase Value</th>
+                              <th scope="col">Points In</th>
+                              <th scope="col">Points Out</th>
+                              <th scope="col">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody> 
+                            
+                            {% for point in points %}
+                            <tr>
+                              <td scope="row">{{point.category}}</td>
+                              <td scope="row">{{point.purchase_value}}</td>
+                              <td  scope="row">{{point.points_earned}}</td>
+                              <td  scope="row">{{point.points_redeemed}}</td>
+                              <td scope="row">{{point.status}}</td>
+                            </tr>
+                            {% endfor %}
+                            
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>              
+                  </div>
+                </div>
+                <!-- end loyalty points  -->
+
+                <!-- customer refferals  -->
+                <div class="tab-pane fade pt-3" id="Refferals">
+                  <div class="row">
+                    <div class="card">
+                      <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+                        <b class="text-center">For Every Refferal You bring you earn 1.5% of their total purchase amount as cashback points everytime they purchase from jirani mall! plus you can borrow each other points</b>
+                       
+                        {% if customer.refferal_code %}
+                        <h4 class="text-center">Your Refferal Code :</span><b> {{customer.refferal_code}} </b></h4>
+                        {% with referral_url="https://jiranimall.shop/?referral_code="|add:customer.refferal_code %}
+                          {% with message="🔥 JOIN & EARN INSTANTLY! 🔥%0AJoin JiraniMall — a loyalty marketplace where you earn points when you shop, and can spend them in ANY other shop on the platform! 🛍️✨%0A%0A✅ Get 50 Points FREE on sign-up%0A🎯 Use my link to join:%0A👉 "|add:referral_url %}
+                            <div class="text-center">
+                            📣 Share:
+                            <a href="https://wa.me/?text={{ message }}" target="_blank">WhatsApp</a> |
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ referral_url|urlencode }}" target="_blank">Facebook</a> |
+                            <a href="https://x.com/intent/tweet?text={{ message }}" target="_blank">X</a> |
+                            <a href="#" onclick="copyToClipboard(decodeURIComponent(`{{ message }}`)); return false;">Copy Link</a>
+                            </div>
+                          {% endwith %}
+                        {% endwith %}
+                        <!--<a class="btn btn-primary mt-3" href="" onclick="showPopup(event, '{{ customer.refferal_code }}')" style=" color: white"><b>Copy the Refferal link and Share with Your Neighbors</b></a>-->
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div class="card-body overflow-auto">
+                      <h3 class="card-title"><b>Customer You've Reffered</b>
+                        <br/> 
+                        <span><a class="btn btn-primary mt-3" href="{% url 'add_customer' %}?refferal_code={{customer.refferal_code}}" style=" color: white"><b>Invite A Neighbor</b></a>
+                      </span></h3>
+                      <!-- Table with stripped rows -->
+                      <table class="table datatable">
+                        <thead>
+                          <tr>
+                            <th scope="col">Customer</th>
+                            <th scope="col">No. of times Purchased</th>
+                            <th scope="col">Current Points</th>
+                            <th scope="col">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for refferd_customer in refferd_customers %}
+                          <tr>
+                            <th scope="row">{% if refferd_customer.user %}{{refferd_customer}}{% else %} {{refferd_customer.name}} {% endif %}</th>
+                            <td scope="row">{{refferd_customer.loyalty_point_count}} </td>
+                            <td scope="row">{% if refferd_customer.total_loyalty_points > 200 %} more than 200 {% else %} less than 200 {% endif %}</td>
+                            <td scope="row"><a class="badge bg-primary" href="#" onclick="borrowPoints(event, `{{refferd_customer.total_loyalty_points}}`, `{{refferd_customer.id}}`)" style=" color: white"><b>borrow points</b></a> </td>
+                          </tr>
+                          {% endfor %}
+                          
+                        </tbody>
+                      </table>
+                    </div>
+                                  
+                  </div>
+                </div>
+                <!-- end customer refferals -->
+
+                <!-- Loaned points  -->
+                <div class="tab-pane fade pt-3" id="loaned-points">
+                  <div class="row">
+                    <div class="card">
+                      <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+                        <b class="text-center">Lend Point To Your Neighbors!</b>
+                    </div>
+                    <div class="card-body overflow-auto">
+                      <h3 class="card-title"><b>Loan Points Requests </b></h3>
+                      <!-- Table with stripped rows -->
+                      <table class="table datatable">
+                        <thead>
+                          <tr>
+                            <th scope="col">Customer</th>
+                            <th scope="col">Points Borrowed</th>
+                            <th scope="col">Points Repayed</th>
+                            <th scope="col">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for loaned_point in loaned_points %}
+                          <tr>
+                            <th scope="row">{% if loaned_point.borrower.user %}{{loaned_point.borrower}} {% else %} {{ loaned_point.borrower.name }} {% endif %}</th>
+                            <td scope="row">{{loaned_point.points_borrowed}} </td>
+                            <td scope="row">{{loaned_point.points_currently_repaid}}</td>
+                            <td scope="row">{% if loaned_point.approved %} <span class='badge bg-success'>Approved</span>  {% else %}<a class="badge bg-primary" href="{% url 'profile' %}?approve_id={{loaned_point.id}}" style=" color: white"><b>Click to Approve and lend points</b></a>{% endif %}</td>
+                          </tr>
+                          {% endfor %}
+                          
+                        </tbody>
+                      </table>
+                    </div>
+                    </div>             
+                  </div>
+                </div>
+                <!-- end borrowed points -->
+
+              <!-- repay borrowed points  -->
+              <div class="tab-pane fade pt-3" id="borrowed-points">
+                <div class="row">
+                  <div class="card">
+                    <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+                      <b class="text-center">Repay Points You Borrowed From Your Neighbors!</b>
+                    </div>
+                  </div>
+                  <div class="card-body overflow-auto">
+                    <h3 class="card-title"><b>Loan Points Balances</b></h3>
+                    <!-- Table with stripped rows -->
+                    <table class="table datatable">
+                      <thead>
+                        <tr>
+                          <th scope="col">Customer</th>
+                          <th scope="col">Points Borrowed</th>
+                          <th scope="col">Points Repayed</th>
+                          <th scope="col">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for borrowed_point in borrowed_points %}
+                        <tr>
+                          <th scope="row">{% if borrowed_point.lender.user %}{{borrowed_point.lender}} {% else %} {{borrowed_point.lender.name}} {% endif %}</th>
+                          <td scope="row">{{borrowed_point.points_borrowed}} </td>
+                          <td scope="row">{{borrowed_point.points_currently_repaid}}</td>
+                          <td scope="row">{% if borrowed_point.approved %} {% if borrowed_point.points_borrowed > borrowed_point.points_currently_repaid %}  <a class="badge bg-primary" href="#" onclick="repayPoints(event, `{{borrowed_point.points_borrowed}}`, `{{borrowed_point.points_currently_repaid}}`, `{{borrowed_point.lender.id}}`, `{{borrowed_point.id}}`)" style=" color: white"><b>repay points</b></a>  {% else %}<span class='badge bg-success'>Fully Repaid</span>{% endif %} {% else %}<span class='badge bg-danger'>Awaiting Approval</span>{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                        
+                      </tbody>
+                    </table>
+                  </div>
+                                
+                </div>
+              </div>
+              <!-- end repay borrowed points -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+<script>
+    function showPopup(event, code) {
+        event.preventDefault(); // Prevent default link behavior
+        
+        const popup = document.getElementById('popup');
+        const shareUrlInput = document.getElementById('share-url');
+        
+        // Construct the referral URL
+        var  url_host = '{{request.get_host}}'
+        var  url_scheme = '{{request.scheme}}'
+
+        const referralUrl = `${url_scheme}://${url_host}/?referral_code=${code}`;
+        
+        console.log(referralUrl)
+        // Set the referral URL in the input field
+        shareUrlInput.value = referralUrl;
+
+        popup.style.display = 'flex'; // Show the popup
+    }
+
+    function closePopup() {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'none'; // Hide the popup
+    }
+
+    function copyToClipboard() {
+        const urlField = document.getElementById('share-url');
+        urlField.select(); // Select the text
+        document.execCommand('copy'); // Copy the text to the clipboard
+        alert('Referral URL copied to clipboard!');
+    }
+</script>
+
+<!-- Popup Modal -->
+<div id="popup" class="popup" style="display:none;">
+    <div class="popup-content">
+        <p>Share this URL:</p>
+        <input type="text" id="share-url" readonly />
+        <button onclick="copyToClipboard()">Copy</button>
+        <button onclick="closePopup()">Close</button>
+    </div>
+</div>
+
+<!-- scripts for point borrowing  -->
+<script>
+  function borrowPoints(event, maximum_points, customer_id) {
+      let maximum_points_to_borrow = maximum_points - 200;
+      
+      if (maximum_points_to_borrow < 0) {
+          maximum_points_to_borrow = 0;
+      }
+  
+      const input = prompt("Enter points you want to borrow:");
+      if (input === null) {
+          return; // user clicked cancel
+      }
+  
+      const points_requested = parseInt(input.trim(), 10);
+  
+      if (isNaN(points_requested)) {
+          alert("Please enter a valid number.");
+          return;
+      }
+  
+      if (points_requested > maximum_points_to_borrow) {
+          alert(`Customer has less points and you can only borrow a maximum of ${maximum_points_to_borrow} points.`);
+          return;
+      }
+  
+      // Now send the data to Django backend
+      fetch('/points/borrow-points/', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': '{{ csrf_token }}',
+          },
+          body: JSON.stringify({
+              customer_id: customer_id,
+              points_requested: points_requested
+          })
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          return response.json();
+      })
+      .then(data => {
+          console.log('Success:', data);
+          alert('Your request to borrow Points sent successfully, awaiting approval.');
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          alert('Something went wrong. Please try again.');
+      });
+  }
+</script>
+
+<!-- script for point repayment -->
+<script>
+  function repayPoints(event, borrowed_points, paid_points, lender_id, borrowed_point_id) {
+      const remaining_loan = borrowed_points - paid_points;
+
+      const input = prompt("Enter points you want to repay:", remaining_loan);
+      if (input === null) {
+          // User clicked cancel
+          return;
+      }
+
+      const point_to_repay = input.trim() === "" ? remaining_loan : parseInt(input, 10);
+
+      if (isNaN(point_to_repay)) {
+          alert("Please enter a valid number.");
+          return;
+      }
+
+      // Now send the data to Django backend
+      fetch('/points/repay-points/', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': '{{ csrf_token }}',  // Important for Django CSRF protection
+          },
+          body: JSON.stringify({
+              lender_id: lender_id,
+              point_to_repay: point_to_repay,
+              borrowed_point_id: borrowed_point_id
+          })
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          return response.json();
+      })
+      .then(data => {
+          console.log('Success:', data);
+          alert('Borrowed points repaid successfully, thanks for repaying!');
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          alert('Something went wrong. Please try again.');
+      });
+  }
+</script>
+
+<!-- script for selecting a refferal code -->
+
+<script>
+  function submitReferralCode(event, customer_id) {
+      const referralCode = prompt("Enter your preferred referral code:");
+      
+      if (referralCode === null || referralCode.trim() === "") {
+          alert("Referral code cannot be empty.");
+          return;
+      }
+
+      // Send referral code to the backend
+      fetch('/referrals/submit/', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': '{{ csrf_token }}',  // ensure this is available in your Django template context
+          },
+          body: JSON.stringify({
+              customer_id: customer_id,
+              referral_code: referralCode.trim()
+          })
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          return response.json();
+      })
+      .then(data => {
+          console.log('Success:', data);
+          alert('Referral code submitted successfully.');
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          alert('Failed to submit referral code. Please try again.');
+      });
+  }
+</script>
+
+<script>
+    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+    const loginUrl = "{% url 'login_user' %}";  // Adjust 'login' to your actual login URL name
+</script>
+
+<!-- script for chalenge results upload -->
+<!-- Upload Profile Image Popup -->
+<div id="upload-popup" class="popup" style="display:none;">
+    <div class="popup-content">
+        <h5>Upload Your Profile Image</h5>
+        <form id="customUploadForm" enctype="multipart/form-data">
+            <input type="file" name="profile_image" id="entryImageInput" accept="image/*" required><br><br>
+            <button type="submit" id="submitBtn">Upload</button>
+            <button type="button" onclick="closeUploadPopup()">Close</button>
+        </form>
+        <p id="upload-status" style="margin-top: 10px; display: none; color: green;">Uploading...</p>
+    </div>
+</div>
+
+<script>
+function showUploadPopup(event) {
+    event.preventDefault();
+
+    if (!isAuthenticated) {
+        window.location.href = loginUrl + '?next=' + window.location.pathname;
+        return;
+    }
+
+    document.getElementById('upload-popup').style.display = 'flex';
+    document.getElementById('upload-status').style.display = 'none';
+    document.getElementById('submitBtn').disabled = false;
+}
+
+function closeUploadPopup() {
+    document.getElementById('upload-popup').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const uploadForm = document.getElementById('customUploadForm');
+    const uploadStatus = document.getElementById('upload-status');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            uploadStatus.textContent = 'Uploading...';
+            uploadStatus.style.display = 'block';
+
+            const formData = new FormData(uploadForm);
+
+            fetch(`/customers/upload-profile-image/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    uploadStatus.textContent = 'Upload successful!';
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    uploadStatus.textContent = data.error || 'Upload failed.';
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                uploadStatus.textContent = 'An error occurred.';
+                submitBtn.disabled = false;
+            });
+        });
+    }
+});
+
+</script>
+<!--copy to clipboard scripts -->
+<script>
+      function copyToClipboard(text) {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(function () {
+            alert('Link copied!');
+          }).catch(function (err) {
+            alert('Failed to copy: ' + err);
+          });
+        } else {
+          // Fallback for older browsers
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand("copy");
+            alert('Link copied!');
+          } catch (err) {
+            alert('Failed to copy: ' + err);
+          }
+          document.body.removeChild(textarea);
+        }
+      }
+    </script>
+
+{% endblock %}

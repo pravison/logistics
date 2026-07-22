@@ -1,0 +1,78 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<!-- popup register -->
+
+<!-- Get In Touch With Us Area -->
+<section class="get_touch_area" style="padding-top: 120px;">
+    <div class="row" style="justify-content: center;">
+        
+        <div class="col-lg-6 " >
+            <div class="row text-center"><b>Login</b></div>
+            <div class="from_area">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                <div class="alert alert-warning alert-dismissible fade show text-center role="alert">
+                    login first
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <form class="from_main" action="{% url 'login_user' %}?next={{next}}" method="POST" id="loginForm">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">+254</span>
+                        <input type="text" name="phone_number" pattern="[0-9+ ]*" class="form-control" placeholder="706420043 (phone number)" required aria-describedby="basic-addon1">
+                    </div>
+                    
+                    <div class="input-group mb-3">
+                        <input type="password" name="password" class="form-control" placeholder="Password" id="password" >
+                    </div>
+                    
+                    <div class="form-group m-0 btn_g">
+                        <button class="theme_btn btn" type="submit" id="loginButton">Login</button>
+                        <a href="{% url 'register_user' %}?next={{next}}">create account</a>
+                    </div>
+                    <div class="form-group m-0 btn_g">
+                        <a href="{% url 'request_reset_code' %}">forgot Password</a>
+                    </div>
+                </form>
+        </div>
+
+        
+    </div>
+</section>
+<!-- Get In Touch With Us Area -->
+<script>
+    // Add an event listener to the form submission
+    document.addEventListener('DOMContentLoaded', function () {
+        const loginButton = document.getElementById('loginButton');
+        const form = loginButton.closest('form'); // Find the closest form element
+
+        if (form) {
+            form.addEventListener('submit', function () {
+                // Disable the button
+                loginButton.disabled = true;
+
+                // Update the button text
+                loginButton.textContent = "logging you in...";
+            });
+        }
+    });
+</script>
+<script>
+    function togglePassword(){
+        const passwordField = document.getElementById('password');
+        const showPassword = document.getElementById('show-password')
+        passwordField.type=showPassword.checked? 'text': 'password';
+    }
+</script>
+
+{% endblock %}
+
+

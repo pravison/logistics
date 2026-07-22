@@ -1,0 +1,219 @@
+{% extends 'store/main.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.analytics-container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 2rem 1rem;
+    color: inherit;
+}
+
+.analytics-filter {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    margin-bottom: 1.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.analytics-filter::-webkit-scrollbar {
+    display: none;
+}
+
+.analytics-filter button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    background-color: #4b6cb7;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.analytics-filter button:hover,
+.analytics-filter button.active {
+    background-color: #ff007f;
+}
+
+/* Table Scroll Wrapper */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+}
+
+.analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    background-color: #fff;
+    color: #333;
+    min-width: 600px;
+}
+
+.analytics-table thead {
+    background-color: #3333aa;
+    color: #fff;
+}
+
+.analytics-table th,
+.analytics-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.analytics-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.share-link {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.share-icons {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.share-icons a,
+.share-icons button {
+    background: #eee;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+    .analytics-container {
+        padding: 1rem 0.5rem;
+    }
+
+    .analytics-table {
+        font-size: 0.85rem;
+    }
+
+    .analytics-table th,
+    .analytics-table td {
+        padding: 0.5rem;
+    }
+
+    .analytics-filter {
+        padding: 0.5rem 0;
+    }
+
+    .analytics-filter button {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.75rem;
+    }
+}
+</style>
+
+<div class="analytics-container">
+    <h2 class="text-xl font-bold text-center mb-6">📊 Who Got the Hugs & Who Felt the Slaps?</h2>
+
+    <div class="analytics-filter">
+        <button onclick="loadAnalytics('today')" class="active">Today</button>
+        <button onclick="loadAnalytics('week')">This Week</button>
+        <button onclick="loadAnalytics('month')">This Month</button>
+        <button onclick="loadAnalytics('year')">This Year</button>
+        <button onclick="loadAnalytics('all')">All Time</button>
+    </div>
+
+    <div id="analyticsTable" class="table-wrapper">
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Slaps</th>
+                    <th>Hugs</th>
+                    <th>Slap %</th>
+                    <th>Hug %</th>
+                </tr>
+            </thead>
+            <tbody id="analyticsBody">
+                {% for p in leaderboard %}
+                {% with total=p.hugs|add:p.slaps %}
+                <tr>
+                    <td><a href="{% url 'hug_or_slap' p.id %}">{{ p.name }}</a></td>
+                    <td>{{ p.slaps }}</td>
+                    <td>{{ p.hugs }}</td>
+                    <td>{{ p.slap_percent }}%</td>
+                    <td>{{ p.hug_percent }}%</td>
+                </tr>
+                {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="share-link">
+        📣 Share this page with your friends!
+        <div class="share-icons">
+            <a href="https://wa.me/?text={{ request.build_absolute_uri }}" target="_blank">WhatsApp</a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank">Facebook</a>
+            <a href="https://www.instagram.com/" target="_blank">Instagram</a>
+            <a href="https://x.com/intent/tweet?url={{ request.build_absolute_uri }}" target="_blank">X</a>
+            <button onclick="copyToClipboard()">Copy Link</button>
+        </div>
+        <div class="mt-2">
+            <a href="{% url 'comment_wall' %}">View Public Comments</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function loadAnalytics(period) {
+        document.querySelectorAll('.analytics-filter button').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.analytics-filter button[onclick*="${period}"]`).classList.add('active');
+
+        fetch(`/analytics-data/?period=${period}`)
+            .then(res => res.json())
+            .then(data => {
+                const body = document.getElementById('analyticsBody');
+                body.innerHTML = '';
+                data.forEach(p => {
+                    const slapPercent = p.slap_percent ?? 0;
+                    const hugPercent = p.hug_percent ?? 0;
+                    body.innerHTML += `
+                        <tr>
+                            <td><a href="/hug-or-slap/${p.id}/">${p.name}</a></td>
+                            <td>${p.slaps}</td>
+                            <td>${p.hugs}</td>
+                            <td>${slapPercent}%</td>
+                            <td>${hugPercent}%</td>
+                        </tr>
+                    `;
+                });
+            });
+    }
+
+    function copyToClipboard() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            alert("Link copied to clipboard!");
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    }
+</script>
+{% endblock %}
+

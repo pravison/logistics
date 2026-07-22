@@ -1,0 +1,135 @@
+{% extends 'main.html' %}
+{% load humanize %}
+{% block title %}All Dispatches{% endblock %}
+{% now "Y-m-d" as today %}
+{% block content %}
+<style>
+    section { background: #f6f7fb; }
+    .card { border: none; border-radius: 14px; }
+    .dispatch-card { transition: 0.2s ease-in-out; }
+    .dispatch-card:hover { transform: scale(1.01); }
+
+    .status-open {
+        background: #ffc107;
+        color: black;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 10px;
+        font-size: 12px;
+    }
+
+    .status-sent {
+        background: #198754;
+        color: white;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 10px;
+        font-size: 12px;
+    }
+
+    .small-label {
+        font-size: 12px;
+        color: #6c757d;
+    }
+    .dispatch-stale {
+        border-left: 6px solid #dc3545;
+        background: #fff0f0;
+    }
+    .needs-update-badge{
+        background:#dc3545;
+        color:white;
+        font-size:11px;
+        font-weight:700;
+        padding:4px 10px;
+        border-radius:12px;
+    }
+</style>
+
+<section>
+<div class="container py-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h5 class="mb-0">All Customer Dispatches</h5>
+            <small class="text-muted">Showing all dispatch records</small>
+        </div>
+    </div>
+
+    <input type="text" id="searchInput" class="form-control mb-3"
+           placeholder="Search customer name or phone...">
+
+    <div id="dispatchContainer">
+        {% for dispatch in dispatches %}
+        <div class="card shadow-sm mb-2 dispatch-card
+            {% if dispatch.status != "SENT" and dispatch.items and dispatch.updated_at|date:'Y-m-d' != today %}
+                dispatch-stale
+            {% endif %}
+        "
+            
+             data-name="{{ dispatch.customer.name|lower }}"
+             data-phone="{{ dispatch.customer.phone_number|lower }}">
+
+            <div class="card-body">
+                <a href="{% url 'order_dispatch_detail' dispatch.id %}" class="text-dark text-decoration-none">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1 fw-bold">
+                            Dispatch #{{ dispatch.id }} - {{ dispatch.customer.name }}
+                        </h6>
+
+                        <div class="small-label">
+                            Phone: <b>{{ dispatch.customer.phone_number }}</b>
+                        </div>
+
+                        <div class="small-label">
+                            Created: {{ dispatch.created_at|date:"M d, Y H:i" }}
+                        </div>
+
+                        <div class="small-label">
+                            Updated: {{ dispatch.updated_at|date:"M d, Y H:i" }}
+                        </div>
+                    </div>
+
+                    <div>
+                        {% if dispatch.status != "SENT" and dispatch.items and dispatch.updated_at|date:'Y-m-d' != today %}
+                            <span class="needs-update-badge d-block mb-1">Needs Update</span>
+                        {% endif %}
+                        {% if dispatch.status == "SENT" %}
+                            <span class="status-sent">SENT</span>
+                        {% else %}
+                            <span class="status-open">OPEN</span>
+                        {% endif %}
+                    </div>
+                </div>
+                </a>
+
+            </div>
+        </div>
+        {% empty %}
+            <div class="alert alert-info">
+                No dispatch records found.
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<script>
+    document.getElementById("searchInput").addEventListener("keyup", function () {
+        const search = this.value.toLowerCase();
+
+        document.querySelectorAll(".dispatch-card").forEach(card => {
+            const name = card.getAttribute("data-name");
+            const phone = card.getAttribute("data-phone");
+
+            if (name.includes(search) || phone.includes(search)) {
+                card.style.display = "block";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    });
+</script>
+
+</section>
+{% endblock %}

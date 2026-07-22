@@ -1,0 +1,835 @@
+{% extends 'main.html' %}
+{% load humanize %}
+
+{% block title %}
+Checkout
+{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* body{
+    background:#f5f7fb;
+} */
+
+.checkout-card{
+    max-width:850px;
+    margin:40px auto;
+    border:none;
+    border-radius:18px;
+}
+
+.section-title{
+    font-size:20px;
+    font-weight:700;
+    margin-bottom:15px;
+    color:#222;
+}
+
+.summary-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    padding:10px 0;
+    border-bottom:1px solid #eee;
+}
+
+.summary-row:last-child{
+    border-bottom:none;
+}
+
+.label{
+    color:#666;
+    font-weight:500;
+}
+
+.value{
+    font-weight:600;
+    text-align:right;
+}
+
+.price-box{
+    background:#111827;
+    color:white;
+    border-radius:15px;
+    padding:25px;
+}
+
+.price{
+    font-size:40px;
+    font-weight:bold;
+}
+
+.note{
+    background:#fff8e1;
+    border-left:5px solid orange;
+    padding:15px;
+    border-radius:8px;
+}
+
+/* =========================================
+   MODAL OVERLAY & BACKDROP ANIMATIONS
+   ========================================= */
+.mpesa-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(17, 24, 39, 0.6); /* Deep slate semi-transparent backdrop */
+    backdrop-filter: blur(4px); /* Modern blur effect */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out;
+}
+
+/* When active, show the overlay smoothly */
+.mpesa-overlay:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Helper class used by your JS */
+.hidden {
+    display: none !important;
+}
+
+/* =========================================
+   MODAL CARD CONTAINER UI/UX
+   ========================================= */
+.mpesa-modal {
+    background: #ffffff;
+    width: 100%;
+    max-width: 440px;
+    margin: 20px;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(15px);
+    transition: transform 0.25s ease-in-out;
+    font-family: inherit;
+}
+
+/* Slide modal up slightly on reveal */
+.mpesa-overlay:not(.hidden) .mpesa-modal {
+    transform: translateY(0);
+}
+
+/* =========================================
+   MODAL TYPOGRAPHY & ELEMENTS
+   ========================================= */
+.mpesa-modal h4, 
+.mpesa-modal h5 {
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 5px;
+}
+
+.mpesa-modal hr {
+    border-color: #f3f4f6;
+    margin: 15px 0;
+}
+
+.mpesa-modal label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Input Fields */
+.mpesa-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 15px;
+    color: #1f2937;
+    background-color: #f9fafb;
+    transition: all 0.2s ease;
+    margin-bottom: 12px;
+}
+
+.mpesa-input:focus {
+    outline: none;
+    border-color: #198754;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.1);
+}
+
+/* Helper small texts */
+.mpesa-modal small {
+    color: #6b7280;
+    font-size: 12px;
+    display: block;
+    margin-top: -6px;
+    margin-bottom: 15px;
+}
+
+/* Status Alert boxes inside modals */
+.mpesa-status {
+    margin-top: 15px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* =========================================
+   MODAL ACTION BUTTONS
+   ========================================= */
+.mpesa-modal .btn {
+    padding: 11px 20px;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.mpesa-modal .btn:active {
+    transform: scale(0.98);
+}
+
+.mpesa-modal .btn-success {
+    background-color: #198754;
+    border: none;
+}
+
+.mpesa-modal .btn-success:hover {
+    filter: brightness(0.9);
+}
+
+.mpesa-modal .btn-light, 
+.mpesa-modal .btn-secondary {
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+.mpesa-modal .btn-light:hover, 
+.mpesa-modal .btn-secondary:hover {
+    background-color: #e5e7eb;
+}
+</style>
+
+
+
+<div class="container">
+
+<div class="card shadow checkout-card">
+
+<div class="card-body p-4">
+
+<h2 class="fw-bold mb-4">
+Checkout - Review Your Booking
+</h2>
+
+<div class="alert alert-primary">
+
+<strong>Tracking Number:</strong>
+
+<h4 class="mb-0 mt-2">
+PK{{ dispatch.id|stringformat:"08d" }}
+</h4>
+
+</div>
+
+<!-- Sender -->
+
+<div class="section-title">
+Sender Information
+</div>
+
+<div class="summary-row">
+<div class="label">Name</div>
+<div class="value">
+{{ dispatch.sending_customer.name }}
+</div>
+</div>
+
+<div class="summary-row">
+<div class="label">Phone</div>
+<div class="value">
+{{ dispatch.sending_customer.phone_number }}
+</div>
+</div>
+
+<div class="summary-row">
+<div class="label">Pickup Point</div>
+
+<div class="value">
+
+{% if dispatch.sending_agent %}
+
+<strong>{{ dispatch.sending_agent.shop_name }}</strong><br>
+
+{{ dispatch.sending_agent.location.name }},
+{{ dispatch.sending_agent.location.county.name }}<br>
+
+{{ dispatch.sending_agent.shop_address }}
+
+{% endif %}
+
+</div>
+
+</div>
+
+<hr class="my-4">
+
+<!-- Receiver -->
+
+<div class="section-title">
+Receiver Information
+</div>
+
+<div class="summary-row">
+<div class="label">Name</div>
+<div class="value">
+{{ dispatch.receiving_customer.name }}
+</div>
+</div>
+
+<div class="summary-row">
+<div class="label">Phone</div>
+<div class="value">
+{{ dispatch.receiving_customer.phone_number }}
+</div>
+</div>
+
+<div class="summary-row">
+<div class="label">Dropoff Point</div>
+
+<div class="value">
+
+{% if dispatch.receiving_agent %}
+
+<strong>{{ dispatch.receiving_agent.shop_name }}</strong><br>
+
+{{ dispatch.receiving_agent.location.name }},
+{{ dispatch.receiving_agent.location.county.name }}<br>
+
+{{ dispatch.receiving_agent.shop_address }}
+
+{% endif %}
+
+</div>
+
+</div>
+
+<hr class="my-4">
+
+<!-- Package -->
+
+<div class="section-title">
+Package Details
+</div>
+
+<div class="summary-row">
+<div class="label">Contents</div>
+<div class="value">
+{{ package.contents }}
+</div>
+</div>
+
+<div class="summary-row">
+<div class="label">Package Type</div>
+<div class="value">
+{{ package.get_package_type_display }}
+</div>
+</div>
+
+<div class="summary-row">
+<div class="label">Weight</div>
+<div class="value">
+{{ package.get_weight_display }}
+</div>
+</div>
+
+<div class="summary-row">
+<div class="label">Quantity</div>
+<div class="value">
+{{ package.quantity }}
+</div>
+</div>
+
+<div class="summary-row">
+<div class="label">Declared Value</div>
+<div class="value">
+KES {{ package.value|intcomma }}
+</div>
+</div>
+
+<div class="summary-row">
+<div class="label">Description</div>
+<div class="value">
+{{ package.description|default:"-" }}
+</div>
+</div>
+
+<hr class="my-4">
+
+<!-- Delivery Fee -->
+
+<div class="price-box">
+
+<div class="row align-items-center">
+
+<div class="col">
+
+<h5>Delivery Fee</h5>
+
+<div class="price">
+KES {{ dispatch.total_transport_cost|intcomma }}
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="note mt-4">
+
+<strong>Note</strong><br>
+
+Your parcel tracking number has been created successfully.
+Proceed with payment to receive your receipt and allow your parcel to be processed for dispatch.
+
+</div>
+<div class="d-flex gap-2 text-right mt-2">
+    <button
+        type="button"
+        id="walletBtn"
+        class="btn btn-success fw-bold flex-fill">
+        Pay from Wallet
+    </button>
+
+    <button type="button"
+            id="mpesaBtn"
+            class="btn btn-success fw-bold flex-fill">
+        Pay from M-Pesa
+    </button>
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const dispatchId = "{{ dispatch.id }}";
+    const transportCost = parseFloat("{{ dispatch.total_transport_cost }}") || 0;
+    const customerPhone = "{{ dispatch.sending_customer.phone_number }}";
+
+    // Global grant total set to the delivery transport cost for this checkout view
+    const currentGrandTotal = transportCost;
+
+    // Elements
+    const mpesaBtn = document.getElementById("mpesaBtn");
+    const overlay = document.getElementById("mpesaOverlay");
+    const phoneInput = document.getElementById("mpesaPhone");
+    const totalInput = document.getElementById("mpesaTotal");
+    const statusBox = document.getElementById("mpesaStatus");
+    const continueBtn = document.getElementById("mpesaContinueBtn");
+    const closeBtn = document.getElementById("mpesaCloseBtn");
+
+    const walletBtn = document.getElementById("walletBtn");
+    const walletOverlay = document.getElementById("walletOverlay");
+    const walletCancelBtn = document.getElementById("walletCancelBtn");
+    const walletPayBtn = document.getElementById("walletPayBtn");
+    const walletBalance = document.getElementById("walletBalance");
+    const walletAmount = document.getElementById("walletAmount");
+    const walletStatus = document.getElementById("walletStatus");
+
+    // Utilities
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function showStatus(message, isError = false) {
+        if (!statusBox) return;
+        statusBox.innerHTML = message;
+        statusBox.style.color = isError ? "#dc3545" : "#198754";
+    }
+
+    /* =========================
+       OPEN/CLOSE MPESA
+    ========================= */
+    mpesaBtn.addEventListener("click", function () {
+        phoneInput.value = customerPhone;
+        totalInput.value = transportCost;
+        showStatus("");
+        overlay.classList.remove("hidden");
+    });
+
+    closeBtn.addEventListener("click", function () {
+        overlay.classList.add("hidden");
+    });
+
+    /* =========================
+       STK PUSH
+    ========================= */
+    continueBtn.addEventListener("click", async function () {
+        const paying_phone_number = phoneInput.value.trim();
+        const amount = parseFloat(totalInput.value);
+
+        if (isNaN(amount) || amount < 10) {
+            alert("Minimum payment amount is Ksh 10.");
+            return;
+        }
+
+        if (amount > transportCost) {
+            alert(`Maximum payable amount is Ksh ${transportCost.toFixed(2)}.`);
+            return;
+        }
+
+        continueBtn.disabled = true;
+        continueBtn.innerText = "Processing...";
+        showStatus("⏳ Sending STK Push...");
+
+        try {
+            const response = await fetch("{% url 'mpesa_stk_push' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({
+                    customer_phone: customerPhone,
+                    paying_phone_number: paying_phone_number,
+                    amount: amount,
+                    dispatch_id: dispatchId,
+                })
+            });
+
+            if (!response.ok) throw new Error("Server returned " + response.status);
+
+            const data = await response.json();
+
+            if (!data.success) {
+                showStatus("❌ " + (data.message || "STK Push failed"), true);
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+                return;
+            }
+
+            showStatus("📱 STK Push sent. Enter your M-Pesa PIN.");
+            pollPayment(data.checkout_request_id);
+
+        } catch (error) {
+            console.error(error);
+            showStatus("❌ Network error. Please try again.", true);
+            continueBtn.disabled = false;
+            continueBtn.innerText = "Continue";
+        }
+    });
+
+    /* =========================
+       POLL PAYMENT
+    ========================= */
+    function pollPayment(checkoutId) {
+        let attempts = 0;
+        const maxAttempts = 60;
+
+        const interval = setInterval(async () => {
+            attempts++;
+            try {
+                const response = await fetch(`/payments/mpesa-payment/status/${checkoutId}/`);
+                if (!response.ok) throw new Error("Status request failed");
+
+                const data = await response.json();
+                showStatus(data.message, data.status === "FAILED");
+
+                if (data.status === "PROCESSED" || data.status === "EXTRA_PAID") {
+                    clearInterval(interval);
+                    setTimeout(() => window.location.reload(), 3000);
+                    return;
+                }
+
+                if (data.status === "FAILED") {
+                    clearInterval(interval);
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+                    return;
+                }
+
+                if (attempts >= maxAttempts) {
+                    clearInterval(interval);
+                    showStatus("⏳ Taking longer than expected. Please wait while we update your payment.", false);
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+                }
+            } catch (error) {
+                console.error(error);
+                clearInterval(interval);
+                showStatus("❌ Unable to verify payment status.", true);
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+            }
+        }, 3000);
+    }
+
+    /* =========================
+       WALLET PAYMENT MODAL
+    ========================= */
+    function showWalletStatus(message, error = false) {
+        walletStatus.style.display = "block";
+        walletStatus.innerHTML = message;
+        walletStatus.className = error ? "alert alert-danger" : "alert alert-success";
+    }
+
+    walletBtn.addEventListener("click", async function () {
+        walletOverlay.classList.remove("hidden");
+        walletStatus.style.display = "none";
+        walletBalance.innerHTML = "Loading...";
+        walletAmount.innerHTML = currentGrandTotal.toFixed(2);
+
+        try {
+            const formData = new FormData();
+            {% with active_api_keys as key_obj %}
+            formData.append("api_key", "{{ key_obj.key|escapejs }}");
+            {% endwith %}
+            formData.append("phone", customerPhone);
+
+            const response = await fetch("https://accounts.garantiimall.shop/ajax/get-or-create-wallet/", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            if (!data.success) {
+                walletBalance.innerHTML = "0";
+                showWalletStatus(data.error || "Unable to load wallet.", true);
+                return;
+            }
+            walletBalance.innerHTML = data.wallet_balance;
+        } catch (err) {
+            console.log(err);
+            walletBalance.innerHTML = "0";
+            showWalletStatus("Unable to load wallet.", true);
+        }
+    });
+
+    walletCancelBtn.addEventListener("click", function () {
+        walletOverlay.classList.add("hidden");
+    });
+
+    walletPayBtn.addEventListener("click", async function () {
+        walletPayBtn.disabled = true;
+        walletPayBtn.innerHTML = "Processing...";
+
+        try {
+            const response = await fetch("{% url 'wallet_payment' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({
+                    customer_phone: customerPhone,
+                    amount: currentGrandTotal,
+                    dispatch_id: dispatchId
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                showWalletStatus("✅ Payment successful.");
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showWalletStatus(data.message, true);
+            }
+        } catch (err) {
+            console.log(err);
+            showWalletStatus("Network error", true);
+        }
+
+        walletPayBtn.disabled = false;
+        walletPayBtn.innerHTML = "Pay";
+    });
+
+});
+</script>
+<!-- CUSTOM MPESA MODAL (NO BOOTSTRAP) -->
+<div id="mpesaOverlay" class="mpesa-overlay hidden">
+    <div class="mpesa-modal">
+
+        <h5>Complete Payment</h5>
+
+        <label>Phone Number</label>
+        <input type="text" id="mpesaPhone" class="mpesa-input" placeholder="2547XXXXXXXX">
+
+        <label>Total Amount</label>
+        <input type="text" id="mpesaTotal" min="10" step="1" class="mpesa-input">
+        <small>unaeza lipa kidogo kidogo</small>
+
+        <button id="mpesaContinueBtn" class="btn btn-success w-100 mt-2">
+            Continue
+        </button>
+
+        <button id="mpesaCloseBtn" class="btn btn-light w-100 mt-2">
+            Cancel
+        </button>
+
+        <div id="mpesaStatus" class="mpesa-status"></div>
+
+    </div>
+</div>
+
+<!-- walet payment modal -->
+ <div id="walletOverlay" class="mpesa-overlay hidden">
+
+    <div class="mpesa-modal">
+
+        <h4>Wallet Payment</h4>
+
+        <hr>
+
+        <div class="mb-3">
+
+            <strong>Wallet Balance</strong>
+
+            <h3 class="text-success">
+                Ksh <span id="walletBalance">...</span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Amount To Pay</strong>
+
+            <h3 class="text-primary">
+                Ksh <span id="walletAmount"></span>
+            </h3>
+
+        </div>
+
+        <div
+            id="walletStatus"
+            class="alert alert-info"
+            style="display:none">
+        </div>
+
+        <div class="d-flex justify-content-between">
+
+            <button
+                id="walletCancelBtn"
+                class="btn btn-secondary">
+
+                Cancel
+
+            </button>
+
+            <button
+                id="walletPayBtn"
+                class="btn btn-success">
+
+                Pay
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+<div id="pointsOverlay" class="mpesa-overlay hidden">
+
+    <div class="mpesa-modal">
+
+        <h4>Pay With Points</h4>
+
+        <hr>
+
+        <div class="mb-3">
+
+            <strong>Available Points</strong>
+
+            <h3 class="text-success">
+                <span id="availablePoints">...</span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Equivalent Value</strong>
+
+            <h3 class="text-success">
+                KSh <span id="pointsValue">...</span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Amount To Pay</strong>
+
+            <h3 class="text-primary">
+                KSh <span id="pointsAmount"></span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Points Required</strong>
+
+            <h3 class="text-warning">
+                <span id="pointsRequired"></span>
+            </h3>
+
+        </div>
+
+        <div
+            id="pointsStatus"
+            class="alert alert-info"
+            style="display:none">
+        </div>
+
+        <div class="d-flex justify-content-between">
+
+            <button
+                id="pointsCancelBtn"
+                class="btn btn-secondary">
+
+                Cancel
+
+            </button>
+
+            <button
+                id="pointsPayBtn"
+                class="btn btn-success">
+
+                Redeem Points
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends 'main.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %} Book Parcel Dispatch {% endblock %}
+
+{% block content %}
+<style>
+    section { min-height: 100vh; }
+    .card { border: none; border-radius: 16px; margin-bottom: 20px; }
+    .section-title { font-size: 0.9rem; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 15px; }
+    .form-label { font-weight: 600; color: #333; margin-top: 10px; }
+    .form-control, .form-select { border-radius: 8px; padding: 12px; }
+    .btn-submit { padding: 15px; font-weight: bold; text-transform: uppercase; }
+</style>
+
+<section class="get_touch_area py-4">
+<div class="container from_area">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0 fw-bold">Book Parcel</h4>
+        <span class="badge bg-primary px-3 py-2">New Dispatch</span>
+    </div>
+
+    <form method="POST" action="{% url 'book_parcel' %}">
+        {% csrf_token %}
+
+        <!-- SENDER INFO -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="section-title">Sender Information</div>
+                <div class="row">
+                    <div class="col-md-6"><label class="form-label">Name</label><input type="text" name="sender_name" class="form-control" placeholder="Sender name" required></div>
+                    <div class="col-md-6"><label class="form-label">Phone</label><input type="number" name="sender_phone" class="form-control" placeholder="07XX XXX XXX" required></div>
+                    <div class="col-12"><label class="form-label">County</label><select id="fromCounty" name="from_county" class="form-select"><option value="">Select County</option>{% for c in counties %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></div>
+                    <div class="col-12" id="fromLocationDiv" style="display:none;"><label class="form-label">Location</label><select id="fromLocation" name="from_location" class="form-select"></select></div>
+                    <div class="col-12" id="fromAgentDiv" style="display:none;"><label class="form-label">Agent</label><select id="fromAgent" name="from_agent" class="form-select"></select></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECEIVER INFO -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="section-title">Receiver Information</div>
+                <div class="row">
+                    <div class="col-md-6"><label class="form-label">Name</label><input type="text" name="receiver_name" class="form-control" placeholder="Receiver name" required></div>
+                    <div class="col-md-6"><label class="form-label">Phone</label><input type="number" name="receiver_phone" class="form-control" placeholder="07XX XXX XXX" required></div>
+                    <div class="col-12"><label class="form-label">County</label><select id="toCounty" name="to_county" class="form-select"><option value="">Select County</option>{% for c in counties %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></div>
+                    <div class="col-12" id="toLocationDiv" style="display:none;"><label class="form-label">Location</label><select id="toLocation" name="to_location" class="form-select"></select></div>
+                    <div class="col-12" id="toAgentDiv" style="display:none;"><label class="form-label">Agent</label><select id="toAgent" name="to_agent" class="form-select"></select></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PACKAGE INFO -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="section-title">Package Details</div>
+                <div class="row">
+                    <div class="col-12"><label class="form-label">Contents of the package</label><input type="text" name="whats_in_the_package" class="form-control" placeholder="e.g. Shoes, Electronics"></div>
+                    <div class="col-md-6"><label class="form-label">Packaging</label><select name="packaging_type" class="form-select"><option value="box">Box</option><option value="envelope">Envelope</option><option value="sack">Sack</option><option value="other">Other</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Weight</label><select name="package_type" class="form-select"><option value="0-1kg">0-2 Kg</option><option value="2-5kg">2-5 Kg</option><option value="5-10kg">5 - 10 Kg</option><option value="10-20kg">10 - 20 Kg</option><option value="20-50kg">20 - 50 Kg</option><option value="50kg+">Above 50 Kg</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Quantity</label><input type="number" name="quantity" class="form-control" placeholder="1"></div>
+                    <div class="col-md-6"><label class="form-label">Declared Value</label><input type="number" name="package_value" class="form-control" placeholder="KES"></div>
+                    <div class="col-12 mt-3"><textarea name="package_details" class="form-control" rows="3" placeholder="Additional details..."></textarea></div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-dark w-100 btn-submit shadow">Continue to Checkout</button>
+    </form>
+</div>
+</section>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+
+    let locations = [];
+
+    try {
+        const response = await fetch("/agents/ajax/all-locations/");
+        const data = await response.json();
+        locations = data.results || [];
+    } catch (err) {
+        console.error("Failed to load locations:", err);
+    }
+
+    function bindSelectors(
+        countyId,
+        locationId,
+        agentId,
+        locationDivId,
+        agentDivId
+    ) {
+
+        const county = document.getElementById(countyId);
+        const location = document.getElementById(locationId);
+        const agent = document.getElementById(agentId);
+
+        const locationDiv = document.getElementById(locationDivId);
+        const agentDiv = document.getElementById(agentDivId);
+
+        locationDiv.style.display = "none";
+        agentDiv.style.display = "none";
+
+        county.addEventListener("change", function () {
+
+            const selectedCounty = this.value;
+
+            console.log("County:", selectedCounty);
+
+            location.innerHTML = "";
+            agent.innerHTML = "";
+
+            agentDiv.style.display = "none";
+
+            if (!selectedCounty) {
+                locationDiv.style.display = "none";
+                return;
+            }
+
+            locationDiv.style.display = "block";
+
+            location.appendChild(
+                new Option("Select Location", "")
+            );
+
+            const filtered = locations.filter(function(item){
+                return String(item.county) === String(selectedCounty);
+            });
+
+            console.log("Filtered locations:", filtered);
+
+            filtered.forEach(function(item){
+
+                location.appendChild(
+                    new Option(item.name, item.id)
+                );
+
+            });
+
+        });
+
+        location.addEventListener("change", async function(){
+            
+
+            const locationId = this.value;
+            console.log(locationId)
+
+            agent.innerHTML = "";
+
+            if (!locationId) {
+                agentDiv.style.display = "none";
+                return;
+            }
+
+            agentDiv.style.display = "block";
+
+            agent.appendChild(
+                new Option("Loading...", "")
+            );
+
+            try {
+
+                const response = await fetch(
+                    `/agents/ajax/agents/?location=${locationId}`
+                );
+
+                const data = await response.json();
+
+                agent.innerHTML = "";
+
+                agent.appendChild(
+                    new Option("Select Agent", "")
+                );
+
+                data.results.forEach(function(item){
+
+                    agent.appendChild(
+                        new Option(item.text, item.id)
+                    );
+
+                });
+
+            } catch(err){
+
+                console.error(err);
+
+                agent.innerHTML = "";
+
+                agent.appendChild(
+                    new Option("Failed to load agents", "")
+                );
+
+            }
+
+        });
+
+    }
+
+    bindSelectors(
+        "fromCounty",
+        "fromLocation",
+        "fromAgent",
+        "fromLocationDiv",
+        "fromAgentDiv"
+    );
+
+    bindSelectors(
+        "toCounty",
+        "toLocation",
+        "toAgent",
+        "toLocationDiv",
+        "toAgentDiv"
+    );
+
+});
+</script>
+{% endblock %}

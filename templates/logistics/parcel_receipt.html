@@ -1,0 +1,394 @@
+{% extends "main.html" %}
+{% load humanize %}
+
+{% block title %}Parcel Receipt{% endblock %}
+
+{% block content %}
+
+<!-- <style>
+
+body{
+    background:#f5f7fb;
+}
+
+.receipt{
+    max-width:700px;
+    margin:30px auto;
+    background:#fff;
+    border-radius:15px;
+    padding:35px;
+    box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
+
+.company{
+    text-align:center;
+    border-bottom:2px dashed #bbb;
+    padding-bottom:15px;
+    margin-bottom:20px;
+}
+
+.company h2{
+    margin:0;
+    font-weight:700;
+}
+
+.company small{
+    color:#666;
+}
+
+.section-title{
+    margin-top:25px;
+    margin-bottom:10px;
+    font-weight:bold;
+    font-size:18px;
+}
+
+.row-item{
+    display:flex;
+    justify-content:space-between;
+    padding:7px 0;
+    border-bottom:1px solid #eee;
+}
+
+.label{
+    color:#666;
+}
+
+.value{
+    font-weight:600;
+    text-align:right;
+}
+
+.total{
+    background:#111827;
+    color:white;
+    border-radius:10px;
+    padding:20px;
+    text-align:center;
+    margin-top:30px;
+}
+
+.total h2{
+    margin:0;
+    font-size:40px;
+}
+
+.footer{
+    margin-top:30px;
+    text-align:center;
+    font-size:14px;
+    color:#666;
+}
+
+.action-buttons{
+    margin-top:30px;
+    display:flex;
+    gap:15px;
+}
+
+@media print{
+
+body{
+    background:white;
+}
+
+.action-buttons{
+    display:none;
+}
+
+.receipt{
+    box-shadow:none;
+    border:none;
+    margin:0;
+    width:100%;
+    max-width:100%;
+}
+
+}
+
+</style> -->
+
+<style>
+
+body{
+    background:#f5f7fb;
+    font-size: 13px; /* Smaller base font size for compactness */
+}
+
+.receipt{
+    max-width: 450px; /* Reduced width to mimic thermal/standard receipt printer rolls */
+    margin: 15px auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px 20px; /* Tighter padding */
+    box-shadow: 0 3px 10px rgba(0,0,0,.08);
+}
+
+.company{
+    text-align: center;
+    border-bottom: 1.5px dashed #bbb;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.company h2{
+    margin: 0;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.company small{
+    color: #666;
+}
+
+.section-title{
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 2px;
+}
+
+.row-item{
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0; /* Minimized vertical spacing between fields */
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.label{
+    color: #666;
+}
+
+.value{
+    font-weight: 600;
+    text-align: right;
+}
+
+.total{
+    background: #111827;
+    color: white;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.total h2{
+    margin: 0;
+    font-size: 24px; /* Scaled down total amount font size */
+}
+
+.footer{
+    margin-top: 15px;
+    text-align: center;
+    font-size: 11px; /* Smaller footer text to save vertical space */
+    color: #666;
+}
+
+.action-buttons{
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+@media print{
+
+body{
+    background: white;
+    font-size: 12px; /* Force compact text size on print */
+}
+
+.action-buttons{
+    display: none;
+}
+
+.receipt{
+    box-shadow: none;
+    border: none;
+    margin: 0;
+    padding: 5px; /* Minimal padding for physical receipt roll alignment */
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Forces elements to fit securely onto a single page layout */
+@page {
+    size: auto;
+    margin: 5mm; 
+}
+
+}
+
+</style>
+<div class="receipt" id="receipt">
+
+<div class="company">
+
+<div><b>GARANTII LOGISTICS</b></div>
+
+<div>
+Travis House, 3rd Floor, Shop B32, Next to Afya Centre
+</div>
+
+<div>
+Contact: 0706 420 043
+</div>
+
+<br>
+
+<div><b>PARCEL RECEIPT</b></div>
+
+<small>
+Issued on {{ dispatch.created_at|date:"d M Y H:i" }}
+</small>
+
+</div>
+
+
+<div class="row-item">
+<div class="label">Tracking Number</div>
+<div class="value">
+PK{{ dispatch.id|stringformat:"08d" }}
+</div>
+</div>
+
+
+<div class="section-title">
+Sender
+</div>
+
+<div class="row-item">
+<div class="label">{{ dispatch.sending_customer.name }}</div>
+<div class="value">
+{{ dispatch.sending_customer.phone_number }}
+</div>
+</div>
+
+<div class="row-item">
+<div class="label">From</div>
+
+<div class="value">
+
+{{ dispatch.sending_agent.shop_name }}<br>
+
+{{ dispatch.sending_agent.location.name }}
+
+</div>
+
+</div>
+
+
+<div class="section-title">
+Receiver
+</div>
+
+<div class="row-item">
+<div class="label">{{ dispatch.receiving_customer.name }}</div>
+<div class="value">
+{{ dispatch.receiving_customer.phone_number }}
+</div>
+</div>
+
+
+<div class="row-item">
+<div class="label">To</div>
+
+<div class="value">
+
+{{ dispatch.receiving_agent.shop_name }}<br>
+
+{{ dispatch.receiving_agent.location.name }}
+
+</div>
+
+</div>
+
+
+<div class="section-title">
+Package(s) Details
+</div>
+
+{% for package in packages %}
+<div style="border: 1px dashed #ccc; padding: 10px; margin-bottom: 10px; border-radius: 8px;">
+    <div class="row-item">
+        <div class="label">Type</div>
+        <div class="value">{{ package.get_package_type_display }}</div>
+    </div>
+    <div class="row-item">
+        <div class="label">Quantity</div>
+        <div class="value">{{ package.quantity }}</div>
+    </div>
+
+    <div class="row-item">
+        <div class="label">Declared Value</div>
+        <div class="value">KES {{ package.value|intcomma }}</div>
+    </div>
+</div>
+{% empty %}
+<div class="row-item">
+    <div class="label">Package</div>
+    <div class="value">No packages recorded.</div>
+</div>
+{% endfor %}
+
+<div class="row-item">
+    <div class="label">Total Paid</div>
+    <div class="value">KES {{ dispatch.total_transport_cost|intcomma }}</div>
+</div>
+
+<div class="footer">
+
+Thank you for choosing <strong>Garantii Logistics</strong>.
+
+<br>
+
+Please keep this receipt until your parcel has been collected.
+</div>
+</div>
+
+<div class=" receipt action-buttons">
+
+    <button class="btn btn-dark w-100" onclick="window.print();">
+        🖨 Standard Print
+    </button>
+
+    <button class="btn btn-primary w-100" id="btPrintBtn">
+        🦷 Print via Bluetooth
+    </button>
+
+    
+
+</div>
+
+<script>
+document.getElementById('btPrintBtn').addEventListener('click', async () => {
+    try {
+        // Check if Web Bluetooth is supported
+        if (!navigator.bluetooth) {
+            alert('Web Bluetooth is not supported by your browser or device.');
+            return;
+        }
+
+        // Request a Bluetooth Low Energy or Classic printer device
+        const device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'] // Common thermal printer service UUID
+        });
+
+        const server = await device.gatt.connect();
+        alert('Connected to printer: ' + device.name + '\n(Send ESC/POS commands or route data stream here)');
+        
+        // Note: Actual raw thermal printing via Bluetooth requires writing ESC/POS byte arrays 
+        // to the printer's specific characteristic UUID write channel.
+    } catch (error) {
+        console.error('Bluetooth printing failed:', error);
+        alert('Could not connect to Bluetooth printer.');
+    }
+});
+</script>
+
+
+
+{% endblock %}

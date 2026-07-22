@@ -1,0 +1,232 @@
+
+{% extends 'main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %} {{ coupon.customer}} {% endblock%}
+{% block content %}
+<style>
+.coupon-card {
+    width: 98%;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #007bff, #ffcc00);
+    padding: 10px;
+    color: white;
+    margin: auto;
+    text-align: center;
+}
+.coupon-code {
+    background-color: white;
+    color: black;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 15px;
+    font-weight: bold;
+}
+.qr-code {
+    margin-top: 15px;
+}
+
+.popup {
+    display: none; /* Hidden by default */
+    position: fixed; /* Ensures the popup stays on the screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Higher z-index to appear on top of other elements */
+}
+
+/* Popup content box */
+.popup-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 90%;
+    z-index: 10000; /* Ensures the content box stays above the overlay */
+}
+/* #cc922e */ 
+/* #1563df blue color */
+
+.popup-content input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.popup-content button {
+    margin: 5px;
+    padding: 8px 16px;
+    background: #1563df;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.popup-content button:hover {
+    background: #1563df;
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+
+
+<main id="main" class="main">
+    {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+    {% endif %}
+    <div class="pagetitle">
+      <h1>{{ coupon.customer}}</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+        <div class="row">
+            <div class="container mt-5">
+                <div class="container mt-5">
+                    <div class="coupon-card" id="couponCardId">
+                        <div>
+                            <h3 style="color: black;"><b>Karibu, {% if request.user.is_authenticated %} {{request.user.first_name}} {% else %}Jirani! {% endif %}</b></h3>
+                            
+
+                            <p><b>You are customer number </b></p>
+                            <div class="coupon-code">{{customer_scan_count}}</div>
+                            <div class="card">
+                            <h3 style="color: black;"><b>You didn't win this time.. but your FREE gas refill is just a few steps away!</b></h3>
+                            </div>
+                        </div>
+
+                        {% if customer %}
+                        <h2>Your Total Points Are: {{total_points}}</h2>
+                        <div class="card">
+                            <div class="card-body">
+                              
+                              <h4 class="card-title">Your Points Progress to free GAS REFILL </h4>
+                
+                              <!-- Progress Bars with labels-->
+
+                              <div class="progress mt-3">
+                                <div class="progress-bar" role="progressbar" style="width: {{percentage_points}}%; background-color: red;" aria-valuenow="{{percentage_points}}" aria-valuemin="0" aria-valuemax="100">{{percentage_points}}%</div>
+                              </div><!-- End Progress Bars with labels -->
+                              {% if remaining_points > 1000 %}
+                              <h6 class="mt-2">Extra points: {{remaining_points}}</h6>
+                              {% else %}
+                              <h6 class="mt-2">Remaining Points: {{remaining_points}}</h6>
+                              
+                              {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="card bg-secondary ">
+                            <h6 class="mt-2"><b><span style="color: white;">Get Free gas refill </span><span style="color: rgb(94, 255, 0);">for only 1000 points</span></b></h6>
+                            <h6><b><span style="color: white;">Get Free kitchen table </span><span style="color: rgb(94, 255, 0);">for only 2000 points</span></b></h6>
+                            <h6><b><span style="color: white;">Get Free gas burner </span><span style="color: rgb(94, 255, 0);">for only 500 points</span></b></h6>
+                            <h6><b><span style="color: white;">Get Free gas grill </span><span style="color: rgb(94, 255, 0);">for only 800 points</span></b></h6>
+                            <h6><b><span style="color: white;">Get Free kitchen dustcoat </span><span style="color: rgb(94, 255, 0);">for only 1000 points</span></b></h6>
+                            <h6><b><span style="color: white;">Get Free Reachargeable Electric Lighter </span><span style="color: rgb(94, 255, 0);">for only 1000 points</span></b></h6>
+                        </div>
+                        <div  class="card bg-light">
+                            <h1 ><b>How to earn points </b></h1>
+                            <ol>
+                                <li style="color: black; margin-bottom: 5px;"><b>signup to join jirani gas refill club and get<span style="color: red;">  200 points</span> welcome bonus</b></li>
+                                <li style="color: black; margin-bottom: 5px;"><b>refill your gas with us and earn <span style="color: red;">  100 points</span> everytime you refill with us </b></li>
+                                <li style="color: black; margin-bottom: 5px;"><b>reffer a neighbour and get<span style="color: red;">  50 points</span> points everytime they refill with us </b></li>
+                                </ol>
+                        </div>
+                        <div>
+                            <a class="coupon-card btn btn-primary mt-3" href="{% url 'register_user' %}?add_customer_to={{business.slug}}&refferal_code={{code_reffered}}" style=" color: white"><b>Join  jirani gas refill club and Claim 200 points</b></a>
+                            <a class="coupon-card btn btn-primary mt-3 mb-3"href="tel:0706420043" style=" color: white"><b>Call 0706420043 to request gas refill @ {% if products %} {{products.price|intcomma}}{% else %}1,000 {% endif %} and earn 100 points</b></a>
+                            
+                        </div>
+                        <div class="card">
+                            <h3  style="color: rgb(5, 5, 108);"><b>Why Jirani Gas Delivery</b></h3>
+                            <p style="color: black;"><b>Affordable Refills in Nairobi.</b></p>
+                            <p style="color: black;"><b>Free delivery to your door.</b></p>
+                            <p style="color: black;"><b>Massive saving.</b></p>
+                            <p style="color: black;"><b>More points for every refil.</b></p>
+                            <p style="color: black;"><b>Safe, Fast, Reliable.</b></p>
+                        </div>
+                    </div>
+                    
+                    <canvas id="canvas" style="display: none;"></canvas>
+    
+                </div>
+            </div>
+            <a class="coupon-card btn btn-primary mt-3" href="{% url 'register_user' %}?add_customer_to={{business.slug}}&refferal_code={{code_reffered}}" style=" color: white"><b>Join  jirani gas refill club and Claim 200 points</b></a>
+            <a class="coupon-card btn btn-primary mt-3"href="tel:0706420043" style=" color: white"><b>Call 0706420043 to request gas refill @ {% if products %} {{products.price|intcomma}}{% else %}1,000 {% endif %} and earn 100 points</b></a>
+            
+            <b class="coupon-card btn btn-primary mt-3" onclick="showPopup(event, '{{ code_reffered }}')" style=" color: white">Copy the Refferal Code and Share with Your Neighbors</b>
+            
+        </div>
+    </section>
+
+</main><!-- End #main -->
+
+<script>
+    function showPopup(event, code) {
+        event.preventDefault(); // Prevent default link behavior
+        
+        const popup = document.getElementById('popup');
+        const shareUrlInput = document.getElementById('share-url');
+        
+        // Construct the referral URL
+        var  url_host = '{{request.get_host}}'
+        var  url_scheme = '{{request.scheme}}'
+        var  refferal_code ='{{customer.refferal_code}}'
+        if (!refferal_code){
+            // if customer is anonymous the share link containg the refferal code of the refferer
+            refferal_code=refferal_coderefferal_code='{{code_reffered}}' 
+        }
+
+        const referralUrl = `${url_scheme}://${url_host}/points/loyalty-qr-code/?referral_code=${refferal_code}`;
+        
+        console.log(referralUrl)
+        // Set the referral URL in the input field
+        shareUrlInput.value = referralUrl;
+        popup.style.display = 'flex'; // Show the popup
+    }
+
+    function closePopup() {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'none'; // Hide the popup
+    }
+
+    function copyToClipboard() {
+        const urlField = document.getElementById('share-url');
+        urlField.select(); // Select the text
+        document.execCommand('copy'); // Copy the text to the clipboard
+        alert('Referral URL copied to clipboard!');
+    }
+</script>
+
+<!-- Popup Modal -->
+<div id="popup" class="popup" style="display:none;">
+    <div class="popup-content">
+        <p>Share this URL:</p>
+        <input type="text" id="share-url" readonly />
+        <button onclick="copyToClipboard()">Copy</button>
+        <button onclick="closePopup()">Close</button>
+    </div>
+</div>
+
+  {% endblock %}

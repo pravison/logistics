@@ -1,0 +1,62 @@
+//team_area
+.team_area{
+	display: block;
+	overflow: hidden;
+	padding-top: 60px;
+	.team{
+		text-align: center;
+		box-shadow: 0px 22px 42px 0px rgba(220, 220, 220, 0.36);
+		border-radius: 10px;
+		margin-bottom: 30px;
+		padding: 55px 40px 75px;
+		@include transition;
+		img{
+			max-width: 100%;
+		}
+		&:hover{
+			box-shadow: 0px 20px 42px 0px rgba(158, 151, 253, 0.36);
+		}
+		a{
+			display: block;
+			font: 500 22px/1 $pop;
+			color: $heding;
+			padding-top: 65px;
+			&:hover{
+				color: $bc;
+			}
+		}
+		h6{
+			font: 400 16px/1 $pop;
+			color: rgba(255, 140, 111, 0.6);
+			padding-top: 25px;
+		}
+	}
+}
+.team_p{
+	padding-bottom: 210px;
+	padding-top: 90px;
+	position: relative;
+	&:after{
+		position: absolute;
+		content: "";
+		top: 240px;
+		right: 140px;
+		background: url(../images/get-shap-2.png) no-repeat;
+		height: 30px;
+		width: 30px;
+		animation: heartbeat 0.5s cubic-bezier(0.245, 0.325, 0.51, 1.305) infinite alternate;
+	}
+   .focus_bg {
+        position: absolute !important;
+        left: 0 !important; 
+        top: 0 !important; 
+    }
+	h2{
+		font: 600 42px $pop;
+		color: $heding;
+		padding-bottom: 90px;
+	}
+}
+//team_area
+
+

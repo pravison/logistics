@@ -1,0 +1,1444 @@
+<!doctype html>
+<html lang="zxx">
+
+<head>
+    <!-- metas -->
+    <meta charset="utf-8">
+    <meta name="author" content="pxdraft">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+    <meta name="keywords" content="ShopApp - eCommerce Bootstrap 5 Template">
+    <meta name="description" content="ShopApp - eCommerce Bootstrap 5 Template">
+    <!-- title -->
+    <title>ShopApp - eCommerce Bootstrap 5 Template</title>
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="../../assets/img/favicon.ico">
+    <!-- CSS Template -->
+    <link href="../../assets/css/swimwear.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Skippy & Prload -->
+    <!-- skippy -->
+    <a id="skippy" class="skippy visually-hidden-focusable overflow-hidden" href="#content">
+        <div class="container"><span class="u-skiplink-text">Skip to main content</span></div>
+    </a>
+    <!-- End skippy -->
+    <!-- Preload -->
+    <div id="loading" class="loading-preloader">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+    <!-- End Preload -->
+    <!-- Edn Skippy & Prload -->
+    <!-- Size Chart  -->
+    <!-- Ask Form -->
+    <div class="modal-askform-view modal fade" id="px_ask_modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Ask about product</h4><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3"><label class="form-label">Your Name</label> <input type="text" class="form-control" placeholder="Name"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3"><label class="form-label">Email address</label> <input type="email" class="form-control" placeholder="E-mail"></div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3"><label class="form-label" for="exampleInputEmail1">Subject</label> <input type="text" class="form-control" placeholder="Subject"></div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3"><label class="form-label" for="exampleInputEmail1">Your Message</label> <textarea class="form-control" rows="5" placeholder="Your Message"></textarea></div>
+                            </div>
+                        </div>
+                        <div class=""><button type="submit" class="btn btn-primary">Send Message</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Ask Form -->
+    <!-- Header Search -->
+    <div class="px-search-full collapse bg-body p-3 position-fixed w-100 top-0" id="search-open">
+        <div class="container position-relative">
+            <div class="row vh-100 justify-content-center">
+                <div class="col-lg-8 pt-12">
+                    <h2 class="h1 mb-4"><span class="d-block">Search</span></h2>
+                    <form class="position-relative w-100">
+                        <div class="mb-3 input-group">
+                            <!-- Search input --><input class="form-control shadow-none" type="text" name="search" placeholder="What are you looking for?">
+                            <!-- Search button --><button type="button" class="btn btn-primary shadow-none"><i class="fi-search"></i></button></div>
+                    </form>
+                    <div class="row pt-3">
+                        <div class="col-6 col-lg-4"><a class="nav-link px-0 py-1" href="#"><i class="bi-chevron-right me-1"></i> Search Results List </a><a class="nav-link px-0 py-1" href="#"><i class="bi-chevron-right me-1"></i> Search Results Grid </a><a class="nav-link px-0 py-1"
+                                href="#"><i class="bi-chevron-right me-1"></i> About </a><a class="nav-link px-0 py-1" href="#"><i class="bi-chevron-right me-1"></i> Services </a><a class="nav-link px-0 py-1" href="#"><i class="bi-chevron-right me-1"></i> Invoice</a></div>
+                        <div
+                            class="col-6 col-lg-4"><a class="nav-link px-0 py-1" href="#"><i class="bi-chevron-right me-1"></i> Profile </a><a class="nav-link px-0 py-1" href="#"><i class="bi-chevron-right me-1"></i> User Contacts </a><a class="nav-link px-0 py-1" href="#"><i class="bi-chevron-right me-1"></i> Reviews </a>
+                            <a
+                                class="nav-link px-0 py-1" href="#"><i class="bi-chevron-right me-1"></i> Settings</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Search button close START --><a class="search-close" data-bs-toggle="collapse" href="javascript:void(0)" data-bs-target="#search-open" aria-expanded="true"><i class="bi bi-x p-0 lh-1"></i> </a>
+            <!-- Search button close END -->
+        </div>
+    </div>
+    </div>
+    <!-- End Header Search -->
+    <!-- Header Side Search -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="header_search_popup" aria-labelledby="header_search_popupLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" id="header_search_popupLabel">Search</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button></div>
+        <div class="offcanvas-body">
+            <form class="position-relative w-100">
+                <div class="input-group">
+                    <!-- Search input --><input class="form-control shadow-none" type="text" name="search" placeholder="What are you looking for?">
+                    <!-- Search button --><button type="button" class="btn btn-primary shadow-none"><i class="fi-search"></i></button></div>
+            </form>
+            <div class="pt-3">
+                <div class="nav tag-cloud"><a class="rounded-pill px-3 small font-w-500 py-1 bg-gray-200 me-1 mb-1 text-mode" href="#">Design</a> <a class="rounded-pill px-3 small font-w-500 py-1 bg-gray-200 me-1 mb-1 text-mode" href="#">Development</a> <a class="rounded-pill px-3 small font-w-500 py-1 bg-gray-200 me-1 mb-1 text-mode"
+                        href="#">Travel</a> <a class="rounded-pill px-3 small font-w-500 py-1 bg-gray-200 me-1 mb-1 text-mode" href="#">Web Design</a> <a class="rounded-pill px-3 small font-w-500 py-1 bg-gray-200 me-1 mb-1 text-mode" href="#">Marketing</a>                    <a class="rounded-pill px-3 small font-w-500 py-1 bg-gray-200 me-1 mb-1 text-mode" href="#">Research</a> <a class="rounded-pill px-3 small font-w-500 py-1 bg-gray-200 me-1 mb-1 text-mode" href="#">Managment</a></div>
+            </div>
+        </div>
+    </div>
+    <!-- End Header Side Search -->
+    <!-- Login Popup  -->
+    <div class="modal fade" id="topbarlogin">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <div class="modal-title p-3">
+                        <h5 class="m-0 text-white">Sign in to your account!</h5>
+                        <p class="m-0 text-white">Nice to see you! Please log in with your account.</p>
+                    </div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body">
+                    <div class="w-100 p-3">
+                        <!-- Form START -->
+                        <form>
+                            <div class="mb-3"><label class="form-label" for="exampleInputEmail1">Email address</label> <input type="email" class="form-control" id="exampleInputEmail1" placeholder="E-mail"></div>
+                            <div class="mb-3"><label class="form-label" for="exampleInputPassword1">Password</label> <input type="password" class="form-control" id="exampleInputPassword1" placeholder="*********"></div>
+                            <div class="mb-3 form-check"><input type="checkbox" class="form-check-input" id="exampleCheck1"> <label class="form-check-label" for="exampleCheck1">keep me signed in</label></div>
+                            <div class="row align-items-center">
+                                <div class="col-sm-4"><button type="submit" class="btn btn-dark">Login</button></div>
+                                <div class="col-sm-8 text-sm-end"><span class="text-muted">Don't have an account? <a href="sign-up.html">Signup here</a></span></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Login Popup  -->
+    <!-- Mini Cart  -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="modalMiniCart" aria-labelledby="modalMiniCartLabel">
+        <div class="offcanvas-header border-bottom">
+            <h6 class="offcanvas-title" id="modalMiniCartLabel">Your Cart (2)</h6><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button></div>
+        <div class="offcanvas-body">
+            <ul class="list-unstyled m-0 p-0">
+                <li class="py-2">
+                    <div class="row align-items-center">
+                        <div class="col-4">
+                            <!-- Image --><a href="#"><img class="img-fluid border" src="../../assets/img/fashion/product-x-1.jpg" alt="..."></a></div>
+                        <div class="col-8">
+                            <!-- Title -->
+                            <p class="mb-2"><a class="text-mode fw-500" href="#">Cotton floral print Dress</a> <span class="m-0 text-muted w-100 d-block">$40.00</span></p>
+                            <!--Footer -->
+                            <div class="d-flex align-items-center">
+                                <!-- Select --><select class="form-select form-select-sm w-auto"><option value="1">1</option><option value="1">2</option><option value="1">3</option></select>
+                                <!-- Remove --><a class="small text-mode ms-auto" href="#!"><i class="bi bi-x"></i> Remove</a></div>
+                        </div>
+                    </div>
+                </li>
+                <li class="py-2">
+                    <div class="row align-items-center">
+                        <div class="col-4">
+                            <!-- Image --><a href="#"><img class="img-fluid border" src="../../assets/img/fashion/product-x-1.jpg" alt="..."></a></div>
+                        <div class="col-8">
+                            <!-- Title -->
+                            <p class="mb-2"><a class="text-mode fw-500" href="#">Cotton floral print Dress</a> <span class="m-0 text-muted w-100 d-block">$40.00</span></p>
+                            <!--Footer -->
+                            <div class="d-flex align-items-center">
+                                <!-- Select --><select class="form-select form-select-sm w-auto"><option value="1">1</option><option value="1">2</option><option value="1">3</option></select>
+                                <!-- Remove --><a class="small text-mode ms-auto" href="#!"><i class="bi bi-x"></i> Remove</a></div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="offcanvas-footer border-top p-3">
+            <div class="row g-0 py-2">
+                <div class="col-8"><span class="text-mode">Subtotal</span></div>
+                <div class="col-4 text-end"><span class="ml-auto">$89.00</span></div>
+            </div>
+            <div class="row g-0 py-2">
+                <div class="col-8"><span class="text-mode">Taxes:</span></div>
+                <div class="col-4 text-end"><span class="ml-auto">$89.00</span></div>
+            </div>
+            <div class="row g-0 pt-2 mt-2 border-top fw-bold text-mode">
+                <div class="col-8"><span class="text-mode">Subtotal</span></div>
+                <div class="col-4 text-end"><span class="ml-auto">$89.00</span></div>
+            </div>
+            <div class="pt-4"><a class="btn btn-block btn-mode w-100 mb-3" href="#">Continue to Checkout</a> <a class="btn btn-block btn-outline-mode w-100" href="#">View Cart</a></div>
+        </div>
+    </div>
+    <!-- End Mini Cart  -->
+    <!-- Quick View  -->
+    <div class="modal-quick-view modal fade" id="px-quick-view" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content"><button class="btn-close position-absolute end-0 top-0 me-2 mt-2 z-index-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-body p-3">
+                    <div class="row">
+                        <!-- Product Gallery -->
+                        <div class="col-lg-6 lightbox-gallery product-gallery"><img src="../../assets/img/fashion/product-x-1.jpg" class="img-fluid" title="" alt=""></div>
+                        <!-- End Product Gallery -->
+                        <!-- Product Details -->
+                        <div class="col-lg-6">
+                            <div class="product-detail pt-4">
+                                <div class="products-brand pb-2"><span>Brand name</span></div>
+                                <div class="products-title mb-2">
+                                    <h1 class="h4">Product Title Here</h1>
+                                </div>
+                                <div class="rating-star text small pb-4"><i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star"></i> <small>(4 Reviews )</small></div>
+                                <div
+                                    class="product-description">
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipisic elit eiusm tempor incidid ut labore et dolore magna aliqua. Ut enim ad minim venialo quis nostrud exercitation ullamco</p>
+                            </div>
+                            <div class="product-attribute"><label class="fs-6 text-mode pb-2 fw-500">Size</label>
+                                <div class="nav-thumbs nav mb-3">
+                                    <div class="form-check radio-text form-check-inline me-2"><input class="form-check-input" type="radio" name="size3" id="xs2" checked=""> <label class="radio-text-label" for="xs2">XS</label></div>
+                                    <div class="form-check radio-text form-check-inline me-2"><input class="form-check-input" type="radio" name="size3" id="s2"> <label class="radio-text-label" for="s2">S</label></div>
+                                    <div class="form-check radio-text form-check-inline me-2"><input class="form-check-input" type="radio" name="size3" id="m2"> <label class="radio-text-label" for="m2">M</label></div>
+                                    <div class="form-check radio-text form-check-inline me-2"><input class="form-check-input" type="radio" name="size3" id="l2"> <label class="radio-text-label" for="l2">L</label></div>
+                                </div><label class="fs-6 text-mode pb-2 fw-500">Color</label>
+                                <div class="nav-thumbs nav mb-3">
+                                    <div class="form-check radio-color large form-check-inline me-2"><input class="form-check-input" type="radio" name="color1" id="color1" checked=""> <label class="radio-color-label" for="color1"><span style="background-color: #126532;"></span></label></div>
+                                    <div class="form-check radio-color large form-check-inline me-2"><input class="form-check-input" type="radio" name="color1" id="color2"> <label class="radio-color-label" for="color2"><span style="background-color: #ff9922;"></span></label></div>
+                                    <div class="form-check radio-color large form-check-inline me-2"><input class="form-check-input" type="radio" name="color1" id="color3"> <label class="radio-color-label" for="color3"><span style="background-color: #326598;"></span></label></div>
+                                    <div class="form-check radio-color large form-check-inline me-2"><input class="form-check-input" type="radio" name="color1" id="color4"> <label class="radio-color-label" for="color4"><span style="background-color: #126578;"></span></label></div>
+                                </div>
+                            </div>
+                            <div class="product-price fs-3 fw-500 mb-2"><del class="text-muted fs-6">$38.<small>50</small></del> <span class="text-primary">$28.<small>50</small></span></div>
+                            <div class="product-detail-actions d-flex flex-wrap pt-3">
+                                <div class="cart-qty me-3 mb-3">
+                                    <div class="dec qty-btn">-</div><input class="cart-qty-input form-control" type="text" name="qtybutton" value="1">
+                                    <div class="inc qty-btn">+</div>
+                                </div>
+                                <div class="cart-button mb-3 d-flex"><button class="btn btn-mode me-3"><i class="fi-shopping-cart"></i> Add to cart</button> <button class="btn btn-outline-primary me-3"><i class="fi-heart"></i></button> <button class="btn btn-outline-primary"><i class="fi-repeat"></i></button></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Product Details -->
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- End Quick View  -->
+    <!-- Sipping Popup  -->
+    <div class="modal-shipping-view modal fade" id="px_shipping_modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Shipping Information</h4><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <ul class="mb-3">
+                        <li>Comodous in tempor ullamcorper miaculis</li>
+                        <li>Pellentesque vitae neque mollis urna mattis laoreet.</li>
+                        <li>Divamus sit amet purus justo.</li>
+                        <li>Proin molestie egestas orci ac suscipit risus posuere loremous</li>
+                    </ul>
+                    <h4 class="pt-4">Privacy Policy</h4>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <ul class="mb-5">
+                        <li>Comodous in tempor ullamcorper miaculis</li>
+                        <li>Pellentesque vitae neque mollis urna mattis laoreet.</li>
+                        <li>Divamus sit amet purus justo.</li>
+                        <li>Proin molestie egestas orci ac suscipit risus posuere loremous</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Sipping Popup  -->
+    <!-- Size Chart  -->
+    <div class="modal-size-chart modal fade" id="px_size_chart_modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Size Chart</h4><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                <div class="modal-body">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr class="text-mode">
+                                <th class="border-0 bg-body">US Sizes</th>
+                                <th class="border-0 bg-body">Euro Sizes</th>
+                                <th class="border-0 bg-body">UK Sizes</th>
+                                <th class="border-0 bg-body">Inches</th>
+                                <th class="border-0 bg-body">CM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="">6</td>
+                                <td>39</td>
+                                <td>5.5</td>
+                                <td>9.25"</td>
+                                <td>23.5</td>
+                            </tr>
+                            <tr>
+                                <td class="">6.5</td>
+                                <td>39</td>
+                                <td>6</td>
+                                <td>9.5"</td>
+                                <td>24.1</td>
+                            </tr>
+                            <tr>
+                                <td class="">7</td>
+                                <td>40</td>
+                                <td>6.5</td>
+                                <td>9.625"</td>
+                                <td>24.4</td>
+                            </tr>
+                            <tr>
+                                <td class="">7.5</td>
+                                <td>40-41</td>
+                                <td>7</td>
+                                <td>9.75"</td>
+                                <td>24.8</td>
+                            </tr>
+                            <tr>
+                                <td class="">8</td>
+                                <td>41</td>
+                                <td>7.5</td>
+                                <td>9.9375"</td>
+                                <td>25.4</td>
+                            </tr>
+                            <tr>
+                                <td class="">8.5</td>
+                                <td>41-42</td>
+                                <td>8</td>
+                                <td>10.125"</td>
+                                <td>25.7</td>
+                            </tr>
+                            <tr>
+                                <td class="">9</td>
+                                <td>42</td>
+                                <td>8.5</td>
+                                <td>10.25"</td>
+                                <td>26</td>
+                            </tr>
+                            <tr>
+                                <td class="">9.5</td>
+                                <td>42-43</td>
+                                <td>9</td>
+                                <td>10.4375"</td>
+                                <td>26.7</td>
+                            </tr>
+                            <tr>
+                                <td class="">10</td>
+                                <td>43</td>
+                                <td>9.5</td>
+                                <td>10.5625"</td>
+                                <td>27</td>
+                            </tr>
+                            <tr>
+                                <td class="">10.5</td>
+                                <td>43-44</td>
+                                <td>10</td>
+                                <td>10.75"</td>
+                                <td>27.3</td>
+                            </tr>
+                            <tr>
+                                <td class="">11</td>
+                                <td>44</td>
+                                <td>10.5</td>
+                                <td>10.9375"</td>
+                                <td>27.9</td>
+                            </tr>
+                            <tr>
+                                <td class="">11.5</td>
+                                <td>44-45</td>
+                                <td>11</td>
+                                <td>11.125"</td>
+                                <td>28.3</td>
+                            </tr>
+                            <tr>
+                                <td class="">12</td>
+                                <td>45</td>
+                                <td>11.5</td>
+                                <td>11.25"</td>
+                                <td>28.6</td>
+                            </tr>
+                            <tr>
+                                <td class="">13</td>
+                                <td>46</td>
+                                <td>12.5</td>
+                                <td>11.5625"</td>
+                                <td>29.4</td>
+                            </tr>
+                            <tr>
+                                <td class="">14</td>
+                                <td>47</td>
+                                <td>13.5</td>
+                                <td>11.875"</td>
+                                <td>30.2</td>
+                            </tr>
+                            <tr>
+                                <td class="">15</td>
+                                <td>48</td>
+                                <td>14.5</td>
+                                <td>12.1875"</td>
+                                <td>31</td>
+                            </tr>
+                            <tr>
+                                <td class="">16</td>
+                                <td>49</td>
+                                <td>15.5</td>
+                                <td>12.5"</td>
+                                <td>31.8</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Size Chart  -->
+    <!-- End Size Chart  -->
+    <!-- 
+    ========================
+        Wrapper 
+    ========================
+    -->
+    <div class="wrapper">
+        <!-- heder height -->
+        <div class="header-height-bar"></div>
+        <!-- Header -->
+        <header class="header-main bg-mode-re header-light fixed-top header-height header-option-9">
+            <!-- Header Top -->
+            <div class="header-top header-border-bottom small bg-black small">
+                <div class="container-fluid">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <!-- Left -->
+                        <div class="d-flex align-items-center justify-content-center">
+                            <p class="ht-top-text text-white">Sign Up for 10% off your first order*</p>
+                        </div>
+                        <!-- Right -->
+                        <div class="d-flex align-items-center justify-content-center w-lg-auto">
+                            <!-- Language -->
+                            <div class="dropdown ms-0 ms-lg-3"><a class="dropdown-toggle text-white" href="#" role="button" id="dropdown_language" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img class="me-2" width="20" src="../../assets/img/flags/uk.svg" alt=""> English</a>
+                                <div
+                                    class="dropdown-menu mt-2 shadow" aria-labelledby="dropdown_language" style="margin: 0px;">
+                                    <div class="dropdown-item"><select class="form-select form-select-sm"><option value="usd">$ USD</option><option value="eur">€ EUR</option><option value="ukp">£ UKP</option><option value="jpy">¥ JPY</option></select></div><a class="dropdown-item"
+                                        href="#"><img class="me-2" width="20" src="../../assets/img/flags/sp.svg" alt=""> Español</a> <a class="dropdown-item" href="#"><img class="me-2" width="20" src="../../assets/img/flags/fr.svg" alt=""> Français</a>
+                                    <a
+                                        class="dropdown-item" href="#"><img class="me-2" width="20" src="../../assets/img/flags/gr.svg" alt=""> Deutsch</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    <!-- End Header Top -->
+    <!-- Header Middle -->
+    <div class="header-middle">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-4 hm-left-col">
+                    <div class="hm-toggle d-lg-none"><button class="hm-toggle-mob" type="button" data-bs-toggle="offcanvas" data-bs-target="#swim_mobile_popup" aria-controls="swim_mobile_popup"><span></span></button></div>
+                    <ul class="nav hm-nav-left d-none d-lg-flex">
+                        <li class="nav-item"><a class="nav-link active" href="#">Women</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Men</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 hm-logo col">
+                    <div class="logo text-center w-100 d-flex justify-content-center"><a href="../../index.html"><img class="logo-dark" src="../../assets/img/logo-v2.svg" title="" alt=""> <img class="logo-light" src="../../assets/img/logo-v2-light.svg" title="" alt=""></a></div>
+                </div>
+                <div class="col-lg-4 hm-right-col">
+                    <div class="nav header-right">
+                        <!-- Nav Search-->
+                        <div class="nav-item d-none d-lg-block"><a class="nav-link" data-bs-toggle="offcanvas" href="#header_search_popup" role="button" aria-controls="header_search_popup"><i class="fi-search"></i></a></div>
+                        <!-- Acount -->
+                        <div class="nav-item dropdown"><a class="nav-link" href="#" role="button" id="dropdown_myaccount" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fi-user"></i></a>
+                            <div class="dropdown-menu dropdown-menu-end mt-2 shadow" aria-labelledby="dropdown_myaccount"><a class="dropdown-item" href="#">Login</a> <a class="dropdown-item" href="#">Register</a> <a class="dropdown-item" href="#">Wishlist</a> <a class="dropdown-item" href="#">My account</a></div>
+                        </div>
+                        <!-- Cart -->
+                        <div class="nav-item"><a class="nav-link" data-bs-toggle="offcanvas" href="#modalMiniCart" role="button" aria-controls="modalMiniCart"><i class="fi-shopping-cart"></i> <sub>08</sub></a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Header Middle -->
+    <!-- Desktop Menu -->
+    <nav class="navbar shadow-none d-none d-lg-flex">
+        <div class="container-fluid">
+            <!-- Menu -->
+            <div class="navbar-collapse">
+                <ul class="navbar-nav">
+                    <li class="dropdown dropdown-full nav-item"><a href="#" class="nav-link">Demos</a>
+                        <div class="dropdown-menu dropdown-mega-menu py-0">
+                            <div class="container p-3 p-lg-4">
+                                <div class="row gy-4">
+                                    <div class="col-6 col-md-3 col-xl-2">
+                                        <h6 class="sm-title-02 mb-3 fw-500">Home Options</h6>
+                                        <ul class="list-unstyled link-list-style-02 m-0">
+                                            <li><a href="../home/index.html">Home Option 1</a></li>
+                                            <li><a href="../home/index-02.html">Home Option 2</a></li>
+                                            <li><a href="../home/index-03.html">Home Option 3</a></li>
+                                            <li><a href="../home/index-04.html">Home Option 4</a></li>
+                                            <li><a href="../home/index-05.html">Home Option 5</a></li>
+                                            <li><a href="../home/index-06.html">Home Option 6</a></li>
+                                            <li><a href="../home/index-07.html">Home Option 7</a></li>
+                                            <li><a href="../home/index-08.html">Home Option 8</a></li>
+                                            <li><a href="../home/index-09.html">Home Option 9</a> <span class="menu-label">New</span></li>
+                                            <li><a href="../home/index-10.html">Home Option 10</a> <span class="menu-label">New</span></li>
+                                            <li><a href="../home/index-11.html">Home Option 11</a> <span class="menu-label">New</span></li>
+                                            <li><a href="../home/index-12.html">Home Option 12</a> <span class="menu-label">New</span></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-6 col-md-3 col-xl-2">
+                                        <h6 class="sm-title-02 mb-3 fw-500">Shop Option 1</h6>
+                                        <ul class="list-unstyled link-list-style-02 mb-4">
+                                            <li><a href="../shop-01/shop.html">Shop Page</a></li>
+                                            <li><a href="../shop-01/shop-filter.html">Shop Filter</a></li>
+                                            <li><a href="../shop-01/shop-fw-left.html">Shop Full Width</a></li>
+                                            <li><a href="../shop-01/shop-fw-right.html">Shop Right Sidebar</a></li>
+                                            <li><a href="../shop-01/shop-fw-without-filtres.html">Shop No Sidebar</a></li>
+                                        </ul>
+                                        <h6 class="sm-title-02 mb-3 fw-500">Shop Option 2</h6>
+                                        <ul class="list-unstyled link-list-style-02 m-0">
+                                            <li><a href="../shop-02/shop.html">Shop Page</a> <span class="menu-label">New</span></li>
+                                            <li><a href="../shop-02/shop-fw.html">Shop Full Width</a> <span class="menu-label">New</span></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-6 col-md-3 col-xl-2">
+                                        <h6 class="sm-title-02 mb-3 fw-500">Shop Option 3</h6>
+                                        <ul class="list-unstyled link-list-style-02 mb-4">
+                                            <li><a href="../shop-03/shop.html">Shop Page</a> <span class="menu-label">New</span></li>
+                                            <li><a href="../shop-03/shop-fw.html">Shop Full Width</a> <span class="menu-label">New</span></li>
+                                        </ul>
+                                        <h6 class="sm-title-02 mb-3 fw-500">Shop Option 4</h6>
+                                        <ul class="list-unstyled link-list-style-02 mb-4">
+                                            <li><a href="../shop-04/shop.html">Shop Page</a> <span class="menu-label">New</span></li>
+                                            <li><a href="../shop-04/shop-fw.html">Shop Full Width</a> <span class="menu-label">New</span></li>
+                                        </ul>
+                                        <h6 class="sm-title-02 mb-3 fw-500">Shopping Cart</h6>
+                                        <ul class="list-unstyled link-list-style-02 m-0">
+                                            <li><a href="../account/shopping-cart.html">Cart Page</a></li>
+                                            <li><a href="../account/shop-cart.html">Cart Page 02</a> <span class="menu-label">New</span></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-6 col-md-3 col-xl-2">
+                                        <h6 class="sm-title-02 mb-3 fw-500">Product Detail Page</h6>
+                                        <ul class="list-unstyled link-list-style-02 mb-0">
+                                            <li><a href="../product-details/product-details.html">Product Detail 01</a></li>
+                                            <li><a href="../product-details/product-details-02.html">Product Detail 01</a></li>
+                                            <li><a href="../product-details/product-details-03.html">Product Detail 03</a></li>
+                                            <li><a href="../product-details/product-details-04.html">Product Detail 04</a></li>
+                                            <li><a href="../product-details/product-details-05.html">Product Detail 05</a></li>
+                                            <li><a href="../product-details/product-details-06.html">Product Detail 06</a> <span class="menu-label">New</span></li>
+                                            <li><a href="../product-details/product-details-07.html">Product Detail 07</a> <span class="menu-label">New</span></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-6 col-md-3 col-xl-2">
+                                        <h6 class="sm-title-02 mb-3 fw-500">Account Pages</h6>
+                                        <ul class="list-unstyled link-list-style-02 mb-0">
+                                            <li><a href="../account/account-address.html">Address</a></li>
+                                            <li><a href="../account/account-order.html">Order</a></li>
+                                            <li><a href="../account/account-payment.html">Payment</a></li>
+                                            <li><a href="../account/account-profile.html">Profile</a></li>
+                                            <li><a href="../account/account-tickets.html">Tickets</a></li>
+                                            <li><a href="../account/account-wishlist.html">Wishlist</a></li>
+                                            <li><a href="../account/wishlist.html">Wishlist 02</a></li>
+                                            <li><a href="../account/account-tabs.html">Account Tab</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-6 col-md-3 col-xl-2">
+                                        <h6 class="sm-title-02 mb-3 fw-500">Login</h6>
+                                        <ul class="list-unstyled link-list-style-02 mb-4">
+                                            <li><a href="../account/login.html">Login</a></li>
+                                            <li><a href="../account/login-02.html">Login 02</a> <span class="menu-label">New</span></li>
+                                            <li><a href="../account/sign-up.html">Sign Up</a></li>
+                                            <li><a href="../account/sign-up-02.html">Sign Up 02</a> <span class="menu-label">New</span></li>
+                                            <li><a href="../account/reset-password.html">Reset Password</a></li>
+                                        </ul>
+                                        <h6 class="sm-title-02 mb-3 fw-500">Checkout</h6>
+                                        <ul class="list-unstyled link-list-style-02 m-0">
+                                            <li><a href="../account/checkout.html">Checkout</a></li>
+                                            <li><a href="../account/checkout-02.html">Checkout 02</a> <span class="menu-label">New</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="dropdown dropdown-full nav-item"><a href="#" class="nav-link">New Arrivals</a>
+                        <div class="dropdown-menu dropdown-mega-menu py-6">
+                            <div class="container">
+                                <div class="row g-3 g-xl-5">
+                                    <div class="col-md-3">
+                                        <h6 class="sm-title-03 mb-4">Shop By Catagory</h6>
+                                        <ul class="list-unstyled link-list-style-01">
+                                            <li><a href="#">Swimwear</a></li>
+                                            <li><a href="#">Underwear</a></li>
+                                            <li><a href="#">Activewear</a></li>
+                                            <li><a href="#">Bodysuits</a></li>
+                                            <li><a href="#">Shop All Basics & Swim</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="position-relative hover-scale">
+                                            <div class="hover-scale-in"><a href="#"><img src="../../assets/img/swimwear/swimwear-mega-menu-1.jpg" title="" alt=""></a>
+                                                <h5 class="position-absolute start-0 bottom-0 p-3 text-white fw-600 m-0">Mix & Match Swim <i class="bi-arrow-right"></i></h5>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="hover-scale">
+                                            <div class="hover-scale-in"><a href="#"><img src="../../assets/img/swimwear/swimwear-mega-menu-2.jpg" title="" alt=""></a></div>
+                                            <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="hover-scale">
+                                            <div class="hover-scale-in"><a href="#"><img src="../../assets/img/swimwear/swimwear-mega-menu-3.jpg" title="" alt=""></a></div>
+                                            <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="dropdown dropdown-full nav-item"><a href="#" class="nav-link">Best Sellers</a>
+                        <div class="dropdown-menu dropdown-mega-menu py-6">
+                            <div class="container">
+                                <div class="row g-3 g-xl-5">
+                                    <div class="col-md-3">
+                                        <h6 class="sm-title-03 mb-4">Highlights</h6>
+                                        <ul class="list-unstyled link-list-style-01">
+                                            <li><a href="#">Back in Stock</a></li>
+                                            <li><a href="#">Gift Cards</a></li>
+                                            <li><a href="#">Shop All Featured</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h6 class="sm-title-03 mb-4">Trending</h6>
+                                        <ul class="list-unstyled link-list-style-01">
+                                            <li><a href="#">The Vacation Edit</a></li>
+                                            <li><a href="#">Modern Essentials</a></li>
+                                            <li><a href="#">The Everyone Collection</a></li>
+                                            <li><a href="#">The Track Collection</a></li>
+                                            <li><a href="#">Shop All Collection</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="hover-scale">
+                                            <div class="hover-scale-in"><a href="#"><img src="../../assets/img/swimwear/swimwear-mega-menu-3.jpg" title="" alt=""></a></div>
+                                            <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="hover-scale">
+                                            <div class="hover-scale-in"><a href="#"><img src="../../assets/img/swimwear/swimwear-mega-menu-2.jpg" title="" alt=""></a></div>
+                                            <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="dropdown dropdown-full nav-item"><a href="#" class="nav-link">Absolue</a>
+                        <div class="dropdown-menu dropdown-mega-menu py-6">
+                            <div class="container">
+                                <div class="row g-3 g-xl-5">
+                                    <div class="col-md-3">
+                                        <h6 class="sm-title-03 mb-4">Swimwear</h6>
+                                        <ul class="list-unstyled link-list-style-01">
+                                            <li><a href="#">Swim Tops</a></li>
+                                            <li><a href="#">Swim Bottoms</a></li>
+                                            <li><a href="#">One pieces</a></li>
+                                            <li><a href="#">Cover-ups</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h6 class="sm-title-03 mb-4">Clothing</h6>
+                                        <ul class="list-unstyled link-list-style-01">
+                                            <li><a href="#">Dresses</a></li>
+                                            <li><a href="#">Sweaters</a></li>
+                                            <li><a href="#">Pants</a></li>
+                                            <li><a href="#">Shirts</a></li>
+                                            <li><a href="#">Shorts</a></li>
+                                            <li><a href="#">Lounge</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h6 class="sm-title-03 mb-4">Accessories</h6>
+                                        <ul class="list-unstyled link-list-style-01">
+                                            <li><a href="#">Bags</a></li>
+                                            <li><a href="#">Eyewear</a></li>
+                                            <li><a href="#">Jewelry</a></li>
+                                            <li><a href="#">Sandals</a></li>
+                                            <li><a href="#">Slippers</a></li>
+                                            <li><a href="#">Underthings</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="hover-scale">
+                                            <div class="hover-scale-in"><a href="#"><img src="../../assets/img/swimwear/swimwear-mega-menu-2.jpg" title="" alt=""></a></div>
+                                            <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="dropdown nav-item"><a href="#" class="nav-link">Pages</a>
+                        <ul class="dropdown-menu left shadow-lg">
+                            <li><a class="dropdown-item" href="../pages/about.html">About</a></li>
+                            <li><a class="dropdown-item" href="../pages/faq.html">FAQ's</a></li>
+                            <li><a class="dropdown-item" href="../pages/policy.html">Policy</a></li>
+                            <li><a class="dropdown-item" href="../pages/support.html">Support</a></li>
+                            <li><a class="dropdown-item" href="../pages/support-topic.html">Support Topic</a></li>
+                            <li><a class="dropdown-item" href="../pages/contact-us.html">Contact Us</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown nav-item"><a href="#" class="nav-link">Blog</a>
+                        <ul class="dropdown-menu left shadow-lg">
+                            <li><a class="dropdown-item" href="../blog/blog.html">Blog</a></li>
+                            <li><a class="dropdown-item" href="../blog/blog-single.html">Blog Single</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a href="#" class="nav-link text-danger">Sale</a></li>
+                </ul>
+            </div>
+            <!-- End Menu -->
+        </div>
+    </nav>
+    <!-- End Desktop Menu -->
+    </header>
+    <!-- Mobile Menu -->
+    <div class="offcanvas tabs-main-mobile-menu offcanvas-start" tabindex="-1" id="swim_mobile_popup"><button type="button" class="btn-close m-0" data-bs-dismiss="offcanvas" aria-label="Close"><i class="bi-x"></i></button>
+        <div class="offcanvas-body p-0">
+            <!-- Mob Search -->
+            <div class="header-search">
+                <form>
+                    <div class="input-group"><input class="form-control form-control-sm shadow-none px-2" type="text" name="search" placeholder="What are you looking for?"> <button type="button" class="btn btn-primary shadow-none btn-sm px-2"><i class="fi-search"></i></button></div>
+                </form>
+            </div>
+            <!-- Mob Tab -->
+            <ul class="nav nav-tabs" id="header_9_mob_tab" role="tablist">
+                <li class="nav-item" role="presentation"><button class="nav-link active" id="h9_woman-tab" data-bs-toggle="tab" data-bs-target="#h9_woman" type="button" role="tab" aria-controls="h9_woman" aria-selected="true">Woman</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="h9_man-tab" data-bs-toggle="tab" data-bs-target="#h9_man" type="button" role="tab" aria-controls="h9_man" aria-selected="false">Man</button></li>
+            </ul>
+            <div class="tab-content" id="header_9_mob_tabContent">
+                <div class="tab-pane fade show active" id="h9_woman" role="tabpanel" aria-labelledby="h9_woman-tab">
+                    <!-- Mobile Top Menu -->
+                    <div class="mob-menu-link-top">
+                        <ul class="list-unstyled">
+                            <li><a href="#">New Arrivals</a></li>
+                            <li><a href="#">Best Sellers</a></li>
+                        </ul>
+                    </div>
+                    <!-- Mobile Main Menu -->
+                    <div class="mob-menu-link-main">
+                        <ul class="list-unstyled mob-menu-level-1">
+                            <li class="dropdown"><a href="#">Swimwear</a> <label class="px-dropdown-toggle mob-menu"><i class="bi-chevron-right"></i></label>
+                                <ul class="dropdown-menu list-unstyled mob-menu-level-2">
+                                    <li><a href="#">Swim Tops</a></li>
+                                    <li><a href="#">Swim Bottoms</a></li>
+                                    <li><a href="#">One pieces</a></li>
+                                    <li><a href="#">Cover-ups</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown"><a href="#">Shop By Catagory</a> <label class="px-dropdown-toggle mob-menu"><i class="bi-chevron-right"></i></label>
+                                <ul class="dropdown-menu list-unstyled mob-menu-level-2">
+                                    <li><a href="#">Swimwear</a></li>
+                                    <li><a href="#">Underwear</a></li>
+                                    <li><a href="#">Activewear</a></li>
+                                    <li><a href="#">Bodysuits</a></li>
+                                    <li><a href="#">Shop All Basics &amp; Swim</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown"><a href="#">Highlights</a> <label class="px-dropdown-toggle mob-menu"><i class="bi-chevron-right"></i></label>
+                                <ul class="dropdown-menu list-unstyled mob-menu-level-2">
+                                    <li><a href="#">Back in Stock</a></li>
+                                    <li><a href="#">Gift Cards</a></li>
+                                    <li><a href="#">Shop All Featured</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown"><a href="#">Trending</a> <label class="px-dropdown-toggle mob-menu"><i class="bi-chevron-right"></i></label>
+                                <ul class="dropdown-menu list-unstyled mob-menu-level-2">
+                                    <li><a href="#">The Vacation Edit</a></li>
+                                    <li><a href="#">Modern Essentials</a></li>
+                                    <li><a href="#">The Everyone Collection</a></li>
+                                    <li><a href="#">The Track Collection</a></li>
+                                    <li><a href="#">Shop All Collection</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown"><a href="#">Accessories</a> <label class="px-dropdown-toggle mob-menu"><i class="bi-chevron-right"></i></label>
+                                <ul class="dropdown-menu list-unstyled mob-menu-level-2">
+                                    <li><a href="#">The Vacation Edit</a></li>
+                                    <li><a href="#">Modern Essentials</a></li>
+                                    <li><a href="#">The Everyone Collection</a></li>
+                                    <li><a href="#">The Track Collection</a></li>
+                                    <li><a href="#">Shop All Collection</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Mobile Product -->
+                    <div class="horizontal-scroll-box pb-3">
+                        <div class="d-flex">
+                            <div class="col-5 pe-2">
+                                <div class="hover-scale">
+                                    <div class="hover-scale-in"><a href="#"><img src="https://media.everlane.com/image/upload/c_fill,w_640,ar_320:320,q_auto,dpr_1.0,g_face:center,f_auto,fl_progressive:steep/i/5cb5b38e_c71b" title="" alt=""></a></div>
+                                    <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                </div>
+                            </div>
+                            <div class="col-5 pe-2">
+                                <div class="hover-scale">
+                                    <div class="hover-scale-in"><a href="#"><img src="https://media.everlane.com/image/upload/c_fill,w_640,ar_320:320,q_auto,dpr_1.0,g_face:center,f_auto,fl_progressive:steep/i/5cb5b38e_c71b" title="" alt=""></a></div>
+                                    <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                </div>
+                            </div>
+                            <div class="col-5 pe-2">
+                                <div class="hover-scale">
+                                    <div class="hover-scale-in"><a href="#"><img src="https://media.everlane.com/image/upload/c_fill,w_640,ar_320:320,q_auto,dpr_1.0,g_face:center,f_auto,fl_progressive:steep/i/5cb5b38e_c71b" title="" alt=""></a></div>
+                                    <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                </div>
+                            </div>
+                            <div class="col-5 pe-2">
+                                <div class="hover-scale">
+                                    <div class="hover-scale-in"><a href="#"><img src="https://media.everlane.com/image/upload/c_fill,w_640,ar_320:320,q_auto,dpr_1.0,g_face:center,f_auto,fl_progressive:steep/i/5cb5b38e_c71b" title="" alt=""></a></div>
+                                    <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                </div>
+                            </div>
+                            <div class="col-5 pe-2">
+                                <div class="hover-scale">
+                                    <div class="hover-scale-in"><a href="#"><img src="https://media.everlane.com/image/upload/c_fill,w_640,ar_320:320,q_auto,dpr_1.0,g_face:center,f_auto,fl_progressive:steep/i/5cb5b38e_c71b" title="" alt=""></a></div>
+                                    <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="h9_man" role="tabpanel" aria-labelledby="h9_man-tab">
+                    <!-- Mobile Top Menu -->
+                    <div class="mob-menu-link-top">
+                        <ul class="list-unstyled">
+                            <li><a href="#">Hot Collections</a></li>
+                            <li><a href="#">Best 2022</a></li>
+                        </ul>
+                    </div>
+                    <!-- Mobile Main Menu -->
+                    <div class="mob-menu-link-main">
+                        <ul class="list-unstyled mob-menu-level-1">
+                            <li class="dropdown"><a href="#">Featured</a> <label class="px-dropdown-toggle mob-menu"><i class="bi-chevron-right"></i></label>
+                                <ul class="dropdown-menu list-unstyled mob-menu-level-2">
+                                    <li><a href="#">Swim Tops</a></li>
+                                    <li><a href="#">Swim Bottoms</a></li>
+                                    <li><a href="#">One pieces</a></li>
+                                    <li><a href="#">Cover-ups</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown"><a href="#">Shop By Catagory</a> <label class="px-dropdown-toggle mob-menu"><i class="bi-chevron-right"></i></label>
+                                <ul class="dropdown-menu list-unstyled mob-menu-level-2">
+                                    <li><a href="#">Swimwear</a></li>
+                                    <li><a href="#">Underwear</a></li>
+                                    <li><a href="#">Activewear</a></li>
+                                    <li><a href="#">Bodysuits</a></li>
+                                    <li><a href="#">Shop All Basics &amp; Swim</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown"><a href="#">Denim</a> <label class="px-dropdown-toggle mob-menu"><i class="bi-chevron-right"></i></label>
+                                <ul class="dropdown-menu list-unstyled mob-menu-level-2">
+                                    <li><a href="#">Back in Stock</a></li>
+                                    <li><a href="#">Gift Cards</a></li>
+                                    <li><a href="#">Shop All Featured</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown"><a href="#">Trending</a> <label class="px-dropdown-toggle mob-menu"><i class="bi-chevron-right"></i></label>
+                                <ul class="dropdown-menu list-unstyled mob-menu-level-2">
+                                    <li><a href="#">The Vacation Edit</a></li>
+                                    <li><a href="#">Modern Essentials</a></li>
+                                    <li><a href="#">The Everyone Collection</a></li>
+                                    <li><a href="#">The Track Collection</a></li>
+                                    <li><a href="#">Shop All Collection</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown"><a href="#">Accessories</a> <label class="px-dropdown-toggle mob-menu"><i class="bi-chevron-right"></i></label>
+                                <ul class="dropdown-menu list-unstyled mob-menu-level-2">
+                                    <li><a href="#">The Vacation Edit</a></li>
+                                    <li><a href="#">Modern Essentials</a></li>
+                                    <li><a href="#">The Everyone Collection</a></li>
+                                    <li><a href="#">The Track Collection</a></li>
+                                    <li><a href="#">Shop All Collection</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Mobile Product -->
+                    <div class="horizontal-scroll-box pb-3">
+                        <div class="d-flex">
+                            <div class="col-5 pe-2">
+                                <div class="hover-scale">
+                                    <div class="hover-scale-in"><a href="#"><img src="https://media.everlane.com/image/upload/c_fill,w_640,ar_320:320,q_auto,dpr_1.0,g_face:center,f_auto,fl_progressive:steep/i/5cb5b38e_c71b" title="" alt=""></a></div>
+                                    <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                </div>
+                            </div>
+                            <div class="col-5 pe-2">
+                                <div class="hover-scale">
+                                    <div class="hover-scale-in"><a href="#"><img src="https://media.everlane.com/image/upload/c_fill,w_640,ar_320:320,q_auto,dpr_1.0,g_face:center,f_auto,fl_progressive:steep/i/5cb5b38e_c71b" title="" alt=""></a></div>
+                                    <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                </div>
+                            </div>
+                            <div class="col-5 pe-2">
+                                <div class="hover-scale">
+                                    <div class="hover-scale-in"><a href="#"><img src="https://media.everlane.com/image/upload/c_fill,w_640,ar_320:320,q_auto,dpr_1.0,g_face:center,f_auto,fl_progressive:steep/i/5cb5b38e_c71b" title="" alt=""></a></div>
+                                    <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                </div>
+                            </div>
+                            <div class="col-5 pe-2">
+                                <div class="hover-scale">
+                                    <div class="hover-scale-in"><a href="#"><img src="https://media.everlane.com/image/upload/c_fill,w_640,ar_320:320,q_auto,dpr_1.0,g_face:center,f_auto,fl_progressive:steep/i/5cb5b38e_c71b" title="" alt=""></a></div>
+                                    <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                </div>
+                            </div>
+                            <div class="col-5 pe-2">
+                                <div class="hover-scale">
+                                    <div class="hover-scale-in"><a href="#"><img src="https://media.everlane.com/image/upload/c_fill,w_640,ar_320:320,q_auto,dpr_1.0,g_face:center,f_auto,fl_progressive:steep/i/5cb5b38e_c71b" title="" alt=""></a></div>
+                                    <h6 class="small pt-2 m-0"><a href="#" class="small text-reset link-effect">The Short-Sleeve Crew Neck Bodysuit</a></h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Mobile Menu -->
+    <!-- End Header -->
+    <!-- Main -->
+    <main>
+        <!-- Product Details -->
+        <section class="product-details-03 py-6">
+            <div class="container">
+                <div class="row align-items-start">
+                    <!-- Product Gallery -->
+                    <div class="col-lg-7 col-xxl-8 lightbox-gallery product-detail-media">
+                        <div class="row g-2">
+                            <div class="col-6"><a class="gallery-link" href="../../assets/img/swimwear/swimwear-pd-1.jpg"><img src="../../assets/img/swimwear/swimwear-pd-1.jpg" class="img-fluid" title="" alt=""></a></div>
+                            <div class="col-6"><a class="gallery-link" href="../../assets/img/swimwear/swimwear-pd-2.jpg"><img src="../../assets/img/swimwear/swimwear-pd-2.jpg" class="img-fluid" title="" alt=""></a></div>
+                            <div class="col-6"><a class="gallery-link" href="../../assets/img/swimwear/swimwear-pd-3.jpg"><img src="../../assets/img/swimwear/swimwear-pd-3.jpg" class="img-fluid" title="" alt=""></a></div>
+                            <div class="col-6"><a class="gallery-link" href="../../assets/img/swimwear/swimwear-pd-4.jpg"><img src="../../assets/img/swimwear/swimwear-pd-4.jpg" class="img-fluid" title="" alt=""></a></div>
+                            <div class="col-6"><a class="gallery-link" href="../../assets/img/swimwear/swimwear-pd-5.jpg"><img src="../../assets/img/swimwear/swimwear-pd-5.jpg" class="img-fluid" title="" alt=""></a></div>
+                            <div class="col-6 pd-video-box"><a class="video-btn pd-video-box-in" href="../../assets/img/swimwear/swimwear-pd-6-video1.mp4"><video width="470" height="255" poster="../../assets/img/swimwear/swimwear-pd-6.jpg" autoplay="autoplay" loop="loop" muted="muted" preload="metadata"><source src="../../assets/img/swimwear/swimwear-pd-6-video1.mp4" type="video/mp4"></video></a></div>
+                        </div>
+                    </div>
+                    <!-- End Product Gallery -->
+                    <!-- Product Details -->
+                    <div class="col-lg-5 col-xxl-4 ps-lg-5 pt-5 pt-lg-0 sticky-lg-top sticky-lg-top-header">
+                        <div class="product-detail">
+                            <ol class="breadcrumb m-0 small">
+                                <li class="breadcrumb-item"><a class="text-nowrap text-reset" href="#">Home</a></li>
+                                <li class="breadcrumb-item text-nowrap active" aria-current="page">Women</li>
+                            </ol>
+                            <div class="products-title-head">
+                                <div class="products-title">
+                                    <h4 class="h4">The Oversized Cotton Ribbed Cardigan</h4>
+                                    <div class="product-price"><del class="text-muted">$38.<small>50</small></del> <span>$28.00</span></div>
+                                </div>
+                                <div class="rating-star small"><i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star"></i> <small>(4 Reviews )</small></div>
+                            </div>
+                            <div class="product-attributes">
+                                <div class="product-attribute-in">
+                                    <div class="att-label">
+                                        <h6>Color <span>Brown</span></h6>
+                                    </div>
+                                    <div class="shop-list-colors"><a href="#" class="sb-color" style="background-color: #1c1c1c;"><span>Black</span></a> <a href="#" class="sb-color" style="background-color: #295f9a;"><span>Blue</span></a> <a href="#" class="sb-color" style="background-color: #ffffff;"><span>White</span></a>                                        <a href="#" class="sb-color" style="background-color: #e5e5e7;"><span>Grey</span></a> <a href="#" class="sb-color active" style="background-color: #9c673b;"><span>Brown</span></a> <a href="#" class="sb-color" style="background-color: #ecb91f;"><span>Yellow</span></a>                                        <a href="#" class="sb-color" style="background-color: #4f3b75;"><span>Purple</span></a> <a href="#" class="sb-color" style="background-color: #bbb09e;"><span>Tan</span></a> <a href="#" class="sb-color" style="background-color: #b8c0ff;"><span>Yellow</span></a>                                        <a href="#" class="sb-color" style="background-color: #55a630;"><span>Purple</span></a> <a href="#" class="sb-color" style="background-color: #e09f3e;"><span>Tan</span></a></div>
+                                </div>
+                                <div class="product-attribute-in">
+                                    <div class="att-label">
+                                        <h6>Size <span>Small</span></h6><a href="#" class="ms-auto" data-bs-toggle="modal" data-bs-target="#px_size_chart_modal">Size guide</a></div>
+                                    <div class="shop-list-tags-02"><a href="#">XXS</a> <a href="#">S</a> <a href="#" class="active">S</a> <a href="#">M</a> <a href="#">L</a> <a href="#">L</a> <a href="#">23</a> <a href="#">24</a> <a href="#">25</a> <a href="#">26</a> <a href="#">27</a>                                        <a href="#">28</a> <a href="#">29</a> <a href="#">30</a> <a href="#">31</a> <a href="#">32</a> <a href="#">33</a> <a href="#">34</a> <a href="#">35</a></div>
+                                </div>
+                            </div>
+                            <div class="cart-qty-01">
+                                <div class="dec qty-btn qty_btn"><i class="bi bi-caret-up-fill"></i></div><input class="cart-qty-input form-control" type="text" name="qtybutton" value="1">
+                                <div class="inc qty-btn qty_btn"><i class="bi bi-caret-down-fill"></i></div>
+                            </div>
+                            <div class="product-detail-actions d-flex flex-wrap">
+                                <div class="cart-button"><button class="btn btn-mode pd-cart-btn"><i class="fi-shopping-cart"></i> Add to cart</button></div>
+                                <div class="ps-3"><button class="btn btn-outline-mode"><i class="fi-repeat"></i></button></div>
+                                <div class="ps-3"><button class="btn btn-outline-mode"><i class="fi-heart"></i></button></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Product Details -->
+                </div>
+            </div>
+        </section>
+        <!-- End Product Details -->
+        <!-- Product Tabs -->
+        <section class="product-detail-tab-03 section">
+            <div class="container">
+                <div class="product-tabs">
+                    <ul class="nav product-nav-tabs-03" id="myTab_03" role="tablist">
+                        <li class="nav-item" role="presentation"><a href="#" class="nav-link active" id="pd_description_tab_03" data-bs-toggle="tab" data-bs-target="#pd_description_03" role="tab" aria-controls="pd_description_03" aria-selected="true">Description</a></li>
+                        <li class="nav-item"
+                            role="presentation"><a href="#" class="nav-link" id="pd_information_tab_03" data-bs-toggle="tab" data-bs-target="#px_information_03" role="tab" aria-controls="px_information_03" aria-selected="false">Information</a></li>
+                        <li class="nav-item" role="presentation"><a href="#" class="nav-link" id="pd_reviews_tab_03" data-bs-toggle="tab" data-bs-target="#pd_reviews_03" role="tab" aria-controls="pd_reviews_03" aria-selected="false">Reviews</a></li>
+                    </ul>
+                    <div class="tab-content" id="myTab_03Content">
+                        <div class="tab-pane fade show active" id="pd_description_03" role="tabpanel" aria-labelledby="pd_description_tab_03">
+                            <div class="row gy-4 align-items-center">
+                                <div class="col-lg-6">
+                                    <h6 class="letter-spacing-2 text-primary mb-2">UNIQUE MATERIALS</h6>
+                                    <h3 class="display-2 lh-1 font-alt mb-3">Fashion is a dirty business.</h3>
+                                    <p class="lead w-lg-80">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                                    <div class="pt-3"><a class="btn btn-primary" href="#">Lear More About</a></div>
+                                </div>
+                                <div class="col-lg-6"><img src="../../assets/img/swimwear/swimwear-cat-9.jpg" title="" alt=""></div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="px_information_03" role="tabpanel" aria-labelledby="pd_information_tab_03">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <table class="table text-sm">
+                                        <tbody>
+                                            <tr>
+                                                <th class="fw-500 text-mode">Product #</th>
+                                                <td class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisic elit</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="fw-500 text-mode">Available packaging</th>
+                                                <td class="text-muted">consectetur adipisic elit eiusm tempor</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="fw-500 text-mode">Weight</th>
+                                                <td class="text-muted">Ut enim ad minim venialo quis nostrud</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="fw-500 text-mode">Sunt in culpa qui</th>
+                                                <td class="text-muted">labore et dolore magna aliqua.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-lg-6">
+                                    <table class="table text-sm">
+                                        <tbody>
+                                            <tr>
+                                                <th class="fw-500 text-mode">Weight</th>
+                                                <td class="text-muted">dolor sit amet</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="fw-500 text-mode">Sunt in culpa qui</th>
+                                                <td class="text-muted">Lorem ipsum dolor sit amet</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="fw-500 text-mode">Product #</th>
+                                                <td class="text-muted">Lorem ipsum dolor sit amet</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="fw-500 text-mode">Available packaging</th>
+                                                <td class="text-muted">Lorem ipsum dolor sit amet</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="pd_reviews_03" role="tabpanel" aria-labelledby="pd_reviews_tab_03">
+                            <div class="row">
+                                <div class="col-lg-8 pe-lg-8">
+                                    <div class="row align-items-end">
+                                        <div class="col-sm-6">
+                                            <h5 class="m-0">Reviews</h5>
+                                            <div class="rating-star small"><i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star"></i>                                                <span>4.85/5 (400 Reviews)</span></div>
+                                        </div>
+                                        <div class="col-sm-6 text-sm-end"><a href="#">View all review</a></div>
+                                    </div>
+                                    <div class="d-flex review-box border-top mt-3 pt-3">
+                                        <div>
+                                            <div class="review-image"><img class="img-fluid" src="../../assets/img/fashion/product-1.jpg" title="" alt=""></div>
+                                        </div>
+                                        <div class="col ps-3">
+                                            <h6 class="m-0">Nancy Bayer</h6>
+                                            <div class="rating-star small"><i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star"></i>                                                <span>13 April 2012</span></div>
+                                            <p class="m-0 pt-2">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+                                                ex ea commodo consequat. Duis aute irure dolor</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex review-box border-top mt-3 pt-3">
+                                        <div>
+                                            <div class="review-image"><img class="img-fluid" src="../../assets/img/fashion/product-1.jpg" title="" alt=""></div>
+                                        </div>
+                                        <div class="col ps-3">
+                                            <h6 class="m-0">Nancy Bayer</h6>
+                                            <div class="rating-star small"><i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star"></i>                                                <span>13 April 2012</span></div>
+                                            <p class="m-0 pt-2">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+                                                ex ea commodo consequat. Duis aute irure dolor</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex review-box border-top mt-3 pt-3">
+                                        <div>
+                                            <div class="review-image"><img class="img-fluid" src="../../assets/img/fashion/product-1.jpg" title="" alt=""></div>
+                                        </div>
+                                        <div class="col ps-3">
+                                            <h6 class="m-0">Nancy Bayer</h6>
+                                            <div class="rating-star small"><i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star"></i>                                                <span>13 April 2012</span></div>
+                                            <p class="m-0 pt-2">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+                                                ex ea commodo consequat. Duis aute irure dolor</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex review-box border-top mt-3 pt-3">
+                                        <div>
+                                            <div class="review-image"><img class="img-fluid" src="../../assets/img/fashion/product-1.jpg" title="" alt=""></div>
+                                        </div>
+                                        <div class="col ps-3">
+                                            <h6 class="m-0">Nancy Bayer</h6>
+                                            <div class="rating-star small"><i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star-fill active"></i> <i class="bi small bi-star"></i>                                                <span>13 April 2012</span></div>
+                                            <p class="m-0 pt-2">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+                                                ex ea commodo consequat. Duis aute irure dolor</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="border p-4 sticky-lg-top review-form mt-4 mt-lg-0">
+                                        <h5 class="mb-3 pb-3 border-bottom h6">WRITE A REVIEW</h5>
+                                        <form>
+                                            <div class="row g-2">
+                                                <div class="col-sm-6"><label class="form-label">Name</label> <input type="text" name="name" class="form-control form-control-sm"></div>
+                                                <div class="col-sm-6"><label class="form-label">Email</label> <input type="text" name="email" class="form-control form-control-sm"></div>
+                                                <div class="col-sm-12"><label class="form-label m-0 pe-3 w-100">Rating</label>
+                                                    <div class="rating-star"><i class="bi small bi-star-fill"></i> <i class="bi small bi-star-fill"></i> <i class="bi small bi-star-fill"></i> <i class="bi small bi-star-fill"></i> <i class="bi small bi-star-fill"></i></div>
+                                                </div>
+                                                <div class="col-sm-12"><label class="form-label">Review Title</label> <input type="text" name="review" class="form-control form-control-sm"></div>
+                                                <div class="col-sm-12"><label class="form-label">Body of Review (1500)</label> <textarea rows="5" class="form-control"></textarea></div>
+                                                <div class="col-sm-12 pt-2"><button class="btn btn-primary">Submit Review</button></div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- End Product Tabs -->
+        <!-- section -->
+        <section class="section bg-primary-light">
+            <div class="container">
+                <div class="row justify-content-center section-heading">
+                    <div class="col-lg-6 text-center">
+                        <div class="fs-6 text-uppercase letter-spacing-3 text-primary mb-2">Bikini Collection</div>
+                        <h3 class="h1 font-alt m-0">Trending This Week</h3>
+                    </div>
+                </div>
+                <div class="swiper-hover-arrow position-relative">
+                    <div class="swiper swiper-container" data-swiper-options='{
+                              "slidesPerView": 2,
+                              "spaceBetween": 24,
+                              "pagination": {
+                                "el": ".swiper-pagination",
+                                "type": "progressbar"
+                                },
+                              "navigation": {
+                                "nextEl": ".swiper-next-02",
+                                "prevEl": ".swiper-prev-02"
+                              },
+                              "breakpoints": {
+                                "600": {
+                                  "slidesPerView": 3
+                                },
+                                "991": {
+                                  "slidesPerView": 3
+                                },
+                                "1300": {
+                                  "slidesPerView": 4
+                                }
+                              }
+                        }'>
+                        <div class="swiper-wrapper">
+                            <!-- Product -->
+                            <div class="swiper-slide">
+                                <div class="product-card-9">
+                                    <div class="product-card-image">
+                                        <div class="badge-ribbon"><span>Sale</span></div>
+                                        <div class="product-action"><a href="#" class="btn"><i class="fi-heart"></i> </a><a href="#" class="btn"><i class="fi-repeat"></i> </a><a data-bs-toggle="modal" data-bs-target="#px-quick-view" href="javascript:void(0)" class="btn"><i class="fi-eye"></i> </a>
+                                            <a
+                                                href="#" class="btn"><i class="fi-shopping-cart"></i></a>
+                                        </div>
+                                        <div class="product-media"><a href="#"><img class="img-fluid" src="../../assets/img/swimwear/swimwear-product-9.jpg" title="" alt=""> <img class="product-media-hover" src="../../assets/img/swimwear/swimwear-product-hover-9.jpg" title="" alt=""></a></div>
+                                    </div>
+                                    <div class="product-card-info">
+                                        <div class="rating-star text"><i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star"></i></div>
+                                        <h6 class="product-title"><a href="#">Mansur Gavriel Bags</a></h6>
+                                        <div class="nav-thumbs">
+                                            <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_aa_1" id="color_aa_1" checked=""> <label class="radio-color-label" for="color_aa_1"><span style="background-color: #ef476f;"></span></label></div>
+                                            <div
+                                                class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_aa_1" id="color_aa_2"> <label class="radio-color-label" for="color_aa_2"><span style="background-color: #ffd166;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_aa_1" id="color_aa_3"> <label class="radio-color-label" for="color_aa_3"><span style="background-color: #06d6a0;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_aa_1" id="color_aa_4"> <label class="radio-color-label" for="color_aa_4"><span style="background-color: #073b4c;"></span></label></div>
+                                    </div>
+                                    <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="small text-muted">$38.<small>50</small></del></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Product -->
+                        <!-- Product -->
+                        <div class="swiper-slide">
+                            <div class="product-card-9">
+                                <div class="product-card-image">
+                                    <div class="badge-ribbon"><span>Sale</span></div>
+                                    <div class="product-action"><a href="#" class="btn"><i class="fi-heart"></i> </a><a href="#" class="btn"><i class="fi-repeat"></i> </a><a data-bs-toggle="modal" data-bs-target="#px-quick-view" href="javascript:void(0)" class="btn"><i class="fi-eye"></i> </a>
+                                        <a
+                                            href="#" class="btn"><i class="fi-shopping-cart"></i></a>
+                                    </div>
+                                    <div class="product-media"><a href="#"><img class="img-fluid" src="../../assets/img/swimwear/swimwear-product-10.jpg" title="" alt=""> <img class="product-media-hover" src="../../assets/img/swimwear/swimwear-product-hover-10.jpg" title="" alt=""></a></div>
+                                </div>
+                                <div class="product-card-info">
+                                    <div class="rating-star text"><i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star"></i></div>
+                                    <h6 class="product-title"><a href="#">Mansur Gavriel Bags</a></h6>
+                                    <div class="nav-thumbs">
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_bb_1" id="color_bb_1" checked=""> <label class="radio-color-label" for="color_bb_1"><span style="background-color: #ef476f;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_bb_1" id="color_bb_2"> <label class="radio-color-label" for="color_bb_2"><span style="background-color: #ffd166;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_bb_1" id="color_bb_3"> <label class="radio-color-label" for="color_bb_3"><span style="background-color: #06d6a0;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_bb_1" id="color_bb_4"> <label class="radio-color-label" for="color_bb_4"><span style="background-color: #073b4c;"></span></label></div>
+                                    </div>
+                                    <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="small text-muted">$38.<small>50</small></del></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Product -->
+                        <!-- Product -->
+                        <div class="swiper-slide">
+                            <div class="product-card-9">
+                                <div class="product-card-image">
+                                    <div class="badge-ribbon"><span>Sale</span></div>
+                                    <div class="product-action"><a href="#" class="btn"><i class="fi-heart"></i> </a><a href="#" class="btn"><i class="fi-repeat"></i> </a><a data-bs-toggle="modal" data-bs-target="#px-quick-view" href="javascript:void(0)" class="btn"><i class="fi-eye"></i> </a>
+                                        <a
+                                            href="#" class="btn"><i class="fi-shopping-cart"></i></a>
+                                    </div>
+                                    <div class="product-media"><a href="#"><img class="img-fluid" src="../../assets/img/swimwear/swimwear-product-11.jpg" title="" alt=""> <img class="product-media-hover" src="../../assets/img/swimwear/swimwear-product-hover-11.jpg" title="" alt=""></a></div>
+                                </div>
+                                <div class="product-card-info">
+                                    <div class="rating-star text"><i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star"></i></div>
+                                    <h6 class="product-title"><a href="#">Mansur Gavriel Bags</a></h6>
+                                    <div class="nav-thumbs">
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_cc_1" id="color_cc_1" checked=""> <label class="radio-color-label" for="color_cc_1"><span style="background-color: #ef476f;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_cc_1" id="color_cc_2"> <label class="radio-color-label" for="color_cc_2"><span style="background-color: #ffd166;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_cc_1" id="color_cc_3"> <label class="radio-color-label" for="color_cc_3"><span style="background-color: #06d6a0;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_cc_1" id="color_cc_4"> <label class="radio-color-label" for="color_cc_4"><span style="background-color: #073b4c;"></span></label></div>
+                                    </div>
+                                    <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="small text-muted">$38.<small>50</small></del></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Product -->
+                        <!-- Product -->
+                        <div class="swiper-slide">
+                            <div class="product-card-9">
+                                <div class="product-card-image">
+                                    <div class="badge-ribbon"><span>Sale</span></div>
+                                    <div class="product-action"><a href="#" class="btn"><i class="fi-heart"></i> </a><a href="#" class="btn"><i class="fi-repeat"></i> </a><a data-bs-toggle="modal" data-bs-target="#px-quick-view" href="javascript:void(0)" class="btn"><i class="fi-eye"></i> </a>
+                                        <a
+                                            href="#" class="btn"><i class="fi-shopping-cart"></i></a>
+                                    </div>
+                                    <div class="product-media"><a href="#"><img class="img-fluid" src="../../assets/img/swimwear/swimwear-product-12.jpg" title="" alt=""> <img class="product-media-hover" src="../../assets/img/swimwear/swimwear-product-hover-12.jpg" title="" alt=""></a></div>
+                                </div>
+                                <div class="product-card-info">
+                                    <div class="rating-star text"><i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star"></i></div>
+                                    <h6 class="product-title"><a href="#">Mansur Gavriel Bags</a></h6>
+                                    <div class="nav-thumbs">
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_dd_1" id="color_dd_1" checked=""> <label class="radio-color-label" for="color_dd_1"><span style="background-color: #ef476f;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_dd_1" id="color_dd_2"> <label class="radio-color-label" for="color_dd_2"><span style="background-color: #ffd166;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_dd_1" id="color_dd_3"> <label class="radio-color-label" for="color_dd_3"><span style="background-color: #06d6a0;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_dd_1" id="color_dd_4"> <label class="radio-color-label" for="color_dd_4"><span style="background-color: #073b4c;"></span></label></div>
+                                    </div>
+                                    <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="small text-muted">$38.<small>50</small></del></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Product -->
+                        <!-- Product -->
+                        <div class="swiper-slide">
+                            <div class="product-card-9">
+                                <div class="product-card-image">
+                                    <div class="badge-ribbon"><span>Sale</span></div>
+                                    <div class="product-action"><a href="#" class="btn"><i class="fi-heart"></i> </a><a href="#" class="btn"><i class="fi-repeat"></i> </a><a data-bs-toggle="modal" data-bs-target="#px-quick-view" href="javascript:void(0)" class="btn"><i class="fi-eye"></i> </a>
+                                        <a
+                                            href="#" class="btn"><i class="fi-shopping-cart"></i></a>
+                                    </div>
+                                    <div class="product-media"><a href="#"><img class="img-fluid" src="../../assets/img/swimwear/swimwear-product-1.jpg" title="" alt=""> <img class="product-media-hover" src="../../assets/img/swimwear/swimwear-product-hover-1.jpg" title="" alt=""></a></div>
+                                </div>
+                                <div class="product-card-info">
+                                    <div class="rating-star text"><i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star"></i></div>
+                                    <h6 class="product-title"><a href="#">Mansur Gavriel Bags</a></h6>
+                                    <div class="nav-thumbs">
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_ee_1" id="color_ee_1" checked=""> <label class="radio-color-label" for="color_ee_1"><span style="background-color: #ef476f;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_ee_1" id="color_ee_2"> <label class="radio-color-label" for="color_ee_2"><span style="background-color: #ffd166;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_ee_1" id="color_ee_3"> <label class="radio-color-label" for="color_ee_3"><span style="background-color: #06d6a0;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_ee_1" id="color_ee_4"> <label class="radio-color-label" for="color_ee_4"><span style="background-color: #073b4c;"></span></label></div>
+                                    </div>
+                                    <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="small text-muted">$38.<small>50</small></del></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Product -->
+                        <!-- Product -->
+                        <div class="swiper-slide">
+                            <div class="product-card-9">
+                                <div class="product-card-image">
+                                    <div class="badge-ribbon"><span>Sale</span></div>
+                                    <div class="product-action"><a href="#" class="btn"><i class="fi-heart"></i> </a><a href="#" class="btn"><i class="fi-repeat"></i> </a><a data-bs-toggle="modal" data-bs-target="#px-quick-view" href="javascript:void(0)" class="btn"><i class="fi-eye"></i> </a>
+                                        <a
+                                            href="#" class="btn"><i class="fi-shopping-cart"></i></a>
+                                    </div>
+                                    <div class="product-media"><a href="#"><img class="img-fluid" src="../../assets/img/swimwear/swimwear-product-2.jpg" title="" alt=""> <img class="product-media-hover" src="../../assets/img/swimwear/swimwear-product-hover-2.jpg" title="" alt=""></a></div>
+                                </div>
+                                <div class="product-card-info">
+                                    <div class="rating-star text"><i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star-fill active"></i> <i class="bi bi-star"></i></div>
+                                    <h6 class="product-title"><a href="#">Mansur Gavriel Bags</a></h6>
+                                    <div class="nav-thumbs">
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_ff_1" id="color_ff_1" checked=""> <label class="radio-color-label" for="color_ff_1"><span style="background-color: #ef476f;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_ff_1" id="color_ff_2"> <label class="radio-color-label" for="color_ff_2"><span style="background-color: #ffd166;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_ff_1" id="color_ff_3"> <label class="radio-color-label" for="color_ff_3"><span style="background-color: #06d6a0;"></span></label></div>
+                                        <div class="form-check radio-color form-check-inline"><input class="form-check-input" type="radio" name="color_ff_1" id="color_ff_4"> <label class="radio-color-label" for="color_ff_4"><span style="background-color: #073b4c;"></span></label></div>
+                                    </div>
+                                    <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="small text-muted">$38.<small>50</small></del></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Product -->
+                    </div>
+                    <div class="swiper-pagination mt-4 position-relative"></div>
+                </div>
+                <div class="swiper-arrow-style-01 swiper-next swiper-next-02"><i class="bi bi-chevron-right"></i></div>
+                <div class="swiper-arrow-style-01 swiper-prev swiper-prev-02"><i class="bi bi-chevron-left"></i></div>
+            </div>
+            </div>
+        </section>
+        <!-- End section -->
+    </main>
+    <!-- End Main -->
+    <!-- Footer -->
+    <footer class="footer bg-dark">
+        <div class="footer-top py-6 py-lg-10">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-xxl-7">
+                        <div class="row gy-4">
+                            <div class="col-md-3 col-6">
+                                <h6 class="sm-title-03 mb-4 text-white">Account</h6>
+                                <ul class="list-unstyled white-link footer-link-3 m-0">
+                                    <li class="pb-3"><a href="#">Log In</a></li>
+                                    <li class="pb-3"><a href="#">Sign Up</a></li>
+                                    <li class="pb-3"><a href="#">Redeem a Gift Card</a></li>
+                                    <li class="pb-3"><a href="#">Unsubscribe</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <h6 class="sm-title-03 mb-4 text-white">Company</h6>
+                                <ul class="list-unstyled white-link footer-link-3 m-0">
+                                    <li class="pb-3"><a href="#">About</a></li>
+                                    <li class="pb-3"><a href="#">Terms of use</a></li>
+                                    <li class="pb-3"><a href="#">Shipping</a></li>
+                                    <li class="pb-3"><a href="#">Return</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <h6 class="sm-title-03 mb-4 text-white">Get Help</h6>
+                                <ul class="list-unstyled white-link footer-link-3 m-0">
+                                    <li class="pb-3"><a href="#">Help Center</a></li>
+                                    <li class="pb-3"><a href="#">Return Policy</a></li>
+                                    <li class="pb-3"><a href="#">Shipping Info</a></li>
+                                    <li class="pb-3"><a href="#">Bulk Orders</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <h6 class="sm-title-03 mb-4 text-white">Connect</h6>
+                                <ul class="list-unstyled white-link footer-link-3 m-0">
+                                    <li class="pb-3"><a href="#">Facebook</a></li>
+                                    <li class="pb-3"><a href="#">Instagram</a></li>
+                                    <li class="pb-3"><a href="#">Twitter</a></li>
+                                    <li class="pb-3"><a href="#">Our Stores</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 ms-auto">
+                        <h6 class="sm-title-03 mb-4 text-white">Stay up to date</h6>
+                        <p class="text-white text-opacity-85">Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan.</p>
+                        <form>
+                            <div class="d-flex flex-column flex-md-row mb-2"><input type="email" class="form-control me-md-2 mb-2 mb-md-0" placeholder="Enter your username"> <button class="btn btn-primary flex-shrink-0" type="submit">Get Started</button></div>
+                            <p class="text-white text-opacity-85 m-0">New UI kits or big discounts. Never spam.</p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom py-4 footer-border-top light small">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start py-1">
+                        <p class="m-0 text-white text-opacity-85">© 2024 copyright by <a href="https://www.pxdraft.com/" target="_blank" class="text-reset">pxdraft</a></p>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-center justify-content-md-end py-1 align-items-center gap-3">
+                        <div class="nav-item h-switch dropdown"><button class="theme-switch btn btn-sm btn-outline-white dropdown-toggle rounded-pill" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown"><span class="bi theme-icon-active"><i class="bi-circle-half"></i> </span><span class="ps-1 d-none">Theme Mode</span></button>
+                            <ul
+                                class="dropdown-menu" aria-labelledby="bd-theme">
+                                <li><button type="button" class="dropdown-item" data-bs-theme-value="light"><span class="bi me-2 opacity-50 theme-icon"><i class="bi-sun-fill"></i> </span>Light <span class="bi ms-auto d-none"><i class="bi-check2"></i></span></button></li>
+                                <li><button type="button" class="dropdown-item" data-bs-theme-value="dark"><span class="bi me-2 opacity-50 theme-icon"><i class="bi-moon-stars-fill"></i> </span>Dark <span class="bi ms-auto d-none"><i class="bi-check2"></i></span></button></li>
+                                <li><button type="button" class="dropdown-item active" data-bs-theme-value="auto"><span class="bi me-2 opacity-50 theme-icon"><i class="bi-circle-half"></i> </span>Auto <span class="bi ms-auto d-none"><i class="bi-check2"></i></span></button></li>
+                                </ul>
+                        </div><img src="../../assets/img/payments.png" title="" alt=""></div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- End Footer -->
+    </div>
+    <!-- 
+    ========================
+       End Wrapper 
+    ========================
+    -->
+    <!-- script start -->
+    <!-- jquery -->
+    <script src="../../assets/js/jquery-3.5.1.min.js"></script>
+    <!--bootstrap-->
+    <script src="../../assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- swiper carousel -->
+    <script src="../../assets/vendor/swiper/swiper-bundle.min.js"></script>
+    <!-- magnific -->
+    <script src="../../assets/vendor/magnific/jquery.magnific-popup.min.js"></script>
+    <!-- isotope -->
+    <script src="../../assets/vendor/isotope/isotope.pkgd.min.js"></script>
+    <!-- count-down -->
+    <script src="../../assets/vendor/count-down/jquery.countdown.min.js"></script>
+    <!-- count-down -->
+    <script src="../../assets/vendor/jarallax/jarallax-all.js"></script>
+    <!-- Theme Js -->
+    <script src="../../assets/js/custom.js"></script>
+    <script src="../../assets/js/theme.js"></script>
+    <script src="../../assets/js/color-modes.js"></script>
+    <!-- End script start -->
+</body>
+
+</html>

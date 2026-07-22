@@ -1,0 +1,97 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %}Wholesale Products {% endblock%}
+{% block content %}
+
+<main id="main" class="main">
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+{% endif %}
+
+    <div class="pagetitle">
+      <h1>Wholesale Products Tables</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' business.slug %}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'wholesale_store' business.slug %}">visit Website</a></li>
+          <li>
+              <a href="{% url 'add_wholesale_product' business.slug %}">
+                <span>Add wholesale Product/Service</span>
+              </a>
+          </li>
+          
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Wholesale Products</h5>
+              <a href="{% url 'add_wholesale_product' business.slug %}">
+                <span>Add Wholesale Product/Service</span>
+              </a>
+              <!-- Table with stripped rows -->
+              <table class="table datatable">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Product Name</th>
+                  <th>sub category</th>
+                  <th>Price Per Unit</th>
+                  <th>Unit Quantity</th>
+                  <th>Price Per Item</th>
+                  <th>Item Quantity</th>
+                  <th>Dropshipping</th>
+                  <th>Single Item Sale</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for product in products %}
+                <tr>
+                  <td>
+                    {% if product.image %}
+                      <img src="{{ product.image.url }}" alt="Image" width="60">
+                    {% else %}
+                      <span class="text-muted">No Image</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ product.product_name }}</td>
+                  <td>{{ product.sub_category}}</td>
+                  <td>{{ product.price_per_unit }}</td>
+                  <td>{{ product.quantity_units }}</td>
+                  <td>{{ product.price_per_item }}</td>
+                  <td>{{ product.total_items_in_stock }}</td>
+                  <td>{% if product.allow_dropshipping %} <span class="badge bg-success">You Accept</span> {% else %}<span class="badge bg-success">You Don't Accept</span> {% endif %}</td>
+                  <td>{% if product.allow_sell_per_item %}<span class="badge bg-success">You Accept</span> {% else %}<span class="badge bg-success">You Don't Accept</span>{% endif %}</td>
+                  <td>
+                    <a href="{% url 'edit_wholesale_product' slug=business.slug product_slug=product.slug %}" class="btn btn-sm btn-primary">Edit</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+              <!-- End Table with stripped rows -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+{% endblock %}

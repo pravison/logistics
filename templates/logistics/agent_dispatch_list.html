@@ -1,0 +1,152 @@
+{% extends 'main.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %} Agent Dispatches {% endblock %}
+
+{% block content %}
+<style>
+    section { min-height: 100vh; }
+    .card { border: none; border-radius: 16px; margin-bottom: 20px; }
+    .section-title { font-size: 0.9rem; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 15px; }
+    .form-label { font-weight: 600; color: #333; margin-top: 5px; font-size: 0.85rem; }
+    .form-control, .form-select { border-radius: 8px; padding: 10px; font-size: 0.9rem; }
+    .table-container { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); }
+    .badge-status { padding: 6px 12px; font-weight: 600; border-radius: 6px; font-size: 0.75rem; text-transform: uppercase; }
+</style>
+
+<section class="get_touch_area">
+<div class="container from_area">
+    
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0 fw-bold">Agent Dispatches</h4>
+        <span class="badge bg-primary px-3 py-2">Overview</span>
+    </div>
+
+    <!-- FILTER & SEARCH FORM -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="section-title">Filter & Search Dispatches</div>
+            <form method="GET" action="" class="row g-3">
+                
+                <!-- Search Box -->
+                <div class="col-md-12">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search by agent name, address, phone, or vehicle...">
+                </div>
+
+                <!-- County Filter -->
+                <div class="col-md-3">
+                    <label class="form-label">County</label>
+                    <select name="county" id="filterCounty" class="form-select">
+                        <option value="">All Counties</option>
+                        {% for c in counties %}
+                        <option value="{{ c.id }}" {% if selected_county == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Location Filter -->
+                <div class="col-md-3">
+                    <label class="form-label">Location</label>
+                    <select name="location" id="filterLocation" class="form-select">
+                        <option value="">All Locations</option>
+                        {% for l in locations %}
+                        <option value="{{ l.id }}" {% if selected_location == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="OPEN" {% if selected_status == "OPEN" %}selected{% endif %}>Open</option>
+                        <option value="SENT" {% if selected_status == "SENT" %}selected{% endif %}>Sent</option>
+                        <option value="ON_ROAD" {% if selected_status == "ON_ROAD" %}selected{% endif %}>On Road</option>
+                        <option value="ARRIVED" {% if selected_status == "ARRIVED" %}selected{% endif %}>Arrived</option>
+                        <option value="PICKED" {% if selected_status == "PICKED" %}selected{% endif %}>Picked</option>
+                    </select>
+                </div>
+
+                <!-- Quick Boolean Toggles -->
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="w-100 d-flex justify-content-between">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="send" value="1" id="sendCheck" {% if request.GET.send == '1' %}checked{% endif %}>
+                            <label class="form-check-label" for="sendCheck" style="font-size:0.8rem;">Send</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="picked" value="1" id="pickedCheck" {% if request.GET.picked == '1' %}checked{% endif %}>
+                            <label class="form-check-label" for="pickedCheck" style="font-size:0.8rem;">Picked</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="arrived" value="1" id="arrivedCheck" {% if request.GET.arrived == '1' %}checked{% endif %}>
+                            <label class="form-check-label" for="arrivedCheck" style="font-size:0.8rem;">Arrived</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-12 mt-3 text-end">
+                    <a href="{% url 'agent_dispatch_list' %}" class="btn btn-outline-secondary btn-sm px-4">Reset</a>
+                    <button type="submit" class="btn btn-dark btn-sm px-4">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DISPATCHES LIST TABLE -->
+    <div class="table-container shadow-sm">
+        <div class="section-title">Dispatch Records</div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#ID</th>
+                        <th>Agent</th>
+                        <th>Delivery Address</th>
+                        <th>Phone Number</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dispatch in dispatches %}
+                    <tr>
+                        <td><strong>#{{ dispatch.id }}</strong></td>
+                        <td>
+                            <div class="fw-bold">{{ dispatch.agent.shop_name }}</div>
+                            <small class="text-muted">{{ dispatch.agent.location.name }}, {{ dispatch.agent.location.county.name }}</small>
+                        </td>
+                        <td>{{ dispatch.delivery_address|default:"N/A" }}</td>
+                        <td>{{ dispatch.delivery_phone|default:"N/A" }}</td>
+                        <td>
+                            <span class="badge-status 
+                                {% if dispatch.status == 'OPEN' %}bg-secondary text-white
+                                {% elif dispatch.status == 'SENT' %}bg-info text-dark
+                                {% elif dispatch.status == 'ON_ROAD' %}bg-warning text-dark
+                                {% elif dispatch.status == 'ARRIVED' %}bg-primary text-white
+                                {% elif dispatch.status == 'PICKED' %}bg-success text-white{% endif %}">
+                                {{ dispatch.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'agent_dispatch_detail' dispatch.id %}" class="btn btn-sm btn-outline-dark">View More</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No dispatches found matching your filters.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</section>
+{% endblock %}

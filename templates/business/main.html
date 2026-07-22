@@ -1,0 +1,343 @@
+?<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+{% load humanize %}
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Garantii Mall {% block title %} {% endblock%}</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{% static 'assets-shopap/img/jiranimall-logo.jpg' %}" rel="icon">
+  <link href="{% static 'assets-shopap/img/jiranimall-logo.jpg' %}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/quill/quill.snow.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/quill/quill.bubble.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/simple-datatables/style.css' %}" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+
+
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L8J68PS7HQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-L8J68PS7HQ');
+</script>
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="header fixed-top d-flex align-items-center">
+    
+    {% if staff and business %}
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="{% url 'dashboard'  business.slug %}" class="logo d-flex align-items-center">
+        <span class="d-none d-lg-block">{{ business.business_name }}</span>
+      </a>
+      <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div><!-- End Logo -->
+    {% else %}
+    
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="{% url 'all_Wholesale_products' %}" class="logo d-flex align-items-center">
+        <img src="{% static 'assets-shopap/img/jiranimall-logo.jpg' %}" alt="">
+        <span class="d-none d-lg-block">Garantii Mall</span>
+      </a>
+      <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div><!-- End Logo -->
+    {% endif %}
+
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+        {% if staff and business %}
+        <li class="nav-item d-block d-lg-none">
+          <a class="nav-link nav-icon " href="{% url 'dashboard'  business.slug %}">
+            <span class="d-lg-block">{{ business.business_name }}</span>
+          </a>
+        </li><!-- End Search Icon-->
+        {% else %}
+        <li class="nav-item d-block d-lg-none">
+          <a class="nav-link nav-icon " href="{% url 'all_Wholesale_products' %}">
+            <span class="d-lg-block">Garantii Mall</span>
+          </a>
+        </li><!-- End Search Icon-->
+        {% endif %}
+
+       
+        <li class="nav-item dropdown pe-3">
+
+          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="" data-bs-toggle="dropdown">
+            <i class="bi bi-person"></i>
+            <span class="d-none d-md-block dropdown-toggle ps-2">{{ request.user.first_name }}</span>
+          </a><!-- End Profile Iamge Icon -->
+
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+            
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'profile' %}">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="https://wa.me/254706420043/">
+                <i class="bi bi-question-circle"></i>
+                <span>Need Help?</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_user' %}">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign Out</span>
+              </a>
+            </li>
+
+          </ul><!-- End Profile Dropdown Items -->
+        </li><!-- End Profile Nav -->
+
+      </ul>
+    </nav><!-- End Icons Navigation -->
+
+  </header><!-- End Header -->
+
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+      {% if staff %}
+      <li class="nav-item">
+        <a class="nav-link  collapsed" href="{% url 'business' %}">
+          <i class="bi bi-grid"></i>
+          <span>My Business</span>
+        </a>
+      </li><!-- End business  Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link " href="{% url 'dashboard' business.slug %}">
+          <i class="bi bi-grid"></i>
+          <span>Dashboard</span>
+        </a>
+      </li><!-- End Dashboard Nav -->
+      {% if request.user.is_authenticated and request.user.is_staff %}
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'order-list' %}">
+          <i class="bi bi-grid"></i>
+          <span>All customers orders </span>
+        </a>
+      </li><!-- End all  customers oders Nav -->
+      {% endif %}
+
+      <!-- Wholesale nav nav -->
+      {% if business.wholesaler %}
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#wholesale-orders-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-people"></i><span>Wholesale Section</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="wholesale-orders-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="{% url 'wholesale_store' business.slug %}">
+              <i class="bi bi-circle"></i><span>My Wholesale Website </span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'wholesale_products' business.slug %}">
+              <i class="bi bi-circle"></i><span>Wholesale Products </span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'add_wholesale_product' business.slug %}">
+              <i class="bi bi-circle"></i><span> Add Wholesale Products</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'wholesale_orders' business.slug %}">
+              <i class="bi bi-circle"></i><span>Customer Orders</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <!-- End  Nav -->
+      {% endif %}
+      <!-- retail section-->
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#retail-orders-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-people"></i><span>Retail Section</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="retail-orders-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          
+          <li>
+            <a href="{% url 'business_store' business.slug %}">
+              <i class="bi bi-circle"></i><span>My {% if business.wholesaler %} Retail {% endif %} website</span>
+            </a>
+          </li><!-- my store -->
+            <li>
+            <a href="{% url 'products' business.slug %}">
+              <i class="bi bi-circle"></i><span>Products</span>
+            </a>
+            </li>
+            <li>
+              <a href="{% url 'add_product' business.slug %}">
+                <i class="bi bi-circle"></i>
+                <span>Add Product/Service</span>
+              </a>
+            </li>
+          <li>
+            <a href="{% url 'seller-orders' business.slug %}">
+              <i class="bi bi-circle"></i><span>Customer Orders</span>
+            </a>
+          </li>
+           
+        </ul>
+      </li>
+      <!-- bu wholesale section-->
+      <li class="nav-item">
+        <a class="nav-link  collapsed" href="{% url 'all_Wholesale_products' %}">
+          <i class="bi bi-bag"></i>
+          <span>Buy Wholesale</span>
+        </a>
+      </li><!-- my store -->
+      <!--dropship link-->
+      <li class="nav-item">
+        <a class="nav-link  collapsed" href="{% url 'all_Wholesale_products' %}?dropship=dropship">
+          <i class="bi bi-bag"></i>
+          <span>Dropship</span>
+        </a>
+      </li><!-- my store -->
+      
+      <!--end customers oders nav-->
+      
+      <!-- Challenges nav nav -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#components-orders-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-people"></i><span>Challenges</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="components-orders-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="{% url 'business_vote_challenges' business.slug %}">
+              <i class="bi bi-circle"></i><span>Challenges</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'challenge_patnership_invite' business.slug %}">
+              <i class="bi bi-circle"></i><span>Challenge Patnership</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'create_vote_challenge' %}?business_id={{business.id}}">
+              <i class="bi bi-circle"></i><span>Create a Creative Challenge</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'create_qna_challenge' %}?business_id={{ business.id }}">
+              <i class="bi bi-circle"></i><span>Create Q&A Challenge</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <!-- End orders Nav -->
+        
+       <!-- customers nav -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-people"></i><span>Customers</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="{% url 'customers' business.slug %}">
+              <i class="bi bi-circle"></i><span>Customers</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'add_customer' %}?refferal_code={{customer.refferal_code}}&bussiness_slug={{business.slug}}">
+              <i class="bi bi-circle"></i><span>Add Customers</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <!-- End customers Nav -->
+
+      {% if request.user == business.owner %}
+      <!--<li class="nav-item">-->
+      <!--  <a class="nav-link collapsed" href="{% url 'add_staff' business.slug %}">-->
+      <!--    <i class="bi bi-person"></i>-->
+      <!--    <span>Add Staff</span>-->
+      <!--  </a>-->
+      <!--</li> End add staff Nav -->
+      {% endif %}
+      {% endif %}
+      
+      
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'profile' %}">
+          <i class="bi bi-person"></i>
+          <span>My Profile</span>
+        </a>
+      </li><!-- End Login Page Nav -->
+      {% if request.user.is_authenticated %}
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'logout_user' %}">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Logout</span>
+        </a>
+      </li><!-- End Login Page Nav -->
+      {% endif %}
+
+    </ul>
+
+  </aside><!-- End Sidebar-->
+
+  {% block content %}
+  {% endblock %}
+
+  <!-- ======= Footer ======= -->
+  <footer id="footer" class="footer">
+    <div class="copyright">
+      &copy; Copyright <strong><span>{{ business.business_name }}</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
+      Powered by <a href="{% url 'all_Wholesale_products' %}">Garantii Mall</a>
+    </div>
+  </footer><!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/apexcharts/apexcharts.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/chart.js/chart.umd.js' %}"></script>
+  <script src="{% static 'assets/vendor/echarts/echarts.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/quill/quill.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/simple-datatables/simple-datatables.js' %}"></script>
+  <script src="{% static 'assets/vendor/tinymce/tinymce.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+
+  <!-- Template Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
+</body>
+
+</html>

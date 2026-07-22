@@ -1,0 +1,319 @@
+{% extends 'store/wholesalers/wholesale-main.html' %}
+{% load static %}
+{% load query_append %}
+{% load custom_product_filters %}
+{% load to_filter %}
+{% load url_filters %}
+{% block content %}
+<main>
+    <!-- Page Title -->
+    <div class="bg-no-repeat bg-cover bg-right-center position-relative" style="background-image: url(../../assets/img/fashion2/home-banner-3.jpg);">
+        <div class="position-absolute top-0 end-0 start-0 bottom-0 opacity-3 bg-dark"></div>
+        <!-- Header Height Bar -->
+        <div class="header-height-bar border-bottom opacity-3"></div>
+        <div class="container-fluid px-container py-6 position-relative">
+            <div class="row align-items-center">
+                <div class="col-lg-6 my-2">
+                    <h1 class="m-0 h4 text-center text-lg-start text-white">Shop</h1>
+                </div>
+                <div class="col-lg-6 my-2">
+                    <ol class="breadcrumb breadcrumb-light m-0 small justify-content-center justify-content-lg-end">
+                        <!-- <li class="breadcrumb-item"><a class="text-nowrap" href="#">Home</a></li>
+                        <li class="breadcrumb-item text-nowrap active" aria-current="page">My Account</li> -->
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Page Title -->
+    <!-- Shop Section -->
+    <section class="pt-6 pb-12">
+        <div class="container-fluid px-container">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col shop-sidebar-option-02 offcanvas-lg offcanvas-start px-0 px-lg-3" tabindex="-1" id="shop_filter" aria-labelledby="shop_filterLabel">
+                    <div class="offcanvas-header border-bottom">
+                        <h5 class="offcanvas-title" id="shop_filterLabel">Shop Filter</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#shop_filter" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body flex-column">
+                        <!--dropship link-->
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 " href="{% url 'all_Wholesale_products' %}?dropship=dropship&seller_id={{business.id}}" >Dropshiped Products<i class="bi bi-bag"></i></a></div>
+                        </div>
+                        <!-- Categories -->
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5" data-bs-toggle="collapse" href="#shop_categories" role="button" aria-expanded="true" aria-controls="shop_categories">Categories <i class="bi bi-chevron-up"></i></a></div>
+                            <div class="shop-categories-list collapse show"
+                                id="shop_categories">
+                                <div class="shop-attr-body">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item"><a href="{% url 'all_Wholesale_products' %}" class="nav-link active">All Products</a></li>
+                                        {% for category in categories %}
+                                        <li class="nav-item"><a href="{% url 'all_Wholesale_products' %}?category_id={{category.id}}" class="nav-link">{{ category.category_name }} <span>({{ category.total_products }})</span></a> <a data-bs-toggle="collapse" href="#shop_cat_{{ category.id }}" role="button" aria-expanded="false" aria-controls="shop_cat_{{ category.id }}" class="s-icon"></a>
+                                            <div class="collapse"
+                                                id="shop_cat_{{ category.id }}">
+                                                <ul class="nav nav-pills flex-column nav-hierarchy">
+                                                    {% for subcat in category.prefetched_subcategories %}
+                                                    <li class="nav-item"><a href="{% url 'all_Wholesale_products' %}?subcategory_id={{subcat.id}}" class="nav-link">{{ subcat.sub_category_name }} <span>({{ subcat.total_products }})</span></a></li>
+                                                    {% empty %}
+                                                    <li class="nav-item"><em>No subcategories</em></li>
+                                                    {% endfor  %}
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Categories -->
+                        <!-- Product Types Filter -->
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 collapsed" data-bs-toggle="collapse" href="#shop_type" role="button" aria-expanded="false" aria-controls="shop_type">Product Type <i class="bi bi-chevron-up"></i></a></div>
+                            <div class="shop-attributes-list collapse"
+                                id="shop_type">
+                                <div class="shop-attr-body">
+                                    
+                                <ul class="list-unstyled">
+                                  {% with request.build_absolute_uri as base_url %}
+                                  {% for key, label in product_types %}
+                                    <li class="nav-item">
+                                      <a href="{% add_query_param base_url 'type' key %}">{{ label }}</a>
+                                    </li>
+                                  {% endfor %}
+                                  {% endwith %}
+                                </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end product types  -->
+
+                        <!-- Product Conditions Filter -->
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 collapsed" data-bs-toggle="collapse" href="#shop_condition" role="button" aria-expanded="false" aria-controls="shop_condition">Product Condition <i class="bi bi-chevron-up"></i></a></div>
+                            <div class="shop-attributes-list collapse"
+                                id="shop_condition">
+                                <div class="shop-attr-body">
+                                    <ul class="list-unstyled">
+                                      {% with request.build_absolute_uri as base_url %}
+                                      {% for key, label in product_conditions %}
+                                        <li class="nav-item">
+                                          <a href="{% add_query_param base_url 'condition' key %}">{{ label }}</a>
+                                        </li>
+                                      {% endfor %}
+                                      {% endwith %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end product conditions -->
+
+                         
+                        <!-- sold as Filter -->
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 collapsed" data-bs-toggle="collapse" href="#shop_sold_as" role="button" aria-expanded="false" aria-controls="shop_type">Sold As <i class="bi bi-chevron-up"></i></a></div>
+                            <div class="shop-attributes-list collapse"
+                                id="shop_sold_as">
+                                <div class="shop-attr-body">
+                                    {% with request.build_absolute_uri as base_url %}
+                                    <ul class="list-unstyled">
+                                    <li class="nav-item">
+                                    <a href="{% add_query_param base_url 'sold_as' 'single item' %}">single item</a>
+                                    </li>
+                                    <li class="nav-item">
+                                    <a href="{% add_query_param base_url 'sold_as' 'pair' %}">pair</a>
+                                    </li>
+                                    <li class="nav-item">
+                                    <a href="{% add_query_param base_url 'sold_as' 'dozen' %}">dozen</a>
+                                    </li>
+                                    <li class="nav-item">
+                                    <a href="{% add_query_param base_url 'sold_as' 'carton' %}">carton</a>
+                                    </li>
+                                    <li class="nav-item">
+                                    <a href="{% add_query_param base_url 'sold_as' 'half carton' %}">half carton</a>
+                                    </li>
+                                    <li class="nav-item">
+                                    <a href="{% add_query_param base_url 'sold_as' 'bale' %}">bale</a>
+                                    </li>
+                                    <li class="nav-item">
+                                    <a href="{% add_query_param base_url 'sold_as' 'half bale' %}">half bale</a>
+                                    </li>
+                                    <li class="nav-item">
+                                    <a href="{% add_query_param base_url 'sold_as' 'sack' %}">sack</a>
+                                    </li>
+                                    <li class="nav-item">
+                                    <a href="{% add_query_param base_url 'sold_as' 'half sack' %}">half sack</a>
+                                    </li>
+                                    <li class="nav-item">
+                                    <a href="{% add_query_param base_url 'sold_as' 'service' %}">service</a>
+                                    </li>
+                                    </ul>
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                                                <!-- end sold as  -->
+                                                
+                        <!-- MOQ Filter -->
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 collapsed" data-bs-toggle="collapse" href="#shop_moq" role="button" aria-expanded="false" aria-controls="shop_type">Minimum Order Quantity <i class="bi bi-chevron-up"></i></a></div>
+                            <div class="shop-attributes-list collapse"
+                                id="shop_moq">
+                                <div class="shop-attr-body">
+                                    {% with request.build_absolute_uri as base_url %}
+
+                                    <ul class="list-unstyled">
+                                      {% for i in 1|to:21 %}
+                                        <li class="nav-item">
+                                          <a href="{% add_query_param base_url 'moq' i %}">{{ i }}</a>
+                                        </li>
+                                      {% endfor %}
+                                    </ul>
+                                    {% endwith %}
+
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end MOQ types  -->
+
+                        <!-- price filter -->
+                        {% with request.build_absolute_uri as base_url %}
+                            <form method="get" action="{{ base_url }}">
+                            <div class="shop-attributes-box">
+                                <div class="shop-sidebar-title">
+                                    <a class="h5 collapsed" data-bs-toggle="collapse" href="#shop_price" role="button" aria-expanded="false" aria-controls="shop_price">
+                                        Price <i class="bi bi-chevron-up"></i>
+                                    </a>
+                                </div>
+                                <div class="shop-attributes-list collapse" id="shop_price">
+                                    <div class="shop-attr-body">
+                                        <div class="d-flex align-items-center pt-3">
+                                            <!-- Min Price -->
+                                            <input type="number" name="min_price" class="form-control form-control-sm" placeholder="ksh10.00" min="0">
+                                            <!-- Divider -->
+                                            <div class="text-gray-350 mx-2">‒</div>
+                                            <!-- Max Price -->
+                                            <input type="number" name="max_price" class="form-control form-control-sm" placeholder="ksh350.00" min="0">
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary mt-2">Filter</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        {% endwith %}
+                        <!-- End Brands -->
+                         <!-- Sellers -->
+                        {% if sellers %}
+                        <div class="shop-attributes-box">
+                            <div class="shop-sidebar-title"><a class="h5 collapsed" data-bs-toggle="collapse" href="#shop_brand" role="button" aria-expanded="false" aria-controls="shop_brand">Sellers<i class="bi bi-chevron-up"></i></a></div>
+                            <div class="shop-attributes-list collapse"
+                                id="shop_brand">
+                                <div class="shop-attr-body">
+                                    <ul class="list-unstyled">
+                                        {% for seller in sellers %}
+                                        <li class="nav-item"><a href="{% url 'all_Wholesale_products' %}?seller_id={{seller.id}}">{{seller.business_name}}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <!-- End sellers -->
+                    </div>
+                </div>
+                <!-- End Sidebar -->
+                <!-- Product Box -->
+                <div class="col">
+                    <div class="shop-top-bar-02 d-flex pb-3">
+                        {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                        <div class="layout-change">
+                            <!-- Mobile Toggle --> <button class="btn btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#shop_filter" aria-controls="shop_filter"><i class="fs-4 lh-1 bi bi-justify-left"></i></button>
+                            <!-- End Mobile Toggle <a class="btn btn-sm active" href="shop-fw.html"><i class="bi bi-grid"></i></a> <a class="btn btn-sm" href="shop-list-fw.html"><i class="bi bi-view-stacked"></i></a>-->
+                            </div>
+                        <div class="shortby-dropdown ms-auto">
+                            <div class="dropdown"><a class="btn btn-none btn-sm border dropdown-toggle text-mode" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">Short by</a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow"
+                                    aria-labelledby="dropdownMenuLink">
+                                    <!-- <li><a class="dropdown-item {% if sort == 'price_asc' %}active{% endif %}" href="?sort=featured">Featured</a></li> -->
+                                    <!-- <li><a class="dropdown-item {% if sort == 'best_selling' %}active{% endif %}" href="?sort=best_selling">Best selling</a></li> -->
+                                    <li><a class="dropdown-item {% if sort == 'name_az' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=name_az' }}">Alphabetically, A-Z</a></li>
+                                    <li><a class="dropdown-item {% if sort == 'name_za' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=name_za' }}">Alphabetically, Z-A</a></li>
+                                    <li><a class="dropdown-item {% if sort == 'price_asc' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=price_asc' }}">Price, low to high</a></li>
+                                    <li><a class="dropdown-item {% if sort == 'price_desc' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=price_desc' }}">Price, high to low</a></li>
+                                    <li><a class="dropdown-item {% if sort == 'date_old' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=date_old' }}">Date, old to new</a></li>
+                                    <li><a class="dropdown-item {% if sort == 'date_new' %}active{% endif %}" href="{{ request.build_absolute_uri|add_query_param:'sort=date_new' }}">Date, new to old</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        {% for product in products %}
+                        {% include "store/partials/wholesale-product-card.html" %}
+                        {% empty %}
+                            <p>No products in this category.</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="shop-bottom-bar-02 d-flex align-items-center mt-3">
+                        <div>Showing: {{ products.start_index }} - {{ products.end_index }} of {{ products.paginator.count }}</div>
+                        <div class="ms-auto">
+                            <ul class="pagination">
+                                {% if products.has_previous %}
+                                    {% with request.build_absolute_uri as base_url %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{% add_query_param base_url 'page' products.previous_page_number %}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    {% endwith %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&laquo;</span>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in products.paginator.page_range %}
+                                    {% if products.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > products.number|add:-3 and num < products.number|add:3 %}
+                                        {% with request.build_absolute_uri as base_url %}
+                                        <li class="page-item"><a class="page-link" href="{% add_query_param base_url 'page' num %}">{{ num }}</a></li>
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if products.has_next %}
+                                    <li class="page-item">
+                                        {% with request.build_absolute_uri as base_url %}
+                                            <a class="page-link" href="{% add_query_param base_url 'page' products.next_page_number %}" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        {% endwith %}
+
+                                        
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&raquo;</span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+
+
+                </div>
+                <!-- End Product Box -->
+            </div>
+        </div>
+    </section>
+    <!-- End Shop Section -->
+</main>
+{% endblock content %}

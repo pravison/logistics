@@ -1,0 +1,178 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %} Loyalty Points {% endblock%}
+{% block content %}
+<style>
+  .coupon-card {
+      width: 280px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #007bff, #ffcc00);
+      padding: 10px;
+      color: white;
+      margin: auto;
+      text-align: center;
+  }
+  .coupon-code {
+      background-color: white;
+      color: black;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 15px;
+      font-weight: bold;
+  }
+  .qr-code {
+      margin-top: 15px;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+
+
+<main id="main" class="main">
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+{% endif %}
+
+    <div class="pagetitle">
+      <h1>Loyalty Points Tables</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'all_customers' %}">Customers</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'add_loyalty_points_to_customer'  %}">Add Points</a></li>
+          
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Loyalty Points</h5>
+              {% if messages %}
+                  {% for message in messages %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+
+                  {% endfor %}
+              {% else %}
+                  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    search anything 
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+              {% endif %}
+              
+              <!-- Table with stripped rows -->
+              <table class="table datatable">
+                <thead>
+                  <tr>
+                    <th scope="col">Customer</th>
+                    <th scope="col">Points Earned </th>
+                    <th scope="col">Purchase Value</th>
+                    <th scope="col">Loyalty Category</th>
+                    <th scope="col">Added By</th>
+                    <th scope="col">date added</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for point in loyalty_points %}
+                  <tr>
+                    <td scope="row">{% if point.customer.user %}{{point.customer}} {% else %} {{point.customer.name}} {% endif %}</td>
+                    <td scope="row">{{point.points_earned}}</td>
+                    <td  scope="row">{{ point.purchase_value}}</td>
+                    <td  scope="row">{{ point.category}}</td>
+                    <td scope="row">{{point.added_by}}</td>
+                    <td scope="row">{{point.date_added|date}}</td>
+                    <td scope="row">{% if point.status == 'awaiting approval' %}<span class="badge bg-warning"><a href="{% url 'all_loyalty_points' %}?approve_point_id={{point.id}}" title='edit' style="color:black;">click to approve</a></span>{% elif point.status == 'approved'  %}<span class="badge bg-success">Approved</span>{% else %}<span class="badge bg-danger">declined</span>{% endif %}</td>
+                  </tr>
+                  {% endfor %}
+                  
+                </tbody>
+              </table>
+              <!-- End Table with stripped rows -->
+
+            </div>
+            <div class="row">
+              <div class="container mt-5">
+                <div class="coupon-card" id="couponCardId">
+                    <h4 style="margin-bottom: 5px; color: black;"><b>Every 20th customer gets a free gas refill!</b></h4>
+                    <p style="color: rgb(94, 255, 0);"><b>Scan or Click the qr-code below to see your number or if you stand a chance for a free gas refill</b></p>
+                    
+                    <div class="qr-code">
+                        <a href="{% url 'loyalty_membership' %}">
+                        <img src="data:image/png;base64,{{ qr_code_image }}" alt="QR Code" class="img-fluid"></a>
+                    </div>
+                    <h6 style="margin-bottom: 5px; color: black"><b>Scan or Click Now!!! Your FREE refill could be waiting!</b></h6>
+                  
+                </div>
+                <canvas id="canvas" style="display: none;"></canvas>
+              </div>
+              <button class="coupon-card btn btn-primary mt-2 mb-1" id="downloadBtn">Download Image</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+
+
+<script>
+  document.getElementById('downloadBtn').addEventListener('click', function () {
+      const downloadBtn = document.getElementById('downloadBtn');
+      const targetDiv = document.getElementById('couponCardId');
+
+      // Display download progress message
+      downloadBtn.innerText = 'Download in Progress...';
+      downloadBtn.disabled = true;
+
+      domtoimage.toPng(targetDiv, { 
+          quality: 1,
+          bgcolor: "white",
+          style: {
+              width: '280px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #007bff, #ffcc00)',
+              padding: '10px',
+              color: 'white',
+              margin: 'auto',
+              textAlign: 'center',
+              fontFamily: 'Arial, sans-serif'
+          }
+      })
+      .then(function (dataUrl) {
+          const link = document.createElement('a');
+          link.download = `loyalty-qr-code-{{business.business_name}}`;
+          link.href = dataUrl;
+          link.click();
+
+          // Reset download button text after download
+          downloadBtn.innerText = 'Download Image';
+          downloadBtn.disabled = false;
+      })
+      .catch(function (error) {
+          console.error('Oops, something went wrong!', error);
+
+          // Reset download button text if an error occurs
+          downloadBtn.innerText = 'Download Image';
+          downloadBtn.disabled = false;
+      });
+  });
+</script>
+
+{% endblock %}

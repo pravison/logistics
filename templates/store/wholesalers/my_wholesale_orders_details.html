@@ -1,0 +1,681 @@
+
+{% extends 'store/wholesalers/wholesale-main.html' %}
+{% load static %}
+{% load humanize %}
+{% load query_append %}
+{% load custom_product_filters %}
+{% load math_filters %}
+
+{% block content %}
+<main>
+    <!-- Page Title -->
+    <div class="bg-no-repeat bg-cover bg-right-center position-relative" style="background-image: url(../../assets/img/fashion2/home-banner-3.jpg);">
+        <div class="position-absolute top-0 end-0 start-0 bottom-0 opacity-3 bg-dark"></div>
+        <!-- Header Height Bar -->
+        <div class="header-height-bar border-bottom opacity-3"></div>
+        <div class="container-fluid px-container py-6 position-relative">
+            <div class="row align-items-center">
+                <div class="col-lg-6 my-2">
+                    <h1 class="m-0 h4 text-center text-lg-start text-white">Your Orders</h1>
+                </div>
+                <div class="col-lg-6 my-2">
+                    <ol class="breadcrumb breadcrumb-light m-0 small justify-content-center justify-content-lg-end">
+                        <!-- <li class="breadcrumb-item"><a class="text-nowrap" href="#">Home</a></li>
+                        <li class="breadcrumb-item text-nowrap active" aria-current="page">My Account</li> -->
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Page Title -->
+    <!-- Shop Section -->
+    <section class="pt-6 pb-12">
+        <div class="container-fluid px-container">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col shop-sidebar-option-02 offcanvas-lg offcanvas-start px-0 px-lg-3" tabindex="-1" id="shop_filter" aria-labelledby="shop_filterLabel">
+                    <div class="offcanvas-header border-bottom">
+                        <h5 class="offcanvas-title" id="shop_filterLabel">Shop Filter</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#shop_filter" aria-label="Close"></button>
+                    </div>
+                   <div class="offcanvas-body flex-column">
+
+                    <!-- 🔄 Clear All Filters -->
+                    <div class="mb-3 text-end">
+                        <a href="{% url 'my_wholesale_orders' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise"></i> Reset Filters
+                        </a>
+                    </div>
+                
+                    <!-- 📦 Filter by Order -->
+                
+                    <!-- 🧑‍💼 Filter by Seller -->
+                    {% if sellers_bought_from %}
+                    <div class="shop-attributes-box">
+                        <div class="shop-sidebar-title">
+                            <a class="h5 collapsed" data-bs-toggle="collapse" href="#seller_filter" role="button" aria-expanded="false" aria-controls="seller_filter">
+                                Filter by Seller <i class="bi bi-chevron-up"></i>
+                            </a>
+                        </div>
+                        <div class="shop-attributes-list collapse" id="seller_filter">
+                            <form method="get" class="mb-4">
+                               <select name="seller_id" onchange="this.form.submit()" class="form-select">
+                                    <option value="">-- Select Seller --</option>
+                                    {% for seller in sellers_bought_from %}
+                                    <option value="{{ seller.business__id }}" {% if request.GET.seller_id == seller.business__id|stringformat:"s" %}selected{% endif %}>
+                                        {{ seller.business__business_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                
+                </div>
+
+                </div>
+                <!-- End Sidebar -->
+                <!-- Product Box -->
+                <div class="col">
+                    <div class="shop-top-bar-02 d-flex pb-3">
+                        <div class="layout-change">
+                            <!-- Mobile Toggle --> <button class="btn btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#shop_filter" aria-controls="shop_filter"><i class="fs-4 lh-1 bi bi-justify-left"></i></button>
+                            </div>
+                        <div class="shortby-dropdown ms-auto">
+                            <form method="get" class="mb-4">
+                                    <select name="sort" onchange="this.form.submit()" class="form-select">
+                                        <option value="">-- Sort Orders: --</option>
+                                        <option value="recent" {% if sort == "recent" %}selected{% endif %}>Recently Added</option>
+                                        <option value="oldest" {% if sort == "oldest" %}selected{% endif %}>Oldest</option>
+                                        <option value="price_asc" {% if sort == "price_asc" %}selected{% endif %}>Price Low to High</option>
+                                        <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Price High to Low</option>
+                                        <option value="received" {% if sort == "received" %}selected{% endif %}>Only Received</option>
+                                        <option value="paid" {% if sort == "paid" %}selected{% endif %}>Only Paid</option>
+                                        <option value="not_paid" {% if sort == "not_paid" %}selected{% endif %}>Not Paid</option>
+                                    </select>
+                                </form>
+                            
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                       
+                        <div class="text-end">
+                        <h6><strong>Total Price:</strong> Ksh {{ total_price|floatformat:2|intcomma }} 
+                            {% if request.user.is_authenticated %}
+                                <a href="{% url 'customer_unpaid_orders'%}?phone_number={{request.user.customer.phone_number }}" class="btn btn-primary rounded">pay</a>                          
+                            {% else %}
+                            <a href="{{ request.build_absolute_uri }}"
+                            class="btn btn-primary login-to-pay rounded">
+                                Login to Pay
+                            </a>
+                            {% endif%}
+                        </h6>
+                        </div>
+                        <hr>
+                        <ul class="list-unstyled m-0 p-0" id="cart-items">
+                          {% for order in orders %}
+                          <li class="py-2">
+                            <div class="row align-items-center">
+                              <div class="col-4">
+                                <img class="img-fluid border" src="{{ order.product.image.url }}" alt="{{ order.product.product_name }}">
+                              </div>
+                              <div class="col-8">
+                                <p class="mb-1" style="text-decoration: underline;"><strong>{{ order.product.product_name }}</strong></p>
+                                <p class="mb-1"><strong>Order Id: {{ order.id }}</strong></p>
+                                <p class="mb-1">Seller: {{ order.product.business.business_name }} {% if request.user.is_staff %} {{ order.product.business.phone_number }}{% else %} 0706420043 {% endif %}</p>
+                                <p class="mb-1">Quantity: {{ order.quantity | intcomma }}</p>
+                                <p class="mb-1">Price at Purchase: Ksh {{ order.price_at_purchase | intcomma }}</p>
+                                <p class="mb-1 text-success">
+                                  Total Price: Ksh {{ order.quantity|mul:order.price_at_purchase|floatformat:2|intcomma }}
+                                </p>
+                        
+                                <p class="mb-1">Order Status: {{ order.order_status }}</p>
+                                <p class="mb-1 text-muted">Ordered at: {{ order.ordered_at|date:"M d, Y H:i" }}</p>
+                                {% if not  order.customer_received or  order.cancelled %}
+                                <button class="btn btn-sm btn-outline-secondary mb-2"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#variantDropdown-{{ order.id }}"
+                                        aria-expanded="false">
+                                    Select Colours & Sizes
+                                </button>
+                                <div class="collapse" id="variantDropdown-{{ order.id }}">
+                                  {% if order.product.allow_customer_to_select_colours or request.user.is_staff  %}
+                                    
+                                    <!-- ✅ Show already selected variants -->
+                                    {% if order.variants.all %}
+                                      <h6>Selected Colours & Sizes</h6>
+                                      <ul class="list-unstyled">
+                                        {% for v in order.variants.all %}
+                                          <li class="variant-item" style="cursor: pointer;"
+                                              data-variant-id="{{ v.id }}">
+                                            {{ v.colour }} / {{ v.size }} × {{ v.quantity }}
+                                            <span class="text-danger small ms-2">(click to remove)</span>
+                                          </li>
+                                        {% empty %}
+                                          <li>No colours/sizes selected yet.</li>
+                                        {% endfor %}
+                                      </ul>
+                                    {% endif %}
+
+                                
+                                    <!-- ✅ Form to add new variants -->
+                                    {% if not order.customer_received %}
+                                    <form method="post" action="{% url 'add_variants_bulk' %}?next={{ request.path }}&order_id={{ order.id }}">
+                                       {% csrf_token %}
+                                       <h6 class="mb-2">Select Colours & Sizes</h6>
+                                       {% for colour in order.product.available_colours.all %}
+                                        <div class="border rounded p-2 mb-3 bg-light">
+                                            <strong class="text-primary">{{ colour.colour }}</strong>
+                                        
+                                            <table class="table table-sm mt-2 mb-0">
+                                              <thead>
+                                                <tr>
+                                                  <th>Size</th>
+                                                  <th>Qty</th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                {% for size in order.product.available_sizes.all %}
+                                                  <tr>
+                                                    <td>{{ size.size }}</td>
+                                                    <td>
+                                                    <input type="checkbox"
+                                                           name="variant_{{ colour.id }}_{{ size.id }}"
+                                                           value="1">
+                                                    </td>
+                                                  </tr>
+                                                {% endfor %}
+                                              </tbody>
+                                            </table>
+                                        
+                                          </div>
+                                        {% endfor %}
+                                    
+                                     
+                                      <button type="submit" class="btn btn-sm btn-outline-primary">save</button>
+                                    </form>
+                                    {% endif %}
+
+                                
+                                  {% else %}
+                                    <!-- ❌ If seller decides colours/sizes -->
+                                    <p class="text-muted">
+                                      <em>The seller will mix colours and sizes for you.</em>
+                                    </p>
+                                  {% endif %}
+                                </div>
+                                {% endif %}
+                        
+                                {% if not order.customer_received %}
+                                  {% if not order.delivery_option %}
+                                    <br/><b>How would you like to receive your order?</b><br>
+                                    <a href="#" class="btn btn-sm btn-outline-primary mt-1 choose-delivery-btn" data-order-id="{{ order.id }}" data-order-type="{{ 'wholesale' }}" data-option="delivery">Request Delivery</a>
+                                    <a href="#" class="btn btn-sm btn-outline-primary mt-1 choose-delivery-btn" data-order-id="{{ order.id }}" data-order-type="{{ 'wholesale' }}" data-option="pickup">Pick at the Store</a>
+                                  {% else %}
+                                    <span class="badge bg-info mt-1">Delivery Option: {{ order.delivery_option }}</span>
+                                  {% endif %}
+                                {% endif %}
+                        
+                                {% if not order.is_reviewed %}
+                                    <a href="#"
+                                       class="btn btn-sm btn-outline-primary mt-1"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#reviewModal"
+                                       data-product-id="{{ order.product.id }}"
+                                       data-product-name="{{ order.product.product_name }}"
+                                       data-business-id="{{ order.product.business.id }}"
+                                       data-order-type="wholesale"
+                                       data-order-id="{{ order.id }}">
+                                       Leave a Review
+                                    </a>
+
+
+
+                                  
+                                {% else %}
+                                  <span class="badge bg-success mt-1">Reviewed</span>
+                                {% endif %}
+                        
+                                {% if order.cancelled %}
+                                  <a href="#" class="btn btn-sm btn-outline-secondary mt-1 disabled">Cancelled</a>
+                                  <a href="?re_order_id={{ order.id }}" class="btn btn-sm btn-outline-primary mt-1">Reorder</a>
+                                {% else %}
+                                  {% if not order.customer_received %}
+                                    <a href="#" class="btn btn-sm btn-outline-success mt-1"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#confirmReceivedModal"
+                                       data-order-type="{{ 'wholesale' }}"
+                                       data-order-id="{{ order.id }}">
+                                       Mark as Received
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-outline-danger mt-1 cancel-order-btn" data-order-id="{{ order.id }}" data-order-type="{{ 'wholesale' }}">Cancel</a>
+                                  {% else %}
+                                    <span class="badge bg-success mt-1">Received</span>
+                                  {% endif %}
+                                {% endif %}
+                              </div>
+                            </div>
+                          </li>
+                          {% empty %}
+                          <li class="py-2">You have no orders.</li>
+                          {% endfor %}
+                        </ul>
+
+                        
+                    </div>
+
+                    <div class="shop-bottom-bar-02 d-flex align-items-center mt-3">
+                        <div>Showing: {{ orders.start_index }} - {{ orders.end_index }} of {{ orders.paginator.count }}</div>
+                        <div class="ms-auto">
+                            <ul class="pagination">
+                                {% if orders.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ orders.previous_page_number }}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&laquo;</span>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in orders.paginator.page_range %}
+                                    {% if orders.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > orders.number|add:-3 and num < orders.number|add:3 %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if orders.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ orders.next_page_number }}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&raquo;</span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="text-center">
+                        <a href="{% url 'my_wholesale_orders' %}" 
+                            class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> Go Back To Your Orders
+                        </a>
+                        <a href="{% url 'all_customer_orders' request.user.customer.id %}" 
+                            class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> see all your Purchases
+                        </a>
+                        <a href="{% url 'all_Wholesale_products' %}" 
+                            class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> Go Back To shopping
+                        </a>
+                    </p>
+
+                </div>
+                <!-- End Product Box -->
+            </div>
+        </div>
+    </section>
+    <!-- End Shop Section -->
+</main>
+<!-- cancel order script-->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const cancelButtons = document.querySelectorAll('.cancel-order-btn');
+    
+    cancelButtons.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const orderId = this.getAttribute('data-order-id');
+            const orderType = this.getAttribute('data-order-type');  // Get the order type (retail or wholesale)
+
+            if (confirm("Are you sure you want to cancel this order?")) {
+                fetch(`/e-store/my-orders/cancel-order/${orderId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ order_type: orderType })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Order cancelled successfully.');
+                        location.reload();
+                    } else {
+                        alert('Failed to cancel order.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Something went wrong.');
+                });
+            }
+        });
+    });
+});
+</script>
+<!-- choose delivery option script-->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const deliveryButtons = document.querySelectorAll('.choose-delivery-btn');
+
+    deliveryButtons.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const orderId = this.getAttribute('data-order-id');
+            const option = this.getAttribute('data-option');
+            const optionText = option === 'delivery' ? 'request delivery' : 'pick up at the store';
+            const orderType = this.getAttribute('data-order-type');  // Get order type
+            if (confirm(`Are you sure you want to ${optionText} for this order?`)) {
+                fetch(`/e-store/my-orders/choose-delivery-option/${orderId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        option: option,
+                        order_type: orderType  // Include order type in the request body
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Delivery option selected successfully.');
+                        location.reload();
+                    } else {
+                        alert(data.error || 'Failed to update delivery option.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Something went wrong.');
+                });
+            }
+        });
+    });
+});
+</script>
+
+<!--review modal-->
+<div class="modal-askform-view modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Leave a Review for <span id="product-name"></span></h4>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewForm">
+                    {% csrf_token %}
+
+                    <!-- Hidden Inputs -->
+                    <input type="hidden" id="review-product-id" name="product_id">
+                    <input type="hidden" id="review-business-id" name="business_id">
+                    <input type="hidden" id="review-order-id" name="order_id">           <!-- ✅ NEW -->
+                    <input type="hidden" id="review-order-type" name="order_type">       <!-- ✅ NEW -->
+
+                    <!-- Review Type Toggle -->
+                    <div class="mb-3">
+                        <label class="form-label">What are you reviewing?</label>
+                        <select class="form-select" id="review-type" name="review_type">
+                            <option value="product">Product</option>
+                            <option value="business">Seller</option>
+                        </select>
+                    </div>
+
+                    <!-- Star Rating -->
+                    <div class="mb-3">
+                        <label class="form-label">Your Rating</label>
+                        <div id="star-rating" class="d-flex gap-1">
+                            {% for i in "12345" %}
+                                <i class="bi bi-star star" data-value="{{ i }}"></i>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" id="rating" name="rating">
+                    </div>
+
+                    <!-- Review Text -->
+                    <div class="mb-3">
+                        <label class="form-label">Your Review</label>
+                        <textarea class="form-control" name="review_text" id="review-text" rows="4" placeholder="Write your review..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Submit Review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--script for review-->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const stars = document.querySelectorAll('#star-rating .star');
+    const ratingInput = document.getElementById('rating');
+    const productNameSpan = document.getElementById('product-name');
+    const productIdInput = document.getElementById('review-product-id');
+    const businessIdInput = document.getElementById('review-business-id');
+    const orderIdInput = document.getElementById('review-order-id');
+    const reviewModal = document.getElementById('reviewModal');
+    const reviewTypeSelect = document.getElementById('review-type');
+
+    let orderType = '';  // Store orderType dynamically per button click
+
+    // ⭐ Star rating logic
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const value = star.getAttribute('data-value');
+            ratingInput.value = value;
+            stars.forEach(s => s.classList.remove('text-warning'));
+            for (let i = 0; i < value; i++) {
+                stars[i].classList.add('text-warning');
+            }
+        });
+    });
+
+    // 📦 Populate modal on button click
+    reviewModal.addEventListener('show.bs.modal', function (event) {
+        const trigger = event.relatedTarget;
+        const productId = trigger.getAttribute('data-product-id');
+        const productName = trigger.getAttribute('data-product-name');
+        const businessId = trigger.getAttribute('data-business-id');
+        const orderType = trigger.getAttribute('data-order-type');
+        const orderId = trigger.getAttribute('data-order-id');
+
+        productNameSpan.textContent = productName;
+        productIdInput.value = productId;
+        businessIdInput.value = businessId;
+
+        reviewTypeSelect.value = 'product';
+        ratingInput.value = '';
+        stars.forEach(s => s.classList.remove('text-warning'));
+        document.getElementById('review-text').value = '';
+
+        // Save orderType and orderId in hidden inputs or variables
+        reviewModal.dataset.orderType = orderType;
+        reviewModal.dataset.orderId = orderId;
+    });
+    // ✅ Submit review
+
+    document.getElementById('reviewForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById("submit-btn");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting...";
+
+        const productId = productIdInput.value;
+        const businessId = businessIdInput.value;
+        const rating = ratingInput.value;
+        const reviewText = document.getElementById('review-text').value;
+        const reviewType = reviewTypeSelect.value;
+        const orderType = reviewModal.dataset.orderType || '';
+        const orderId = reviewModal.dataset.orderId || '';
+
+        fetch(`/e-store/my-orders/submit-review/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                rating: rating,
+                review_text: reviewText,
+                review_type: reviewType,
+                business_id: businessId,
+                order_type: orderType,
+                order_id: orderId,  // send order_id here!
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Review submitted successfully!');
+                bootstrap.Modal.getInstance(reviewModal).hide();
+                location.reload();
+            } else {
+                alert(data.error || 'Failed to submit review');
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Submit Review";
+            }
+        })
+        .catch(() => {
+            alert('Something went wrong.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit Review";
+        });
+    });
+});
+</script>
+
+<!--modal for confirming to have received the order-->
+<div class="modal fade" id="confirmReceivedModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Product Receipt</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you have received your order?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Not Yet</button>
+        <button type="button" class="btn btn-success" id="confirm-received-btn">Yes, I’ve Received It</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- script for order recieve confirmation-->
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let selectedOrderId = null;
+    let selectedOrderType = null;  // Add this for the order type
+    const confirmModal = document.getElementById('confirmReceivedModal');
+    const confirmButton = document.getElementById('confirm-received-btn');
+
+    // Capture order ID and type when modal is shown
+    confirmModal.addEventListener('show.bs.modal', function (event) {
+        const trigger = event.relatedTarget;
+        selectedOrderId = trigger.getAttribute('data-order-id');
+        selectedOrderType = trigger.getAttribute('data-order-type');  // Get the order type (retail or wholesale)
+    });
+
+    // Confirm received via AJAX
+    confirmButton.addEventListener('click', function () {
+        fetch(`/e-store/my-orders/confirm-received/${selectedOrderType}/${selectedOrderId}/`, {  // Include order type in the URL
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(confirmModal).hide();
+                location.reload();
+            } else {
+                alert(data.error || 'Something went wrong.');
+            }
+        })
+        .catch(error => {
+            alert('Failed to confirm receipt.');
+        });
+    });
+});
+</script>
+
+<!-- script for deselecting colours and sizes -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const removeVariantBase = "{% url 'remove_variant' 0 %}".replace(/0\/$/, "");
+
+  document.querySelectorAll(".variant-item").forEach(function(el) {
+    el.addEventListener("click", function() {
+      let variantId = el.getAttribute("data-variant-id");
+
+      if (confirm("Do you want to remove this colour/size selection?")) {
+        fetch(`${removeVariantBase}${variantId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken,
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+          window.location.reload(); // refresh the page
+        }
+         else {
+            alert("Could not remove: " + (data.error || "Unknown error"));
+          }
+        })
+        .catch(err => alert("Request failed: " + err));
+      }
+    });
+  });
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie("csrftoken");
+</script>
+
+
+{% endblock content %}
+
+

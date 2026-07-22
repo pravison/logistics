@@ -1,0 +1,405 @@
+{% extends 'profile-main.html' %}
+{% load static %}
+{% load sort_participants %}
+{% load humanize %}
+{% block title %}{{ challenge.challenge_name }}{% endblock %}
+{% block content %}
+<style>
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+}
+</style>
+
+<style>
+.popup {
+    display: none; /* Hidden by default */
+    position: fixed; /* Ensures the popup stays on the screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Higher z-index to appear on top of other elements */
+}
+
+/* Popup content box */
+.popup-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 90%;
+    z-index: 10000; /* Ensures the content box stays above the overlay */
+}
+/* #cc922e */ 
+/* #1563df blue color */
+
+.popup-content input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.popup-content button {
+    margin: 5px;
+    padding: 8px 16px;
+    background: #1563df;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.popup-content button:hover {
+    background: #1563df;
+}
+
+</style>
+
+
+
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1>{{ challenge.challenge_name }} - Quiz Challenge</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'view_all_qna_challenges' %}">All Challenges</a></li>
+        <li class="breadcrumb-item active">View Challenge</li>
+      </ol>
+    </nav>
+  </div>
+
+  <section class="section profile">
+    <div class="row">
+      <div class="col-xl-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+    
+            <!-- Challenge Title -->
+            <h2 class="fw-bold text-center text-dark mb-3">
+              {{ challenge.challenge_name }} <span class="text-primary">Challenge</span>
+            </h2>
+    
+            <!-- Countdown Timer -->
+            <div id="countdown" class="badge bg-danger text-white py-2 px-3 mb-3 fs-6 shadow-sm">
+              <!-- Countdown gets injected here -->
+            </div>
+    
+            <!-- CTA Section -->
+            <div class="text-center w-100">
+              {% if participating %}
+                <p class="text-success fw-semibold">✅ You're already participating!</p>
+                <a class="btn btn-outline-primary mt-2 px-4 fw-bold" href="#" onclick="showPopup(event)">
+                  📢 Share with Friends & Neighbors
+                </a>
+              {% else %}
+                <a href="{% url 'start_challenge' challenge.id %}" id="inviteButton" class="btn btn-primary btn-lg px-4 fw-bold shadow">
+                  🚀 Join Challenge Now
+                </a>
+              {% endif %}
+            </div>
+    
+          </div>
+        </div>
+      </div>
+
+
+        <div class="col-xl-8">
+          <div class="card shadow-sm border-0">
+            <div class="card-body pt-3">
+        
+              <!-- Tabs -->
+              <ul class="nav nav-tabs nav-tabs-bordered mb-3">
+                <li class="nav-item">
+                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview">Overview</button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#participants">Participants</button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#winners">Winners</button>
+                </li>
+              </ul>
+        
+              <!-- Tab Content -->
+              <div class="tab-content pt-2">
+        
+                <!-- Motivational Alert -->
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  ⚡ The earlier you join and share your link, the higher your chances of winning!
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+        
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview">
+                  <h5 class="card-title">{{ challenge.challenge_name }} Challenge</h5>
+                  <p class="small fst-italic text-muted">Last Day: {{ challenge.end_date }}</p>
+        
+                  <h5 class="card-title">🎁 What You Can Win</h5>
+                  {% if challenge.participating_reward %}
+                  <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Every Participant Gets:</div>
+                    <div class="col-md-8">{{ challenge.participating_reward }} points</div>
+                  </div>
+                  {% endif %}
+                  <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Top {{ challenge.target_winners }} Will Win:</div>
+                    <div class="col-md-8">
+                      {{ challenge.challenge_reward|safe }} 
+                      <span class="text-muted">(worth KES {{ challenge.challenge_reward_monetary_value|intcomma }})</span>
+                    </div>
+                  </div>
+        
+                  <h5 class="card-title mt-4">📋 Details</h5>
+                  {% if challenge.challenge_brief %}
+                  <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Brief:</div>
+                    <div class="col-md-8">{{ challenge.challenge_brief|safe }}</div>
+                  </div>
+                  {% endif %}
+                  {% if challenge.challenge_guidelines %}
+                  <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Guidelines:</div>
+                    <div class="col-md-8">{{ challenge.challenge_guidelines|safe }}</div>
+                  </div>
+                  {% endif %}
+        
+                  <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Host:</div>
+                    <div class="col-md-8">{{ challenge.business|default:"Jirani Mall" }}</div>
+                  </div>
+        
+                  <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Challenge Closed:</div>
+                    <div class="col-md-8">{% if challenge.closed %}Yes{% else %}No{% endif %}</div>
+                  </div>
+        
+                  {% if challenge.challenge_patners.first %}
+                  <h5 class="card-title mt-4">🤝 Challenge Partners</h5>
+                  <div class="row">
+                    {% for patner in challenge.challenge_patners.all %}
+                    <div class="col-md-6 mb-1">
+                      {{ forloop.counter }}. {{ patner }}
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+        
+                <!-- Participants Tab -->
+                <div class="tab-pane fade" id="participants">
+                    <div class="card-body overflow-auto">
+                      <h5 class="card-title">Participants (Ranked by Performance)</h5>
+                      <!--<table class="table table-hover datatable">-->
+                      <!--  <thead>-->
+                      <!--    <tr>-->
+                      <!--      <th>Customer</th>-->
+                      <!--      <th>Group</th>-->
+                      <!--      <th>Joined</th>-->
+                      <!--      <th>Action</th>-->
+                      <!--    </tr>-->
+                      <!--  </thead>-->
+                      <!--  <tbody>-->
+                      <!--    {% for participant in participants|sort_by_score %}-->
+                      <!--    <tr>-->
+                      <!--      <td>{{ participant.customer.user.get_full_name }}</td>-->
+                      <!--      <td>{% if participant.group %}{{ participant.group.name }}{% endif %}</td>-->
+                      <!--      <td>{{ participant.joined_at|naturaltime }}</td>-->
+                      <!--      <td>-->
+                      <!--        <a href="{% url 'challenge_result' participant.id %}" class="btn btn-sm btn-outline-info">View</a>-->
+                      <!--      </td>-->
+                      <!--    </tr>-->
+                      <!--    {% endfor %}-->
+                      <!--  </tbody>-->
+                      <!--</table>-->
+                      <table class="table table-bordered table-striped datatable">
+                        <thead>
+                          <tr>
+                            <th>Customer</th>
+                            <th>Correct Answers</th>
+                            <th>Total Score (%)</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for result in winners %}
+                          <tr>
+                            <td>{{ result.participant.customer.user.get_full_name }}</td>
+                            <td>{{ result.correct_answers }}</td>
+                            <td>{{ result.total_score }}</td>
+                            <td>
+                              <a href="{% url 'challenge_result' result.participant.id %}" class="btn btn-sm btn-success">View</a>
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                </div>
+        
+                <!-- Winners Tab -->
+                <div class="tab-pane fade" id="winners">
+                    <div class="card-body overflow-auto">
+                      <h5 class="card-title">🏆 Winners</h5>
+                      {% if winners and challenge.closed %}
+                      <table class="table table-bordered table-striped datatable">
+                        <thead>
+                          <tr>
+                            <th>Customer</th>
+                            <th>Correct Answers</th>
+                            <th>Total Score (%)</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for result in winners %}
+                          <tr>
+                            <td>{{ result.participant.customer.user.get_full_name }}</td>
+                            <td>{{ result.correct_answers }}</td>
+                            <td>{{ result.total_score }}</td>
+                            <td>
+                              <a href="{% url 'challenge_result' result.participant.id %}" class="btn btn-sm btn-success">View</a>
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                      {% else %}
+                      <div class="alert alert-info">🏁 Winners will be announced after the challenge ends.</div>
+                      {% endif %}
+                     </div>
+                </div>
+        
+              </div>
+            </div>
+          </div>
+        </div>
+
+    </div>
+  </section>
+</main>
+
+<!-- script for loding -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inviteButton = document.getElementById('inviteButton');
+
+        inviteButton.addEventListener('click', function (e) {
+                // Disable the button
+                button.classList.add('disabled');
+                button.textContent = "working on it...";
+            });
+        });
+</script>
+<!-- script for link modal -->
+<script>
+    function showPopup(event) {
+        event.preventDefault(); // Prevent default link behavior
+        
+        const popup = document.getElementById('popup');
+        const shareUrlInput = document.getElementById('share-url');
+        
+        // Construct the referral URL
+        var  urlLink= '{{ request.build_absolute_uri }}'
+        const referralUrl = `${urlLink}`;
+
+        console.log(referralUrl)
+        // Set the referral URL in the input field
+        shareUrlInput.value = referralUrl;
+
+        popup.style.display = 'flex'; // Show the popup
+    }
+
+    function closePopup() {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'none'; // Hide the popup
+    }
+
+    function copyToClipboard() {
+        const urlField = document.getElementById('share-url');
+        urlField.select(); // Select the text
+        document.execCommand('copy'); // Copy the text to the clipboard
+        alert('Referral URL copied to clipboard!');
+    }
+</script>
+
+<!-- Popup Modal -->
+<div id="popup" class="popup" style="display:none;">
+    <div class="popup-content">
+        <p>Share this URL:</p>
+        <input type="text" id="share-url" readonly />
+        <button onclick="copyToClipboard()">Copy</button>
+        <button onclick="closePopup()">Close</button>
+    </div>
+</div>
+<!-- script for countdown -->
+<script>
+    // Parse the target time from Django
+    const deadline = new Date("{{ last_day|date:'Y-m-d\\TH:i:s' }}");
+
+    function updateCountdown() {
+        const now = new Date();
+        const diff = deadline - now;
+
+        if (diff <= 0) {
+            document.getElementById("countdown").innerText = "Time's up!";
+            clearInterval(timer);
+            return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        document.getElementById("countdown").innerText =
+            `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    updateCountdown(); // Initial call
+    const timer = setInterval(updateCountdown, 1000); // Update every second
+</script>
+<!-- script to check if user is logged in -->
+<script>
+    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+    const loginUrl = "{% url 'login_user' %}";  // Adjust 'login' to your actual login URL name
+</script>
+
+
+<!-- script for joining challenge -->
+<script>
+function joinChallenge(event, challengeId) {
+  event.preventDefault();
+  if (!isAuthenticated) {
+        window.location.href = loginUrl + '?next=' + window.location.pathname;
+        return;
+    }
+
+  // open modal to join or redirect to join form
+  alert('Join challenge logic to be implemented here.');
+}
+</script>
+{% endblock %}

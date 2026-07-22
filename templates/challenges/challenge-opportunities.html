@@ -1,0 +1,160 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load humanize %}
+{% block title %} Challenge Opportunities {% endblock %}
+{% block content %}
+<style>
+  .category {
+    position: relative;
+    overflow: hidden;
+    height: 20px;
+  }
+
+  .diagonal-strip {
+    position: absolute;
+    top: 1%;
+    left: -5%;
+    width: 200%;
+    transform: rotate(-1deg);
+    background: #cc922e;
+    color: white;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 10;
+    pointer-events: none;
+    padding: 10px 0;
+  }
+</style>
+
+<main id="main" class="main">
+
+  <div class="pagetitle">
+    <h1>Challenge Opportunities</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'view_all_qna_challenges' %}">Q&A Challenges</a></li>
+        {% if vote_challenge %} 
+        <li class="breadcrumb-item"><a href="{% url 'refferal_challenge_opportunities' %}">Refferal Challenges</a></li>
+        {% else %}
+        <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">Creative Challenges</a></li>
+        {% endif %}
+        <li class="breadcrumb-item active">Welcome {% if request.user.is_authenticated %}{{ request.user.first_name }} {{ request.user.last_name }}{% endif %}</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row align-items-top g-4">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+    
+        {% for challenge in challenges %}
+          {% if vote_challenge %}
+            {% url 'view_vote_challenge' challenge.id as challenge_url %}
+          {% else %}
+            {% url 'view_refferal_challenge' challenge.id as challenge_url %}
+          {% endif %}
+    
+          <div class="col-lg-4">
+            <div class="card shadow-sm h-100 border-0">
+              <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <span class="badge bg-primary text-uppercase">
+                  {% if vote_challenge %}
+                    {{ challenge.challenge_owner|default:"Jirani Mall" }}
+                  {% else %}
+                    {{ challenge.challenge_type }} Referral
+                  {% endif %}
+                </span>
+                <span class="text-muted small">Opportunity</span>
+              </div>
+    
+              <div class="card-body">
+                <h5 class="fw-bold text-dark mb-2">{{ challenge.challenge_name }}</h5>
+    
+                <ul class="list-unstyled small text-muted mb-3">
+                  <li><strong>Start:</strong> {{ challenge.start_date }}</li>
+                  <li><strong>End:</strong> {{ challenge.end_date }}</li>
+                  <li><strong>Target Winners:</strong> {{ challenge.target_winners }}</li>
+                  <li><strong>Participants:</strong> {{ challenge.total_applications }}</li>
+                </ul>
+    
+                <div class="bg-warning bg-opacity-10 p-3 rounded mb-3">
+                  <p class="mb-1"><strong>🏆 Challenge Reward:</strong></p>
+                  <p class="h6 text-dark mb-0">{{ challenge.challenge_reward|safe }}</p>
+                </div>
+    
+                <p class="mb-3 text-success">
+                  🎁 Earn <strong>{{ challenge.participating_reward }} points</strong> just for participating!
+                </p>
+    
+                {% if challenge.challenge_patners.first %}
+                  <p class="text-muted small mb-2"><strong>Partners:</strong><br>
+                    {% for patner in challenge.challenge_patners.all %}
+                      <span class="d-block">{{ patner }}</span>
+                    {% endfor %}
+                  </p>
+                {% endif %}
+              </div>
+    
+              <div class="card-footer bg-white border-0 text-end">
+                <a href="{{ challenge_url }}" class="btn btn-outline-primary w-100 fw-bold">
+                  🚀 View & Join Challenge
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+
+</main><!-- End #main -->
+
+<script>
+  function showPopup(event) {
+    event.preventDefault();
+    const popup = document.getElementById('popup');
+    popup.style.display = 'flex';
+  }
+
+  function closePopup() {
+    const popup = document.getElementById('popup');
+    popup.style.display = 'none';
+  }
+
+  function copyToClipboard() {
+    const urlField = document.getElementById('share-url');
+    urlField.select();
+    document.execCommand('copy');
+    alert('URL copied to clipboard!');
+  }
+
+  function showPopupBusiness(event) {
+    event.preventDefault();
+    const popup = document.getElementById('popupBusiness');
+    popup.style.display = 'flex';
+  }
+
+  function closeBusinessPopup() {
+    const popup = document.getElementById('popupBusiness');
+    popup.style.display = 'none';
+  }
+
+  function copyBusinessToClipboard() {
+    const urlField = document.getElementById('share-url-business');
+    urlField.select();
+    document.execCommand('copy');
+    alert('URL copied to clipboard!');
+  }
+</script>
+
+{% endblock %}

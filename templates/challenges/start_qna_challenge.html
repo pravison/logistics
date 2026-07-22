@@ -1,0 +1,273 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% load humanize %}
+{% load query_append %}
+{% load custom_product_filters %}
+{% load math_filters %}
+
+{% block content %}
+<style>
+  .choice-wrapper {
+    transition: all 0.2s ease;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .choice-wrapper:hover {
+    background-color: #f0f8ff;
+    border-color: #2563eb;
+  }
+
+  .choice-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    position: relative;
+  }
+
+  .choice-checkbox.checked::after {
+    content: '✔';
+    position: absolute;
+    top: -2px;
+    left: 3px;
+    font-size: 16px;
+    color: #2563eb;
+  }
+    #question-image {
+      display: none;
+      max-width: 100%;
+      width: 100%;
+      height: auto;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (min-width: 640px) {
+      #question-image {
+        width: 75%;
+      }
+    }
+    
+    @media (min-width: 768px) {
+      #question-image {
+        width: 66%;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      #question-image {
+        width: 50%;
+      }
+    }
+
+</style>
+
+<main>
+    
+    <section class="pt-10 pb-16 bg-gray-50 min-h-screen flex items-center justify-center">
+      <div class="w-full max-w-2xl bg-white shadow-xl rounded-xl px-8 py-10">
+        
+        <!-- Title -->
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-3">{{ challenge.challenge_name }}</h1>
+        <p id="question-progress" class="text-sm text-center text-gray-500 mb-6">Question <span id="current-question-number">1</span></p>
+    
+        <!-- Question Text -->
+        <div id="question-container" class="mb-6">
+          <!-- Optional Image -->
+            <div class="flex justify-center mb-4">
+              <img id="question-image" src="" alt="Question Image" />
+            </div>
+        
+          <!-- Question Text -->
+          <p id="question-text" class="text-lg font-medium text-gray-900 mb-4 text-center"></p>
+        
+          <!-- Choices -->
+          <form id="choices-container" class="space-y-4"></form>
+        </div>
+    
+        <!-- Feedback Area -->
+        <div id="feedback" class="visually-hidden text-center text-lg font-semibold mt-4"></div>
+    
+        <!-- Next Button -->
+        <div class="text-right mt-6">
+          <button id="next-btn" class="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition visually-hidden">
+            Next
+          </button>
+        </div>
+    
+      </div>
+    </section>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+let currentQuestionIndex = 0;
+let questions = [];
+let startTime = null;
+const challengeId = "{{ challenge.id }}";
+const participantId = "{{ participant.id }}";
+const participantToken = "{{ participant.session_token }}";
+let answeredQuestions = new Set();
+
+window.addEventListener('beforeunload', function (e) {
+  if (answeredQuestions.size === 0) {
+    // Submit a score of zero to the backend
+    navigator.sendBeacon('/challenges/submit-abandon/', JSON.stringify({
+      participant_token: participantToken,
+      reason: 'abandon',
+      total_score: 0
+    }));
+
+    const confirmationMessage = 'Are you sure you want to leave? You won\'t be able to participate again.';
+    e.returnValue = confirmationMessage; // Required for some browsers
+    return confirmationMessage;
+  }
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const response = await fetch(`/challenges/get-challenge-questions/${challengeId}/questions/`);
+  questions = await response.json();
+  if (questions.length > 0) {
+    loadQuestion();
+    console.log("QUESTIONS LOADED:", questions);
+
+  } else {
+    document.getElementById("question-text").textContent = "No questions available.";
+  }
+});
+
+function loadQuestion() {
+    const question = questions[currentQuestionIndex];
+
+    // ✅ Set question text
+    document.getElementById("question-text").textContent = question.text;
+
+    // ✅ Handle image display
+    const imageElement = document.getElementById("question-image");
+    if (question.image && question.image.trim() !== "") {
+        imageElement.src = question.image;
+        imageElement.style.display = "block";
+    } else {
+        imageElement.style.display = "none";
+    }
+
+    // ✅ Set question number
+    document.getElementById("current-question-number").textContent = currentQuestionIndex + 1;
+
+    // ✅ Render choices
+    const choicesContainer = document.getElementById("choices-container");
+    choicesContainer.innerHTML = '';
+
+    const feedback = document.getElementById("feedback");
+    feedback.textContent = '';
+    feedback.classList.add("visually-hidden");
+
+    document.getElementById("next-btn").classList.add("visually-hidden");
+
+    question.choices.forEach((choice, index) => {
+        const choiceWrapper = document.createElement('label');
+        choiceWrapper.className = 'choice-wrapper';
+        choiceWrapper.setAttribute("for", `choice-${index}`);
+
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'radio';
+        hiddenInput.name = 'choice';
+        hiddenInput.id = `choice-${index}`;
+        hiddenInput.className = 'hidden';
+        hiddenInput.onclick = () => submitAnswer(choice.id, choice.is_correct, question.id);
+
+        const fakeCheckbox = document.createElement('div');
+        fakeCheckbox.className = 'choice-checkbox';
+
+        const choiceText = document.createElement('div');
+        choiceText.className = 'text-gray-800 text-base';
+        choiceText.textContent = choice.text;
+
+        choiceWrapper.appendChild(hiddenInput);
+        choiceWrapper.appendChild(fakeCheckbox);
+        choiceWrapper.appendChild(choiceText);
+        choicesContainer.appendChild(choiceWrapper);
+    });
+
+    startTime = new Date();
+}
+
+
+function submitAnswer(choiceId, isCorrect, questionId) {
+  const answeredAt = new Date();
+  const timeTaken = (answeredAt - startTime) // in seconds
+  const feedback = document.getElementById("feedback");
+
+  // Score logic
+    //   # for score we are taking maximum time to be 10 seconds if you answer correct
+    // # but take more that 10 seconds you get 10%
+    // #if you answer wrong you get 0%
+    // # the faster you answer the more the score
+  let score = 0;
+  if (isCorrect) {
+    const maxTime = 10000; // 10 seconds max
+    if (timeTaken <= maxTime) {
+      const ratio = (maxTime - timeTaken) / maxTime;
+      score = 10 + ratio * 90; // Min 10%, max 100%
+    } else {
+      score = 10; // Took longer than 5 seconds
+    }
+    score = Math.round(score * 100) / 100; // Optional: round to 2 decimals
+  }
+  feedback.textContent = isCorrect ? "🎉 Correct!" : "❌ Not quite — keep going!";
+  feedback.className = isCorrect
+    ? "text-green-600 text-center text-lg font-semibold mt-4"
+    : "text-red-500 text-center text-lg font-semibold mt-4";
+  feedback.classList.remove("visually-hidden");
+  
+  
+  if (isCorrect && typeof confetti === 'function') {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  }
+
+  // Disable all choices
+  document.querySelectorAll('input[name="choice"]').forEach(i => i.disabled = true);
+
+  fetch(`/challenges/submit-answer/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": "{{ csrf_token }}"
+    },
+    body: JSON.stringify({
+      participant_token: participantToken,
+      question_id: questionId,
+      choice_id: choiceId,
+      time_taken: timeTaken,
+      is_correct: isCorrect,
+      total_score: score
+    })
+  });
+
+  // Track answered question
+  answeredQuestions.add(questionId);
+
+  document.getElementById("next-btn").classList.remove("visually-hidden");
+  document.getElementById("next-btn").onclick = () => {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+      loadQuestion();
+    } else {
+      window.location.href = `/challenges/challenge/result/${participantId}/`;
+    }
+  };
+}
+</script>
+
+{% endblock %}

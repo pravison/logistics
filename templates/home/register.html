@@ -1,0 +1,83 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<!-- popup register -->
+
+<!-- Get In Touch With Us Area -->
+<section class="get_touch_area" style="padding-top: 120px;">
+    <div class="row" style="justify-content: center;">
+        
+        <div class="col-lg-6 " >
+            <div class="row text-center"><b>Register</b></div>
+            <div class="from_area">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                <form class="from_main" action="{% url 'register_user' %}?pricing_plan={{pricing_plan}}&add_staff_to={{add_staff_to}}&add_customer_to={{add_customer_to}}&next={{next_url}}" method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="input-group mb-3 col-lg-6">
+                            <input type="text" name="first_name" class="form-control" placeholder="First Name" required>
+                        </div>
+                        <div class="input-group mb-3 col-lg-6">
+                            <input type="text" name="last_name" class="form-control" placeholder="Last Name" required>
+                        </div>
+                    </div>
+            
+                    <div class="input-group mb-3">
+                        <input type="email" name="email" class="form-control" placeholder="Email (important for password reset)">
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">+254</span>
+                        <input type="text" name="phone_number" pattern="[0-9+ ]*" class="form-control" placeholder="use your whatsapp phone number" required aria-describedby="basic-addon1">
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <input type="text" name="password" class="form-control" placeholder="Password" id="password" >
+                    </div>
+                        
+                    
+                    <div class="form-group m-0 btn_g">
+                        <button class="theme_btn btn" id="registerButton" type="submit" >Register</button>
+                        <a href="{% url 'login_user' %}">already have an account  login</a>
+                    </div>
+                </form>
+        </div>
+
+        
+    </div>
+</section>
+<!-- Get In Touch With Us Area -->
+<script>
+    // Add an event listener to the form submission
+    document.addEventListener('DOMContentLoaded', function () {
+        const loginButton = document.getElementById('registerButton');
+        const form = loginButton.closest('form'); // Find the closest form element
+
+        if (form) {
+            form.addEventListener('submit', function () {
+                // Disable the button
+                loginButton.disabled = true;
+
+                // Update the button text
+                loginButton.textContent = "registration in progress...";
+            });
+        }
+    });
+</script>
+<script>
+    function togglePassword(){
+        const passwordField = document.getElementById('password');
+        const showPassword = document.getElementById('show-password')
+        passwordField.type=showPassword.checked? 'text': 'password';
+    }
+</script>
+
+{% endblock %}

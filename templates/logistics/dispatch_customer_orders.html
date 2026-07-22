@@ -1,0 +1,769 @@
+{% extends 'main.html' %}
+{% load static %}
+{% load humanize %}
+{% load math_filters %}
+
+{% block title %} Customer Dispatch {% endblock %}
+
+{% block content %}
+
+<style>
+
+section{
+    background:#f6f7fb;
+}
+
+.card{
+    border:none;
+    border-radius:14px;
+}
+
+.small-label{
+    font-size:12px;
+    color:#6c757d;
+    margin-bottom:3px;
+}
+
+.dispatch-item{
+    transition:0.2s ease-in-out;
+    border-radius:14px;
+}
+
+.dispatch-item.ready{
+    border-left:6px solid #198754;
+}
+
+.dispatch-item.not-ready{
+    border-left:6px solid #dc3545;
+}
+
+.form-control,
+.form-select{
+    min-height:48px;
+    font-size:16px;
+}
+
+.form-check-input{
+    width:1.3rem;
+    height:1.3rem;
+}
+
+.sticky-save{
+    position:sticky;
+    bottom:0;
+    background:white;
+    padding:12px;
+    border-top:1px solid #ddd;
+    z-index:100;
+}
+
+@media(max-width:768px){
+
+    .sticky-save{
+        position:fixed;
+        left:0;
+        right:0;
+        bottom:0;
+    }
+
+    body{
+        padding-bottom:100px;
+    }
+
+}
+
+</style>
+
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-warning alert-dismissible fade show m-2" role="alert">
+            {{ message }}
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+
+
+<section>
+
+<div class="container py-3">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <div>
+            <h5 class="mb-0">
+                Customer Dispatch
+            </h5>
+
+            <small class="text-muted">
+                {{ customer }}
+            </small>
+        </div>
+
+        <span class="badge bg-primary">
+            {{ dispatch.status }}
+        </span>
+
+    </div>
+
+
+
+    <!-- ====================================== -->
+    <!-- MAIN DISPATCH FORM -->
+    <!-- ====================================== -->
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <input type="hidden"
+               name="action"
+               value="save_dispatch">
+
+
+        <!-- DELIVERY DETAILS -->
+        <div class="card shadow-sm mb-3">
+
+            <div class="card-body">
+
+                <h6 class="mb-3">
+                    Delivery Details
+                </h6>
+
+                <div class="mb-3">
+
+                    <div class="small-label">
+                        Delivery Address
+                    </div>
+
+                    <textarea name="delivery_address"
+                              class="form-control"
+                              rows="2"
+                              placeholder="Enter delivery address">{% if dispatch.delivery_address %}{{ dispatch.delivery_address }}{% else %}{{ customer.delivery_address }}{% endif %}</textarea>
+
+                </div>
+
+                <div class="row g-2">
+
+                    <div class="col-6">
+
+                        <div class="small-label">
+                            Phone
+                        </div>
+
+                        <input type="text"
+                               name="delivery_phone"
+                               class="form-control"
+                               value="{% if dispatch.delivery_phone %}{{ dispatch.delivery_phone }}{% else %}{{ customer.phone_number }}{% endif %}">
+
+                    </div>
+
+                    <div class="col-6">
+
+                        <div class="small-label">
+                            Vehicle Used
+                        </div>
+
+                        <input type="text"
+                               name="vehicle_used"
+                               class="form-control"
+                               value="{% if dispatch.vehicle_used %}{{ dispatch.vehicle_used }}{% else %}{{ customer.delivery_vehicle }}{% endif %}"
+                               placeholder="{% if dispatch.vehicle_used %}{{ dispatch.vehicle_used }}{% else %}{{ customer.delivery_vehicle }}{% endif %}">
+
+                    </div>
+                    <div class="col-12">
+
+                        <div class="small-label">
+                            Agent Receiving
+                        </div>
+
+                        <select name="agent_receiving" class="form-control">
+                            <option value="">-- Select Agent --</option>
+
+                            {% for agent in agents %}
+                                <option value="{{ agent.id }}"
+                                    {% if dispatch.agent_receiving.id == agent.id %}
+                                        selected
+                                    {% endif %}>
+                                    {{ agent}}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- PAYMENT -->
+        <div class="card shadow-sm mb-3">
+
+            <div class="card-body">
+
+                <h6 class="mb-3">
+                    Payment Confirmation
+                </h6>
+
+                <div class="row g-2">
+
+                    <div class="col-4">
+
+                        <div class="small-label">
+                            Transport
+                        </div>
+
+                        <input type="number"
+                               step="0.01"
+                               name="approx_transport_cost"
+                               class="form-control"
+                               value="{{ dispatch.approx_transport_cost }}">
+
+                    </div>
+
+                    <div class="col-4">
+
+                        <div class="small-label">
+                            Packaging
+                        </div>
+
+                        <input type="number"
+                               step="0.01"
+                               name="packaging_bag_cost"
+                               class="form-control"
+                               value="{{ dispatch.packaging_bag_cost }}">
+
+                    </div>
+
+                    <div class="col-4">
+
+                        <div class="small-label">
+                            Beba
+                        </div>
+
+                        <input type="number"
+                               step="0.01"
+                               name="beba_cost"
+                               class="form-control"
+                               value="{{ dispatch.beba_cost }}">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    
+
+        <!-- ITEMS -->
+        <div class="card shadow-sm mb-3">
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <h6 class="mb-0">
+                        Packed Items
+                    </h6>
+
+                    <small class="text-muted">
+                        {{ dispatch_items.count }} items
+                    </small>
+
+                </div>
+
+                <input type="text"
+                       id="searchInput"
+                       class="form-control mb-3"
+                       placeholder="Search product...">
+
+
+                <div id="itemsContainer">
+
+                    {% for item in dispatch_items %}
+
+                    <div class="card mb-2 dispatch-item {% if item.ready_to_dispatch %}ready{% else %}not-ready{% endif %}"
+                         data-product="{{ item.display_name|lower }}">
+
+                        <div class="card-body py-2">
+
+                            <div class="d-flex justify-content-between align-items-start">
+
+                                <div>
+
+                                    {% if item.product and item.product.image %}
+
+                                        <img src="{{ item.product.image.url }}"
+                                             alt="{{ item.display_name }}"
+                                             style="width:45px;height:45px;object-fit:cover;border-radius:8px;">
+
+                                    {% endif %}
+
+                                </div>
+
+                                <div class="flex-grow-1 px-2">
+
+                                    <strong>
+                                        {{ item.display_name }}
+                                    </strong>
+
+                                    {% if item.is_manual_product %}
+                                        <br>
+
+                                        <span class="badge bg-dark mt-1">
+                                            Manual Product
+                                        </span>
+                                    {% endif %}
+
+                                    <br>
+
+                                    <small class="text-muted">
+                                        Paid: {{ item.quantity_paid_for }}
+                                        |
+                                        Packed: {{ item.quantity_packed }}
+                                    </small>
+
+                                </div>
+
+                                <div class="form-check">
+
+                                    <input class="form-check-input readyCheck"
+                                           type="checkbox"
+                                           name="ready_{{ item.id }}"
+                                           {% if item.ready_to_dispatch %}checked{% endif %}>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="row g-2 mt-2">
+
+                                <div class="col-6">
+
+                                    <div class="small-label">
+                                        Quantity Packed
+                                    </div>
+
+                                    <input type="number"
+                                           step="0.01"
+                                           class="form-control"
+                                           name="packed_{{ item.id }}"
+                                           value="{{ item.quantity_packed }}">
+
+                                </div>
+
+                                <div class="col-6">
+
+                                    <div class="small-label">
+                                        Quantity Paid
+                                    </div>
+
+                                    <input type="text"
+                                           class="form-control"
+                                           value="{{ item.quantity_paid_for }}"
+                                           disabled>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {% empty %}
+
+                    <div class="alert alert-info">
+                        No dispatch items yet.
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        
+        <!-- SAVE -->
+        <div class="sticky-save">
+            {% if  customer.phone_number and dispatch.delivery_address %}
+            <a href="{% url 'mark_dispatch_sent' dispatch.id %}"
+               class="btn btn-dark w-100 mb-2 py-2 fw-bold">
+                Mark Dispatch as SENT
+            </a>
+            {% endif %}
+
+            <button class="btn btn-success w-100 py-2 fw-bold">
+                Save Dispatch
+            </button>
+
+        </div>
+
+    </form>
+
+    <!-- ====================================== -->
+    <!-- ADD MANUAL PRODUCT -->
+    <!-- ====================================== -->
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <input type="hidden"
+               name="action"
+               value="add_manual_product">
+
+        <div class="card shadow-sm mb-3">
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <h6 class="mb-0">
+                        Add Extra Product
+                    </h6>
+
+                    <span class="badge bg-dark">
+                        Outside Website
+                    </span>
+
+                </div>
+
+
+                <div class="row g-2">
+
+                    <div class="col-12">
+
+                        <input type="text"
+                               name="manual_product_name"
+                               class="form-control"
+                               placeholder="Product name"
+                               required>
+
+                    </div>
+
+                    <div class="col-6">
+
+                        <input type="number"
+                               step="0.01"
+                               name="manual_quantity"
+                               class="form-control"
+                               placeholder="Quantity"
+                               required>
+
+                    </div>
+
+                    <div class="col-6">
+
+                        <input type="number"
+                               step="0.01"
+                               name="manual_price"
+                               class="form-control"
+                               placeholder="value">
+
+                    </div>
+                    <div class="col-6">
+
+                        <input type="text"
+                               step="0.01"
+                               name="sender"
+                               class="form-control"
+                               placeholder="Sender"
+                               required>
+
+                    </div>
+
+                    <div class="col-6">
+
+                        <input type="number"
+                               step="0.01"
+                               name="sender_phone"
+                               class="form-control"
+                               placeholder="Sender Phone Number">
+
+                    </div>
+
+                    <div class="col-12">
+
+                        <input type="text"
+                               name="sending_from"
+                               class="form-control"
+                               placeholder="sending from /mzigo unatumwa kutoka wapi"
+                               required>
+
+                    </div>
+
+                </div>
+
+                <button class="btn btn-dark w-100 mt-3">
+                    Add Product
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+
+    <!-- ====================================== -->
+    <!-- ADD NOTE -->
+    <!-- ====================================== -->
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <input type="hidden"
+               name="action"
+               value="add_note">
+
+        <div class="card shadow-sm mb-3">
+
+            <div class="card-body">
+
+                <h6 class="mb-3">
+                    Dispatch Progress Notes
+                </h6>
+
+                <div class="row g-2">
+
+                    <div class="col-4">
+
+                        <select name="dispatch_note_type"
+                                class="form-select">
+
+                            <option value="GENERAL">
+                                General
+                            </option>
+
+                            <option value="PACKING">
+                                Packing
+                            </option>
+
+                            <option value="TRANSPORT">
+                                Transport
+                            </option>
+
+                            <option value="DELIVERY">
+                                Delivery
+                            </option>
+
+                            <option value="PAYMENT">
+                                Payment
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-8">
+
+                        <input type="text"
+                               name="dispatch_note"
+                               class="form-control"
+                               placeholder="Write note..."
+                               required>
+
+                    </div>
+
+                </div>
+
+                <button class="btn btn-primary w-100 mt-3">
+                    Add Note
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+
+
+
+    <!-- NOTES HISTORY -->
+    <div class="card shadow-sm mb-3">
+
+        <div class="card-body">
+
+            <h6 class="mb-3">
+                Notes History
+            </h6>
+
+            {% for note in notes %}
+
+            <div class="border rounded p-2 mb-2 bg-light">
+
+                <div class="d-flex justify-content-between">
+
+                    <span class="badge bg-secondary">
+                        {{ note.note_type }}
+                    </span>
+
+                    <small class="text-muted">
+                        {{ note.added_at|naturaltime }}
+                    </small>
+
+                </div>
+
+                <div class="mt-2">
+                    {{ note.note }}
+                </div>
+
+                <small class="text-muted">
+                    {{ note.added_by }}
+                </small>
+
+            </div>
+
+            {% empty %}
+
+            <div class="alert alert-light mb-0">
+                No notes yet.
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+
+
+    
+
+
+
+    <!-- FOOTER LINKS -->
+    <p class="text-center">
+
+        <a href="{{ previous_url|default:'/' }}"
+           class="btn btn-primary p-2 mt-2">
+
+            Back
+
+        </a>
+
+        <a href="{% url 'customers_with_active_orders' %}"
+           class="btn btn-primary p-2 mt-2">
+
+            Customers With Orders
+
+        </a>
+
+        <a href="{% url 'all_Wholesale_products' %}"
+           class="btn btn-primary p-2 mt-2">
+
+            Shop
+
+        </a>
+
+        <a href="{% url 'business' %}"
+           class="btn btn-primary p-2 mt-2">
+
+            Dashboard
+
+        </a>
+
+    </p>
+
+</div>
+
+
+
+<script>
+
+function sortReadyItems() {
+
+    const container = document.getElementById("itemsContainer");
+
+    const items = Array.from(
+        container.querySelectorAll(".dispatch-item")
+    );
+
+    items.sort((a, b) => {
+
+        const aChecked = a.querySelector(".readyCheck").checked ? 1 : 0;
+
+        const bChecked = b.querySelector(".readyCheck").checked ? 1 : 0;
+
+        return bChecked - aChecked;
+
+    });
+
+    items.forEach(item => container.appendChild(item));
+
+}
+
+
+document.querySelectorAll(".readyCheck").forEach(cb => {
+
+    cb.addEventListener("change", function () {
+
+        const card = this.closest(".dispatch-item");
+
+        if (this.checked) {
+
+            card.classList.add("ready");
+
+            card.classList.remove("not-ready");
+
+        } else {
+
+            card.classList.add("not-ready");
+
+            card.classList.remove("ready");
+
+        }
+
+        sortReadyItems();
+
+    });
+
+});
+
+
+
+document.getElementById("searchInput").addEventListener("keyup", function () {
+
+    const search = this.value.toLowerCase();
+
+    document.querySelectorAll(".dispatch-item").forEach(item => {
+
+        const product = item.getAttribute("data-product");
+
+        item.style.display = product.includes(search)
+            ? "block"
+            : "none";
+
+    });
+
+});
+
+
+sortReadyItems();
+
+</script>
+
+</section>
+
+{% endblock %}

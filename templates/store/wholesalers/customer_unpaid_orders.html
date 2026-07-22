@@ -1,0 +1,1316 @@
+{% extends 'store/wholesalers/wholesale-main.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %} Customer Checkout {% endblock %}
+
+{% block content %}
+<style>
+    section { background: #f6f7fb; }
+    .card { border: none; border-radius: 14px; }
+    .orderCard { transition: 0.2s ease-in-out; }
+    .small-label { font-size: 12px; color: #6c757d; margin-bottom: 3px; }
+
+    .sticky-checkout {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding: 12px;
+        border-top: 1px solid #ddd;
+    }
+</style>
+<style>
+.mpesa-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.mpesa-modal {
+    background: white;
+    width: 320px;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.mpesa-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.mpesa-status {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #444;
+}
+
+.hidden {
+    display: none;
+}
+body {
+    padding-bottom: 200px;
+}
+</style>
+
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+{% endif %}
+
+<section>
+<div class="container py-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h5 class="mb-0">Customer Checkout</h5>
+            <strong><a 
+                  href="{% if request.user.is_staff %}https://wa.me/{{ customer.phone_number }}{% else %}#{% endif %}"
+                  {% if request.user.is_staff %} target="_blank"{% endif %}
+                  class="text-decoration-none"
+                >
+                  <span class="text-black fw-semibold">
+                    {{ customer }}
+                  </span>
+                </a>
+                </strong>
+        </div>
+        <span class="badge bg-success">PAY</span>
+    </div>
+
+    <form method="POST" id="checkoutForm">
+        {% csrf_token %}
+
+        <!-- CUSTOMER ORDERS -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+
+                <h6 class="mb-2">Orders</h6>
+
+                <div id="itemsContainer">
+
+                    {% for item in orders %}
+                    <div class="card mb-2 orderCard"
+                         data-order-id="{{ item.id }}"
+                         data-type="{{ item.type }}"
+                         data-product-balance="{{ item.product_balance }}"
+                         data-transport-balance="{{ item.transport_balance }}"
+                         data-total-paid="{{ item.total_paid }}"
+                         data-product="{{ item.product_name|lower }}">
+
+                        <div class="card-body py-2">
+
+                            <div class="d-flex justify-content-between align-items-start">
+
+                                <!-- IMAGE -->
+                                <div>
+                                    {% if item.product_image %}
+                                    <a href="{% url 'order-detail' item.id %}" style="color: inherit; text-decoration: none; cursor: pointer;" >
+                                        <img src="{{ item.product_image }}"
+                                            style="width:45px;height:45px;object-fit:cover;border-radius:6px;">
+                                    </a>
+                                    {% endif %}
+                                </div>
+
+                                <!-- PRODUCT INFO -->
+                                <div class="flex-grow-1 ms-2">
+                                    <strong><a href="{% url 'order-detail' item.id %}" style="color: inherit; text-decoration: none; cursor: pointer;" >
+                                        {{ item.product_name }}</a></strong><br>
+
+                                    <small class="text-muted">
+                                        Product Balance: <b>Ksh {{ item.product_balance|floatformat:2 }}</b><br>
+                                        Transport Balance: <b>Ksh {{ item.transport_balance|floatformat:2 }}</b>
+                                    </small>
+
+                                    <div class="form-check mt-1">
+                                        <input class="form-check-input transportCheck" type="checkbox" checked>
+                                        <label class="form-check-label small">
+                                            Pay transport now
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- ACTIONS -->
+                                <div class="form-check ms-2">
+
+                                    <div>
+                                        <input class="form-check-input payCheck" type="checkbox" checked>
+                                        <label class="form-check-label small">
+                                            Pay
+                                        </label>
+                                    </div>
+
+                                    <div>
+                                        <input class="form-check-input cancelCheck"
+                                               type="checkbox">
+                                               <!--{% if item.total_paid > 0 %}disabled{% endif %}-->
+                                        <label class="form-check-label small text-danger">
+                                            Cancel
+                                        </label>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="mt-2 small">
+                                <span class="text-muted">This item total:</span>
+                                <b class="itemTotalText"></b>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% empty %}
+                        <div class="alert alert-info">
+                            No unpaid orders found.
+                        </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+        
+        <!-- FIXED BOTTOM CHECKOUT BAR -->
+        <div class="fixed-bottom bg-white border-top shadow-lg p-3">
+        
+            <!-- SUMMARY -->
+            <div class="mb-2">
+                <div class="d-flex justify-content-between small">
+                    <span>Items</span>
+                    <b id="selectedCount">0</b>
+                </div>
+        
+                <div class="d-flex justify-content-between small">
+                    <span>Products</span>
+                    <b>Ksh <span id="productTotal">0</span></b>
+                </div>
+        
+                <div class="d-flex justify-content-between small">
+                    <span>Transport</span>
+                    <b>Ksh <span id="transportTotal">0</span></b>
+                </div>
+        
+                <div class="d-flex justify-content-between fw-bold">
+                    <span>Total</span>
+                    <span>Ksh <span id="grandTotal">0</span></span>
+                </div>
+            </div>
+        
+            <!-- ACTION BUTTONS -->
+            <div class="d-flex gap-3 text-right">
+                <button type="button"
+                        id="saveBtn"
+                        class="btn btn-outline-primary fw-bold">
+                    Save Changes
+                </button>
+
+                <button type="button"
+                        id="mpesaBtn"
+                        class="btn btn-success fw-bold">
+                    Pay from M-Pesa
+                </button>
+
+            </div>
+            <div class="d-flex gap-3 text-right mt-1">
+               <button
+                    type="button"
+                    id="walletBtn"
+                    class="btn btn-success fw-bold">
+                    Pay from Wallet
+                </button>
+
+                <button
+                    type="button"
+                    id="pointsBtn"
+                    class="btn btn-success fw-bold">
+                    Pay with points
+                </button>
+
+            </div>
+        
+        </div>
+        
+        <!-- add spacing so content is not hidden -->
+        <div style="height:160px;"></div>
+
+    </form>
+
+    <p class="text-center mt-3">
+        <a href="{{ previous_url|default:'/' }}" class="btn btn-primary p-2 mt-3">
+            <i class="fi-arrow-left"></i> Back
+        </a>
+        {% if request.user.is_authenticated %}
+        {% if request.user.is_staff or request.user.customer == customer %}
+        <a href="{% url 'all_customer_orders' customer.id %}"
+            class="btn btn-primary p-2 mt-3">
+            Customer Orders
+        </a>
+        {% endif %}
+        {% endif %}
+        <a href="{% url 'customer_orders_redirect' %}" 
+            class="btn btn-primary p-2 mt-3 login-to-pay" <i class="fi-bag"></i>all Purchases
+        </a>
+        <a href="{% url 'all_Wholesale_products' %}" class="btn btn-primary p-2 mt-3">
+            <i class="fi-arrow-left"></i> continue shopping
+        </a>
+    </p>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* =========================
+       GLOBAL STATE
+    ========================= */
+    let currentProductTotal = 0;
+    let currentTransportTotal = 0;
+    let currentGrandTotal = 0;
+
+    const form = document.getElementById("checkoutForm");
+    const container = document.getElementById("itemsContainer");
+
+    const saveBtn = document.getElementById("saveBtn");
+    const mpesaBtn = document.getElementById("mpesaBtn");
+
+    const overlay = document.getElementById("mpesaOverlay");
+    const phoneInput = document.getElementById("mpesaPhone");
+    const totalInput = document.getElementById("mpesaTotal");
+    const statusBox = document.getElementById("mpesaStatus");
+    const continueBtn = document.getElementById("mpesaContinueBtn");
+    const closeBtn = document.getElementById("mpesaCloseBtn");
+
+    const walletBtn = document.getElementById("walletBtn");
+    const walletOverlay = document.getElementById("walletOverlay");
+    const walletCancelBtn = document.getElementById("walletCancelBtn");
+    const walletPayBtn = document.getElementById("walletPayBtn");
+
+    const walletBalance = document.getElementById("walletBalance");
+    const walletAmount = document.getElementById("walletAmount");
+    const walletStatus = document.getElementById("walletStatus");
+
+
+
+    /* =========================
+       UTILITIES
+    ========================= */
+    function formatMoney(num) {
+        return Number(num || 0).toLocaleString("en-KE", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function safeNumber(value) {
+        return parseFloat(String(value || "0").replace(/,/g, "")) || 0;
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1)
+                    );
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+    function showStatus(message, isError = false) {
+        if (!statusBox) return;
+
+        statusBox.innerHTML = message;
+        statusBox.style.color = isError ? "#dc3545" : "#198754";
+    }
+
+    /* =========================
+       BUILD PAYLOAD
+    ========================= */
+    function buildPayload() {
+
+        const cards = document.querySelectorAll(".orderCard");
+        const payload = [];
+
+        cards.forEach(card => {
+
+            const payCheck = card.querySelector(".payCheck");
+            const cancelCheck = card.querySelector(".cancelCheck");
+            const transportCheck = card.querySelector(".transportCheck");
+
+            if (cancelCheck.checked) {
+
+                payload.push({
+                    id: card.dataset.orderId,
+                    type: card.dataset.type,
+                    pay_transport: false,
+                    cancel: true
+                });
+
+                return;
+            }
+
+            if (payCheck.checked) {
+
+                payload.push({
+                    id: card.dataset.orderId,
+                    type: card.dataset.type,
+                    pay_transport: transportCheck.checked,
+                    cancel: false
+                });
+            }
+
+        });
+
+        return payload;
+    }
+
+    /* =========================
+       TOTALS
+    ========================= */
+    function updateTotalsAndSort() {
+
+        const cards = Array.from(
+            document.querySelectorAll(".orderCard")
+        );
+
+        let productTotal = 0;
+        let transportTotal = 0;
+        let selectedCount = 0;
+
+        cards.forEach(card => {
+
+            const payCheck = card.querySelector(".payCheck");
+            const cancelCheck = card.querySelector(".cancelCheck");
+            const transportCheck = card.querySelector(".transportCheck");
+
+            const productBalance =
+                safeNumber(card.dataset.productBalance);
+
+            const transportBalance =
+                safeNumber(card.dataset.transportBalance);
+
+            let itemTotal = 0;
+
+            card.style.opacity =
+                cancelCheck.checked ? "0.5" : "1";
+
+            if (payCheck.checked && !cancelCheck.checked) {
+
+                selectedCount++;
+
+                productTotal += productBalance;
+                itemTotal += productBalance;
+
+                if (transportCheck.checked) {
+                    transportTotal += transportBalance;
+                    itemTotal += transportBalance;
+                }
+            }
+
+            const totalText =
+                card.querySelector(".itemTotalText");
+
+            if (totalText) {
+                totalText.innerText =
+                    "Ksh " + formatMoney(itemTotal);
+            }
+        });
+
+        currentProductTotal = productTotal;
+        currentTransportTotal = transportTotal;
+        currentGrandTotal = productTotal + transportTotal;
+
+        document.getElementById("selectedCount").innerText =
+            selectedCount;
+
+        document.getElementById("productTotal").innerText =
+            formatMoney(productTotal);
+
+        document.getElementById("transportTotal").innerText =
+            formatMoney(transportTotal);
+
+        document.getElementById("grandTotal").innerText =
+            formatMoney(currentGrandTotal);
+
+        cards.sort((a, b) => {
+
+            const aCancel =
+                a.querySelector(".cancelCheck").checked ? 1 : 0;
+
+            const bCancel =
+                b.querySelector(".cancelCheck").checked ? 1 : 0;
+
+            const aPay =
+                a.querySelector(".payCheck").checked ? 1 : 0;
+
+            const bPay =
+                b.querySelector(".payCheck").checked ? 1 : 0;
+
+            if (aCancel !== bCancel) {
+                return aCancel - bCancel;
+            }
+
+            return bPay - aPay;
+        });
+
+        const fragment =
+            document.createDocumentFragment();
+
+        cards.forEach(card => {
+            fragment.appendChild(card);
+        });
+
+        container.appendChild(fragment);
+    }
+
+    /* =========================
+       EVENT DELEGATION
+    ========================= */
+    document.addEventListener("change", function (e) {
+
+        if (e.target.classList.contains("cancelCheck")) {
+
+            const card =
+                e.target.closest(".orderCard");
+
+            const payCheck =
+                card.querySelector(".payCheck");
+
+            const transportCheck =
+                card.querySelector(".transportCheck");
+
+            if (e.target.checked) {
+                payCheck.checked = false;
+                transportCheck.checked = false;
+            } else {
+                payCheck.checked = true;
+            }
+
+            updateTotalsAndSort();
+        }
+
+        if (e.target.classList.contains("payCheck")) {
+
+            const card =
+                e.target.closest(".orderCard");
+
+            const cancelCheck =
+                card.querySelector(".cancelCheck");
+
+            if (e.target.checked) {
+                cancelCheck.checked = false;
+            }
+
+            updateTotalsAndSort();
+        }
+
+        if (e.target.classList.contains("transportCheck")) {
+            updateTotalsAndSort();
+        }
+    });
+
+    /* =========================
+       SAVE CHANGES
+    ========================= */
+    saveBtn.addEventListener("click", function () {
+
+        const payload = buildPayload();
+
+        if (!payload.length) {
+            alert("Please select at least one order.");
+            return;
+        }
+
+        form.querySelectorAll(
+            "input[name='action'], input[name='selected_orders']"
+        ).forEach(el => el.remove());
+
+        const actionInput =
+            document.createElement("input");
+
+        actionInput.type = "hidden";
+        actionInput.name = "action";
+        actionInput.value = "save";
+
+        const dataInput =
+            document.createElement("input");
+
+        dataInput.type = "hidden";
+        dataInput.name = "selected_orders";
+        dataInput.value = JSON.stringify(payload);
+
+        form.appendChild(actionInput);
+        form.appendChild(dataInput);
+
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Saving...";
+
+        form.submit();
+    });
+
+    /* =========================
+       OPEN MPESA
+    ========================= */
+    mpesaBtn.addEventListener("click", function () {
+
+        const payload = buildPayload();
+
+        if (!payload.length) {
+            alert("Please select at least one order.");
+            return;
+        }
+
+    
+        phoneInput.value = `{{ phone_number }}`;
+        totalInput.value = currentGrandTotal.toFixed(2);
+
+        showStatus("");
+
+        overlay.classList.remove("hidden");
+    });
+
+    /* =========================
+       CLOSE MPESA
+    ========================= */
+    closeBtn.addEventListener("click", function () {
+        overlay.classList.add("hidden");
+    });
+
+    /* =========================
+       STK PUSH
+    ========================= */
+    continueBtn.addEventListener("click", async function () {
+
+        const paying_phone_number  = phoneInput.value.trim();
+        const amount = parseFloat(document.getElementById("mpesaTotal").value);
+        const customer_phone = `{{ phone_number }}`;
+
+        // Validate minimum amount
+        if (isNaN(amount) || amount < 10) {
+            alert("Minimum payment amount is Ksh 10.");
+            return;
+        }
+
+        // Don't allow paying more than outstanding balance
+        if (amount > currentGrandTotal) {
+            alert(`Maximum payable amount is Ksh ${currentGrandTotal.toFixed(2)}.`);
+            return;
+        }
+
+        const payload = buildPayload();
+
+        if (!payload.length) {
+            alert("No orders selected.");
+            return;
+        }
+
+        continueBtn.disabled = true;
+        continueBtn.innerText = "Processing...";
+
+        showStatus("⏳ Sending STK Push...");
+
+        try {
+
+            const response = await fetch(
+                "{% url 'mpesa_stk_push' %}",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    body: JSON.stringify({
+                        customer_phone:customer_phone,
+                        paying_phone_number:paying_phone_number,
+                        amount: amount,
+                        orders: payload
+                    })
+                }
+            );
+            console.log(payload)
+
+            if (!response.ok) {
+                throw new Error(
+                    "Server returned " + response.status
+                );
+            }
+
+            const data = await response.json();
+
+            if (!data.success) {
+
+                showStatus(
+                    "❌ " + (data.message || "STK Push failed"),
+                    true
+                );
+
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+
+                return;
+            }
+
+            showStatus(
+                "📱 STK Push sent. Enter your M-Pesa PIN."
+            );
+
+            pollPayment(data.checkout_request_id);
+
+        } catch (error) {
+
+            console.error(error);
+
+            showStatus(
+                "❌ Network error. Please try again.",
+                true
+            );
+
+            continueBtn.disabled = false;
+            continueBtn.innerText = "Continue";
+        }
+    });
+
+    /* =========================
+       POLL PAYMENT
+    ========================= */
+    function pollPayment(checkoutId) {
+
+        let attempts = 0;
+        const maxAttempts = 60;
+
+        const interval = setInterval(async () => {
+
+            attempts++;
+
+            try {
+
+                const response = await fetch(
+                    `/payments/mpesa-payment/status/${checkoutId}/`
+                );
+
+                if (!response.ok) {
+                    throw new Error("Status request failed");
+                }
+
+                const data = await response.json();
+
+                // Always show backend message
+                showStatus(
+                    data.message,
+                    data.status === "FAILED"
+                );
+
+                if (
+                    data.status === "PROCESSED" ||
+                    data.status === "EXTRA_PAID"
+                ) {
+
+                    clearInterval(interval);
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+
+                    return;
+                }
+
+                if (data.status === "FAILED") {
+
+                    clearInterval(interval);
+
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+
+                    return;
+                }
+
+                if (attempts >= maxAttempts) {
+
+                    clearInterval(interval);
+
+                    showStatus(
+                        "⏳ This is taking longer than expected. If you completed the M-Pesa prompt, please wait a little longer while we finish updating your payment.",
+                        false
+                    );
+
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+                clearInterval(interval);
+
+                showStatus(
+                    "❌ Unable to verify payment status. Please refresh the page or contact customer care if payment was deducted.",
+                    true
+                );
+
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+            }
+
+        }, 3000);
+    }
+    /* =========================
+       INITIAL LOAD
+    ========================= */
+
+    /* =================================
+    open walet payment
+    ===================================*/
+    
+    function showWalletStatus(message, error=false){
+
+        walletStatus.style.display="block";
+
+        walletStatus.innerHTML=message;
+
+        walletStatus.className=error
+            ? "alert alert-danger"
+            : "alert alert-success";
+
+    }
+
+
+    walletBtn.addEventListener("click", async function(){
+
+        walletOverlay.classList.remove("hidden");
+
+        walletStatus.style.display="none";
+
+        walletBalance.innerHTML="Loading...";
+
+        walletAmount.innerHTML=currentGrandTotal.toFixed(2);
+
+        try{
+
+            const formData = new FormData();
+
+            
+            {% with active_api_keys as key_obj %}
+            formData.append("api_key", "{{ key_obj.key|escapejs }}");
+            {% endwith %}
+
+            formData.append(
+                "phone",
+                "{{ phone_number }}"
+            );
+
+            const response = await fetch(
+                "https://accounts.garantiimall.shop/ajax/get-or-create-wallet/",
+                {
+                    method:"POST",
+                    body:formData
+                }
+            );
+
+            const data = await response.json();
+
+            if(!data.success){
+
+                walletBalance.innerHTML="0";
+
+                showWalletStatus(
+                    data.error || "Unable to load wallet.",
+                    true
+                );
+
+                return;
+
+            }
+
+            walletBalance.innerHTML=data.wallet_balance;
+
+        }
+
+        catch(err){
+
+            console.log(err);
+
+            walletBalance.innerHTML="0";
+
+            showWalletStatus(
+                "Unable to load wallet.",
+                true
+            );
+
+        }
+
+    });
+
+
+    walletCancelBtn.addEventListener("click",function(){
+
+        walletOverlay.classList.add("hidden");
+
+    });
+
+   /* =================================
+    pay from walet 
+    ===================================*/
+
+
+    walletPayBtn.addEventListener("click",async function(){
+
+        walletPayBtn.disabled=true;
+
+        walletPayBtn.innerHTML="Processing...";
+
+        const payload=buildPayload();
+
+        if(payload.length===0){
+
+            alert("No orders selected.");
+
+            walletPayBtn.disabled=false;
+
+            walletPayBtn.innerHTML="Pay";
+
+            return;
+
+        }
+
+        try{
+
+            const response=await fetch(
+                "{% url 'wallet_payment' %}",
+                {
+
+                    method:"POST",
+
+                    headers:{
+
+                        "Content-Type":"application/json",
+
+                        "X-CSRFToken":getCookie("csrftoken")
+
+                    },
+
+                    body:JSON.stringify({
+
+                        customer_phone:"{{ phone_number }}",
+
+                        amount:currentGrandTotal,
+
+                        orders:payload
+
+                    })
+
+                }
+            );
+
+            const data=await response.json();
+
+            if(data.success){
+
+                showWalletStatus(
+                    "✅ Payment successful."
+                );
+
+                setTimeout(function(){
+
+                    location.reload();
+
+                },1000);
+
+            }
+
+            else{
+
+                showWalletStatus(
+                    data.message,
+                    true
+                );
+
+            }
+
+        }
+
+        catch(err){
+
+            console.log(err);
+
+            showWalletStatus(
+                "Network error",
+                true
+            );
+
+        }
+
+        walletPayBtn.disabled=false;
+
+        walletPayBtn.innerHTML="Pay";
+
+    });
+
+    /* =================================
+     paying with points
+    ===================================*/
+
+    //opening model
+
+    function showPointsStatus(message,error=false){
+
+            pointsStatus.style.display="block";
+
+            pointsStatus.innerHTML=message;
+
+            pointsStatus.className=error
+                ? "alert alert-danger"
+                : "alert alert-success";
+
+        }
+
+        
+        pointsBtn.addEventListener("click",async function(){
+
+        pointsOverlay.classList.remove("hidden");
+
+        pointsStatus.style.display="none";
+
+        availablePoints.innerHTML="Loading...";
+
+        pointsAmount.innerHTML=currentGrandTotal.toFixed(2);
+
+        try{
+
+            const formData=new FormData();
+
+            formData.append(
+                "phone",
+                "{{ phone_number }}"
+            );
+
+            const response=await fetch(
+                "{% url 'get_customer_points' %}",
+                {
+                    method:"POST",
+                    headers:{
+                        "X-CSRFToken":getCookie("csrftoken")
+                    },
+                    body:formData
+                }
+            );
+
+            const data=await response.json();
+
+            if(!data.success){
+
+                showPointsStatus(
+                    data.error,
+                    true
+                );
+
+                return;
+
+            }
+
+            availablePoints.innerHTML=data.available_points;
+
+            pointsValue.innerHTML=data.value.toFixed(2);
+
+            pointsRequired.innerHTML = (currentGrandTotal * 100).toLocaleString();
+
+        }
+
+        catch(err){
+
+            showPointsStatus(
+                "Unable to fetch points.",
+                true
+            );
+
+        }
+
+    });
+    // cancel
+    pointsCancelBtn.addEventListener("click",function(){
+
+        pointsOverlay.classList.add("hidden");
+
+    });
+
+    // pay 
+
+    pointsPayBtn.addEventListener("click",async function(){
+
+        pointsPayBtn.disabled=true;
+
+        pointsPayBtn.innerHTML="Processing...";
+
+        const payload=buildPayload();
+        if (payload.length === 0) {
+
+            showPointsStatus(
+                "No orders selected.",
+                true
+            );
+
+            return;
+
+        }
+
+        try{
+
+            const response=await fetch(
+
+                "{% url 'pay_using_points' %}",
+
+                {
+
+                    method:"POST",
+
+                    headers:{
+
+                        "Content-Type":"application/json",
+
+                        "X-CSRFToken":getCookie("csrftoken")
+
+                    },
+
+                    body:JSON.stringify({
+
+                        customer_phone:"{{ phone_number }}",
+
+                        amount:currentGrandTotal,
+
+                        orders:payload
+
+                    })
+
+                }
+
+            );
+
+            const data=await response.json();
+
+            if(data.success){
+
+                showPointsStatus(
+                    "✅ Payment successful."
+                );
+
+                setTimeout(function(){
+
+                    location.reload();
+
+                },1000);
+
+            }
+
+            else{
+
+                showPointsStatus(
+                    data.message,
+                    true
+                );
+
+            }
+
+        }
+
+        catch(err){
+
+            showPointsStatus(
+                "Network error",
+                true
+            );
+
+        }
+
+        pointsPayBtn.disabled=false;
+
+        pointsPayBtn.innerHTML="Redeem Points";
+
+    });
+
+
+    updateTotalsAndSort();
+
+});
+</script>
+<!-- CUSTOM MPESA MODAL (NO BOOTSTRAP) -->
+<div id="mpesaOverlay" class="mpesa-overlay hidden">
+    <div class="mpesa-modal">
+
+        <h5>Complete Payment</h5>
+
+        <label>Phone Number</label>
+        <input type="text" id="mpesaPhone" class="mpesa-input" placeholder="2547XXXXXXXX">
+
+        <label>Total Amount</label>
+        <input type="text" id="mpesaTotal" min="10" step="1" class="mpesa-input">
+        <small>unaeza lipa kidogo kidogo</small>
+
+        <button id="mpesaContinueBtn" class="btn btn-success w-100 mt-2">
+            Continue
+        </button>
+
+        <button id="mpesaCloseBtn" class="btn btn-light w-100 mt-2">
+            Cancel
+        </button>
+
+        <div id="mpesaStatus" class="mpesa-status"></div>
+
+    </div>
+</div>
+
+<!-- walet payment modal -->
+ <div id="walletOverlay" class="mpesa-overlay hidden">
+
+    <div class="mpesa-modal">
+
+        <h4>Wallet Payment</h4>
+
+        <hr>
+
+        <div class="mb-3">
+
+            <strong>Wallet Balance</strong>
+
+            <h3 class="text-success">
+                Ksh <span id="walletBalance">...</span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Amount To Pay</strong>
+
+            <h3 class="text-primary">
+                Ksh <span id="walletAmount"></span>
+            </h3>
+
+        </div>
+
+        <div
+            id="walletStatus"
+            class="alert alert-info"
+            style="display:none">
+        </div>
+
+        <div class="d-flex justify-content-between">
+
+            <button
+                id="walletCancelBtn"
+                class="btn btn-secondary">
+
+                Cancel
+
+            </button>
+
+            <button
+                id="walletPayBtn"
+                class="btn btn-success">
+
+                Pay
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+<div id="pointsOverlay" class="mpesa-overlay hidden">
+
+    <div class="mpesa-modal">
+
+        <h4>Pay With Points</h4>
+
+        <hr>
+
+        <div class="mb-3">
+
+            <strong>Available Points</strong>
+
+            <h3 class="text-success">
+                <span id="availablePoints">...</span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Equivalent Value</strong>
+
+            <h3 class="text-success">
+                KSh <span id="pointsValue">...</span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Amount To Pay</strong>
+
+            <h3 class="text-primary">
+                KSh <span id="pointsAmount"></span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Points Required</strong>
+
+            <h3 class="text-warning">
+                <span id="pointsRequired"></span>
+            </h3>
+
+        </div>
+
+        <div
+            id="pointsStatus"
+            class="alert alert-info"
+            style="display:none">
+        </div>
+
+        <div class="d-flex justify-content-between">
+
+            <button
+                id="pointsCancelBtn"
+                class="btn btn-secondary">
+
+                Cancel
+
+            </button>
+
+            <button
+                id="pointsPayBtn"
+                class="btn btn-success">
+
+                Redeem Points
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

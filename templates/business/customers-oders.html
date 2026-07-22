@@ -1,0 +1,89 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %} Customer Orders{% endblock%}
+{% block content %}
+
+<main id="main" class="main">
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+{% endif %}
+
+    <div class="pagetitle">
+      <h1>Customer Orders</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' business.slug %}">Dashboard</a></li>
+          <li class="breadcrumb-item active">Data</li>
+          
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Orders</h5>
+              <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                search anything 
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              <!-- Table with stripped rows -->
+              <table class="table datatable">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Product Name</th>
+                  <th>Category</th>
+                  <th>Quantity</th>
+                  <th>Customer</th>
+                  <th>Phone Number</th>
+                  <th>Delivery Option</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in orders %}
+                <tr>
+                  <td><img src="{{ order.product.imageUrl }}" alt="Product Image" width="60"></td>
+                  <td>{{ order.product.product_name }}</td>
+                  <td>{{ order.product.sub_category }}</td>
+                  <td>{{ order.quantity }}</td>
+                  <td>{{ order.customer.user.first_name }} {{ order.customer.user.last_name }}</td>
+                  <td>{{ order.customer.phone_number }}</td>
+                  <td>{{ order.delivery_option }}</td>
+                  <td>{{ order.order_status }}</td>
+                  <td>
+                    {% if not order.seller_sent and order.delivery_option == 'delivery' %}
+                      <a href="{% url 'update-order-status' order.id 'sent' %}" class="btn btn-sm btn-primary">Mark as Sent</a>
+                    {% elif not order.customer_received and order.delivery_option == 'pickup' %}
+                      <a href="{% url 'update-order-status' order.id 'pickup' %}" class="btn btn-sm btn-success">Confirm Pickup</a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+              <!-- End Table with stripped rows -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+{% endblock %}

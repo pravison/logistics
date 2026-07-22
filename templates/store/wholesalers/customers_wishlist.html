@@ -1,0 +1,362 @@
+{% extends 'store/wholesalers/wholesale-main.html' %}
+{% load static %}
+{% load humanize%}
+{% load math_filters %}  <!-- Load the custom filter module -->
+{% block title %} Customer Wishlists{% endblock%}
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+{% endif %}
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+           
+          <h5 class="card-title text-center py-3 mb-2">
+                <strong>Wishlists For {{customer}} - 
+                <a 
+                  href="https://wa.me/{{ customer.phone_number }}"
+                  target="_blank"
+                  class="text-decoration-none"
+                >
+                  <span class="text-black fw-semibold">
+                    {{ customer.phone_number }}
+                  </span>
+                </a>
+                </strong>
+                
+            </h5>
+            {% if request.user.is_staff %}
+            <div class="d-flex gap-3">
+                <a href="{% url 'all_customer_orders' customer.id %}"
+                  class="btn btn-dark flex-fill py-3fw-bold">
+                    Customer Orders
+                </a>
+                <a href="{% url 'dispatch_customer_orders' customer.id %}"
+                  class="btn btn-dark flex-fill py-3 fw-bold">
+                    Dispatch
+                </a>
+                <a href="{% url 'customer_unpaid_orders'%}?phone_number={{customer.phone_number}}" class="btn btn-primary flex-fill py-3 fw-bold">pay</a>
+            </div>
+            {% endif %}
+          <div class="card">
+            {% if ordinary_orders %}
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Customers Wishlists</h5>
+              <div class="row mb-3">
+                  <div class="col-md-6">
+                    <input type="text"
+                       id="customerOrdinarySearch"
+                       class="form-control"
+                       placeholder="Search product name, amount, status...">
+                  </div>
+                
+                  <div class="col-md-6">
+                    <select id="ordinaryStatusFilter" class="form-select">
+                      <option value="all">All Orders</option>
+                      <option value="pending">Pending</option>
+                      <option value="paid">Paid</option>
+                      <option value="packed">Packed</option>
+                      <option value="sent">Sent</option>
+                      <option value="received">Received</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="returned">Returned</option>
+                    </select>
+                  </div>
+                </div>
+              
+              <!-- Table with stripped rows -->
+              
+              <table class="table" id="ordersCustomerTable">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">#</th>
+                    <th scope="col">product </th>
+                    <th scope="col">quantity</th>
+                    <th scope="col">amount paid</th>
+                    <th scope="col">status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for order in ordinary_orders %}
+                  <tr data-status="{{ order.order_status }}" data-sent="{% if order.seller_sent %}yes{% else %}no{% endif %}">
+                    
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" 
+                           href="{% url 'order-detail' order.customer_order.id %}">
+                        {{ forloop.counter }}
+                    </a></td>
+                
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" 
+                           href="{% url 'order-detail' order.customer_order.id %}">
+                        <img src="{{ order.product.imageUrl }}" alt="Product Image" width="100">
+                    </a></td>
+                
+                    <th scope="row">
+                      <a style="color: inherit; text-decoration: none; cursor: pointer;" 
+                                       href="{% url 'order-detail' order.customer_order.id %}">
+                        {{ order.product.product_name }}
+                      </a><br/>
+                      <a href="{% url 'customer_unpaid_orders' %}?phone_number={{ customer.phone_number }}"
+                        class="btn"
+                        style="
+                            background-color: red;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            padding: 4px 12px;
+                            font-size: 14px;
+                            text-decoration: none;
+                            display: inline-block;
+                        ">
+                        Pay
+                      </a>
+                    </th>
+                
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" 
+                           href="{% url 'order-detail' order.customer_order.id %}">
+                        {% with paid_qty=order.amount_paid|floor_divide:order.price_at_purchase %}
+                            <span data-status-for="{{ order.id }}" class="badge bg-success rounded">
+                                {{ paid_qty|remaining:order.exchanged_quantity }}
+                            </span>
+                        {% endwith %}
+                        /{{ order.quantity }}
+                    </a></td>
+                
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" 
+                           href="{% url 'order-detail' order.customer_order.id %}">
+                        {{ order.amount_paid|add:order.transport_and_errand_amount_paid }}/{{ order.price_at_purchase|mul:order.quantity|add:order.transport_and_errand_amount }}
+                    </a></td>
+                
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" 
+                           href="{% url 'order-detail' order.customer_order.id %}">
+                        {{ order.order_status }}
+                    </a></td>
+                
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              
+              <!-- End ordinary order with stripped rows -->
+            </div>
+            {% endif %}
+            
+            
+            {% if group_orders %}
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Customer Group Orders Wishlists</h5>
+              
+              <!-- group order with stripped rows -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <input type="text"
+                           id="customerGroupSearch"
+                           class="form-control"
+                           placeholder="Search product name, amount, packed, sent...">
+                  </div>
+                
+                  <div class="col-md-6">
+                    <select id="statusFilter" class="form-select">
+                      <option value="all">All Orders</option>
+                      <option value="not_packed">Not Packed</option>
+                      <option value="packed_not_sent">Packed but Not Sent</option>
+                      <option value="sent">Sent</option>
+                    </select>
+                  </div>
+                </div>
+              
+              <table class="table" id="ordersTable">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">image </th>
+                    <th scope="col">product </th>
+                    <th scope="col">quantity</th>
+                    <th scope="col">amount paid</th>
+                    <th scope="col">Packed</th>
+                    <th scope="col">Sent</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for order in group_orders %}
+                  
+                  <tr
+                  data-packed="{{ order.packed|yesno:'yes,no' }}"
+                  data-sent="{{ order.sent|yesno:'yes,no' }}"
+                  >
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" href="{% url 'group_order_detail' order.group.id %}">{{ forloop.counter }}</a></td>
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" href="{% url 'group_order_detail' order.group.id %}">
+                        <img src="{{ order.group.product.imageUrl }}" alt="Product Image" width="100">
+                        </a></td>
+                    <th scope="row">
+                      <a style="color: inherit; text-decoration: none; cursor: pointer;" href="{% url 'group_order_detail' order.group.id %}">{{ order.group.name }}</a>
+                      <br/>
+                      <a href="{% url 'customer_unpaid_orders' %}?phone_number={{ customer.phone_number }}"
+                        class="btn"
+                        style="
+                            background-color: red;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            padding: 4px 12px;
+                            font-size: 14px;
+                            text-decoration: none;
+                            display: inline-block;
+                        ">
+                        Pay
+                      </a>
+                    </th>
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" href="{% url 'group_order_detail' order.group.id %}">
+                        {% with paid_qty=order.amount_paid|floor_divide:order.unit_price %}
+                            <span data-status-for="{{ order.id }}" class="badge bg-success rounded">
+                                {{ paid_qty|remaining:order.exchanged_quantity }}
+                            </span>
+                            
+                        {% endwith %}/{{ order.quantity }}</a></td>
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" href="{% url 'group_order_detail' order.group.id %}">
+                        
+                        <span data-status-for="{{ order.id }}" class="badge bg-success rounded">
+                           {{ order.amount_paid|add:order.transport_and_errand_amount_paid }}
+                        </span>/{{ order.total_price|add:order.transport_and_errand_amount }} 
+                        </a>
+                        
+                        
+                    </td>
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" href="{% url 'group_order_detail' order.group.id %}">
+                        {% if order.packed %}
+                        <span data-status-for="{{ order.id }}" class="badge bg-success rounded"> Yes </span>
+                        {% else %} 
+                        <span data-status-for="{{ order.id }}" class="badge bg-danger rounded">No </span>
+                        {% endif %}</a></td>
+                    <td><a style="color: inherit; text-decoration: none; cursor: pointer;" href="{% url 'group_order_detail' order.group.id %}">
+                        {% if order.sent %}
+                        <span data-status-for="{{ order.id }}" class="badge bg-success rounded"> Yes </span>
+                        {% else %} 
+                        <span data-status-for="{{ order.id }}" class="badge bg-danger rounded">No </span>
+                        {% endif %}</a></td>
+                  
+                  </tr>
+                  {% endfor %}
+                  
+                </tbody>
+              </table>
+              
+              <!-- End group order with stripped rows -->
+            
+            </div>
+            {% endif %}
+            <p class="text-center">
+                <a href="{% url 'customers_with_active_orders' %}" 
+                        class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i>Customer with orders
+                </a>
+                <a href="{% url 'all_Wholesale_products' %}" 
+                    class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> head shopping
+                </a>
+                <a href="{% url 'business' %}" 
+                    class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> Dashboard
+                </a>
+            </p>
+          </div>
+
+
+        </div>
+      </div>
+    </section>
+
+<!-- group for filtering ordinary purchases-->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("customerOrdinarySearch");
+    const statusFilter = document.getElementById("ordinaryStatusFilter");
+
+    const tableRows = document.querySelectorAll("#ordersCustomerTable tbody tr");
+
+    function applyFilters() {
+
+        const searchValue = searchInput.value.toLowerCase().trim();
+        const filterValue = statusFilter.value;
+
+        tableRows.forEach(row => {
+
+            const rowText = row.innerText.toLowerCase();
+
+            const status = row.getAttribute("data-status");  // pending, packed, sent, etc
+            const sent = row.getAttribute("data-sent");      // yes/no
+
+            const matchesSearch = rowText.includes(searchValue);
+
+            let matchesFilter = true;
+
+            if (filterValue !== "all") {
+                matchesFilter = (status === filterValue);
+            }
+
+            // Extra safety: if filter is "sent", also confirm seller_sent = yes
+            if (filterValue === "sent") {
+                matchesFilter = (status === "sent" && sent === "yes");
+            }
+
+            row.style.display = (matchesSearch && matchesFilter) ? "" : "none";
+        });
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    statusFilter.addEventListener("change", applyFilters);
+
+});
+</script>
+
+<!--script for searching and filtering group purcheses-->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("customerGroupSearch");
+    const statusFilter = document.getElementById("statusFilter");
+
+    const tableRows = document.querySelectorAll("#ordersTable tbody tr");
+
+    function applyFilters() {
+        const searchValue = searchInput.value.toLowerCase().trim();
+        const filterValue = statusFilter.value;
+        // console.log(searchValue);
+        tableRows.forEach(row => {
+
+            const rowText = row.innerText.toLowerCase();
+            const packed = row.getAttribute("data-packed");
+            const sent = row.getAttribute("data-sent");
+
+            const matchesSearch = rowText.includes(searchValue);
+
+            let matchesFilter = true;
+
+            if (filterValue === "not_packed") {
+                matchesFilter = (packed === "no");
+            }
+            else if (filterValue === "packed_not_sent") {
+                matchesFilter = (packed === "yes" && sent === "no");
+            }
+            else if (filterValue === "sent") {
+                matchesFilter = (sent === "yes");
+            }
+
+            row.style.display = (matchesSearch && matchesFilter) ? "" : "none";
+        });
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    statusFilter.addEventListener("change", applyFilters);
+
+});
+</script>
+{% endblock %}
+
+

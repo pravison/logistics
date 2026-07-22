@@ -1,0 +1,108 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %} Edit {% endblock%}
+{% block content %}
+
+<main id="main" class="main">
+    {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+    
+    
+        {% endfor %}
+    {% endif %}
+    
+        <div class="pagetitle">
+          <h1>Add Loyalty Points</h1>
+          <nav>
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'all_customers' %}">Customers</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'all_loyalty_points' %}">Loyalty Points</a></li>
+            </ol>
+          </nav>
+        </div><!-- End Page Title -->
+    
+        <section class="section">
+          <div class="row">
+            <div class="col-lg-12">
+    
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Add</h5>
+    
+                  {% if form.errors or form.non_field_errors %}
+                      <div class="mb-3 p-6 bg-red-100 rounded-xl">
+                          {% for field in form %}
+                              {{ field.errors }}
+                          {% endfor %}
+    
+                          {{ form.non_field_errors }}
+                      </div>
+                  {% endif %}
+    
+                  <!-- General Form Elements -->
+                <form method="POST" action="{% url 'add_loyalty_points_to_customer' %}">
+                  {% csrf_token %}
+                
+                  {% if messages %}
+                    {% for message in messages %}
+                      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                  {% endif %}
+                
+                  <div class="input-group mb-3">
+                    <span class="input-group-text">#</span>
+                    <input type="number" name="order_id" class="form-control" placeholder="Enter Order ID" required>
+                  </div>
+                
+                  <div class="row mb-3">
+                    <div class="col-sm-10 justify-content-center">
+                      <button type="submit" class="btn btn-primary">Award Points</button>
+                    </div>
+                  </div>
+                </form>
+
+                </div>
+              </div>
+    
+            </div>
+          </div>
+        </section>
+    
+      </main><!-- End #main -->
+    
+      <script>
+        src="https://code.jquery.com/jquery-3.6.0.min.js"
+      </script>
+      <script>
+        $(document).ready(function(){
+          $('.autocomplete').autocomplete(
+            {
+              source:'/customer-autocomplete/',
+            }
+          );
+        });
+      </script>
+      <script>
+        // Add an event listener to the form submission
+        document.addEventListener('DOMContentLoaded', function () {
+            const loginButton = document.getElementById('RegisteringAccount');
+            const form = loginButton.closest('form'); // Find the closest form element
+    
+            if (form) {
+                form.addEventListener('submit', function () {
+                    // Disable the button
+                    loginButton.disabled = true;
+    
+                    // Update the button text
+                    loginButton.textContent = "adding points to customer...";
+                });
+            }
+        });
+      </script>
+{% endblock %}

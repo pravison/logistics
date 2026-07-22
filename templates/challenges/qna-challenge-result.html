@@ -1,0 +1,204 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% load humanize %}
+{% load query_append %}
+{% load custom_product_filters %}
+{% load math_filters %}
+
+{% block content %}
+<style>
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+}
+</style>
+
+<style>
+.popup {
+    display: none; /* Hidden by default */
+    position: fixed; /* Ensures the popup stays on the screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Higher z-index to appear on top of other elements */
+}
+
+/* Popup content box */
+.popup-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 90%;
+    z-index: 10000; /* Ensures the content box stays above the overlay */
+}
+/* #cc922e */ 
+/* #1563df blue color */
+
+.popup-content input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.popup-content button {
+    margin: 5px;
+    padding: 8px 16px;
+    background: #1563df;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.popup-content button:hover {
+    background: #1563df;
+}
+
+</style>
+
+
+<style>
+.score-box h2 {
+  font-size: 2.5rem;
+}
+
+@media (max-width: 576px) {
+  .score-box h2 {
+    font-size: 2rem;
+  }
+}
+</style>
+<main>
+<section class="section py-5" style="background-color: #f9f9f9;">
+  <div class="container">
+    <div class="row justify-content-center text-center">
+      <div class="col-lg-8">
+        <div class="card shadow-lg border-0 rounded-4 p-4" style="background: #ffffff;">
+          <div class="card-body">
+            <h2 class="mb-4 text-dark fw-bold">🎯 {{display_name}} Challenge Result</h2>
+            
+            <div class="row gy-4">
+              <!-- Score -->
+              <div class="col-md-4 col-12">
+                <div class="score-box rounded-3 p-4" style="background-color: #e3f2fd;">
+                  <h6 class="text-muted mb-2">Total Score</h6>
+                  <h2 class="text-primary fw-bold">{{ total_score }}%</h2>
+                </div>
+              </div>
+
+              <!-- Correct Answers -->
+              <div class="col-md-4 col-12">
+                <div class="score-box rounded-3 p-4" style="background-color: #d1f7d1;">
+                  <h6 class="text-muted mb-2">Correct Answers</h6>
+                  <h2 class="text-success fw-bold">{{ correct }}</h2>
+                </div>
+              </div>
+
+              <!-- Total Questions -->
+              <div class="col-md-4 col-12">
+                <div class="score-box rounded-3 p-4" style="background-color: #ffe1db;">
+                  <h6 class="text-muted mb-2">Total Questions</h6>
+                  <h2 class="text-danger fw-bold">{{ total }}</h2>
+                </div>
+              </div>
+            </div>
+
+            <!-- Optional: Badge / Medal -->
+            {% if total_score >= 80 %}
+            <div class="mt-4">
+              <div class="badge bg-warning text-dark py-2 px-4 rounded-pill fs-6 shadow-sm">
+                🏆 Excellent Performance!
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Call to actions -->
+            <div class="mt-5 d-flex flex-column flex-md-row justify-content-center gap-3">
+              <a href="{% url 'view_all_qna_challenges' %}" class="btn btn-primary px-4 py-2 rounded-pill">
+                Try Another Challenge
+              </a>
+              
+              <a href="{% url 'challenge_scoreboard' challenge_id %}" 
+                 class="btn btn-outline-dark px-4 py-2 rounded-pill">
+                view scores of other participants
+              </a>
+              <a href="#"  onclick="showPopup(event)" 
+                 class="btn btn-outline-dark px-4 py-2 rounded-pill">
+                📤 Share Results
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+    function showPopup(event) {
+        event.preventDefault(); // Prevent default link behavior
+        
+        const popup = document.getElementById('popup');
+        const shareUrlInput = document.getElementById('share-url');
+        
+        // Construct the referral URL
+        var  urlLink= '{{ request.build_absolute_uri }}'
+        const referralUrl = `${urlLink}`;
+
+        console.log(referralUrl)
+        // Set the referral URL in the input field
+        shareUrlInput.value = referralUrl;
+
+        popup.style.display = 'flex'; // Show the popup
+    }
+
+    function closePopup() {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'none'; // Hide the popup
+    }
+
+    function copyToClipboard() {
+        const urlField = document.getElementById('share-url');
+        urlField.select(); // Select the text
+        document.execCommand('copy'); // Copy the text to the clipboard
+        alert('Referral URL copied to clipboard!');
+    }
+</script>
+
+<!-- Popup Modal -->
+<div id="popup" class="popup" style="display:none;">
+    <div class="popup-content">
+        <p>Share this URL:</p>
+        <input type="text" id="share-url" readonly />
+        <button onclick="copyToClipboard()">Copy</button>
+        <button onclick="closePopup()">Close</button>
+    </div>
+</div>
+
+{% endblock content %}

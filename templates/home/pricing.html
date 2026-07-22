@@ -1,0 +1,71 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block title %} - Bring More Customers to Your Store and Keep Them Coming Back!{% endblock %}
+{% block keyword %}{% endblock %}
+{% block description %}{% endblock %}
+
+{% block content %}
+<!-- Pricing Plan -->
+<section class="pricing_plan pp_2" id="pricing" style="margin-top: 20px;">
+    <div class="container">
+        <div class="tittle">
+            <h2>Pricing Plan</h2>
+            <p>Select Your Favourable Pricing Plan</p>
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="row">
+            
+            <div class="col-lg-4 col-md-6 wow fadeIn" data-wow-delay="0.4s">
+                <div class="plan plan_3">
+                    <h3>Platninum<br/> <b>1,000 ksh</b> <br/> per month</h3>
+                    <h6>renewable yearly</h6>
+                    <ul>
+                        <li>unlimitted qr codes</li>
+                        <li>unlimitted coupons codes</li>
+                        <li>unlimittted challanges </li>
+                        <li>4 months full money back guarantee</li>
+                    </ul>
+                    <a href="{% url 'add_business' %}?pricing_plan=platinum" class="theme_btn">Start now</a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 wow fadeIn" data-wow-delay="0.2s">
+                <div class="plan  active plan_2">
+                    <h3>Starndard<br/> <b>1,500 ksh.</b><br/> per month</h3>
+                    <h6>renewable semi-annually</h6>
+                    <ul>
+                        <li>unlimitted qr codes</li>
+                        <li>unlimitted coupons codes</li>
+                        <li>unlimittted challanges </li>
+                        <li>2 months full money back guarantee</li>
+                    </ul>
+                    <a href="{% url 'add_business' %}?pricing_plan=starndard" class="theme_btn">Start now</a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 wow fadeIn">
+                <div class="plan plan_2">
+                    <h3>Starter<br/> <b>2,000 ksh.</b><br/> per month</h3>
+                    <h6>renewable monthly</h6>
+                    <ul>
+                        <li>unlimitted qr codes</li>
+                        <li>unlimitted coupons codes</li>
+                        <li>unlimittted challanges </li>
+                    </ul>
+                    <a href="{% url 'add_business' %}?pricing_plan=starter" class="theme_btn">Start now</a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</section>
+<!-- End Pricing Plan -->
+
+{% endblock %}

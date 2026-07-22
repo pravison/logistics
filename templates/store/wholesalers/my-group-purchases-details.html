@@ -1,0 +1,2199 @@
+{% extends 'store/wholesalers/wholesale-main.html'%}
+{% load static %}
+{% load humanize %}
+{% load math_filters %}
+{% load url_filters %}
+{% load query_params %}
+{% block title %}All Customer Orders in the Group{% endblock %}
+
+<!--{% load math_extras %}-->
+
+{% block content %}
+<style>
+/* === Overlay === */
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* === Modal Box === */
+.custom-modal {
+  background: #fff;
+  padding: 25px 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Buttons & Inputs === */
+.custom-modal h3 {
+  margin-top: 0;
+  color: #222;
+  font-size: 1.3rem;
+}
+
+.custom-modal input {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  background: #28a745;
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #ccc;
+  color: #333;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-close-custom {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #666;
+  cursor: pointer;
+}
+
+.modal-buttons {
+  text-align: right;
+}
+
+.modal-buttons button {
+  margin-left: 5px;
+}
+
+.variant-content {
+  display: none;
+  border: 1px solid #e0e0e0;
+  padding: 10px;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.variant-content.show {
+  display: block;
+}
+
+.variant-toggle {
+  width: 100%;
+  text-align: left;
+}
+
+.group-product-img {
+  max-width: 280px;   /* smaller image */
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.group-join-card {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
+.group-mini-table {
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.group-mini-table th {
+  font-weight: 600;
+  color: #555;
+  background: #f8f9fa;
+}
+
+.group-mini-table td {
+  font-weight: 500;
+}
+
+@media (max-width: 576px) {
+  .group-mini-table {
+    font-size: 0.8rem;
+  }
+}
+
+</style>
+
+<main id="main" class="main">
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body overflow-auto col-lg-12"> 
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+            <div class="row align-items-center g-4">
+
+              <!-- IMAGE (LEFT) -->
+              <div class="col-lg-5 text-center">
+                <a href="{% url 'group_order_detail' group_order.id %}">
+                  <img
+                    src="{{ group_order.product.imageUrl }}"
+                    alt="{{ group_order.product.product_name }}"
+                    class="group-product-img img-fluid"
+                  >
+                </a>
+              </div>
+            
+              <!-- TEXT (RIGHT) -->
+              <div class="col-lg-7">
+                <div class="group-info-card">
+            
+                  <h3 class="mb-3">
+                    {{ group_order.name }}
+                  </h3>
+            
+                  <p class="text-muted mb-4">
+                    (#{{ group_order.id }}) Created by <strong>{{ group_order.created_by }}</strong>
+                  </p>
+            
+                  <ul class="list-unstyled group-info-list">
+                    <li><span>Product Colours: </span>  </b> {% for colour in group_order.product.available_colours.all %} {{ colour.colour }} {% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}</b></li>
+                    <li><span>Product Sizes: </span>  </b> {% for size in group_order.product.available_sizes.all %} {{ size.size }} {% if not forloop.last %},{% endif %}{% empty %}"no stated"{% endfor %}</b></li>
+                    <li><span>Product Price:</span> {{ group_order.product.price_per_unit }}</li>
+                    <li><span>Total Price:</span> {{ group_order.total_price }}</li>
+                    <li><span>Total Paid:</span> {{ group_order.total_paid }}</li>
+                    <li><span>Remaining:</span>
+                      {{ group_order.total_price|subtract:group_order.total_paid }}
+                    </li>
+                    <li><span>Total Quantity:</span> {{ group_order.target_quantity }}</li>
+                    <li><span>Quantity Paid:</span> {{ group_order.current_quantity }}</li>
+                    <li><span>Remaining Qty:</span>
+                      {{ group_order.target_quantity|subtract:group_order.current_quantity }}
+                    </li>
+                    <li><span>Customers Joined:</span> {{ group_order.total_customers }}</li>
+                    <li><span>Deadline:</span>
+                      {% if group_order.deadline %}{{ group_order.deadline }}{% else %}N/A{% endif %}
+                    </li>
+                    <li>
+                      <span>Target Hit:</span>
+                      {% if group_order.target_quantity <= group_order.current_quantity %}
+                        <span class="badge bg-success">Yes</span>
+                      {% else %}
+                        <span class="badge bg-warning text-dark">No</span>
+                      {% endif %}
+                    </li>
+                    <li>
+                      <span>Closed:</span>
+                      {% if group_order.closed %}
+                        <span class="badge bg-danger">Yes</span>
+                      {% else %}
+                        <span class="badge bg-success">No</span>
+                      {% endif %}
+                    </li>
+                    <li>
+                      <span>Description:</span>
+                      {% if group_order.description %}
+                        <p>{{ group_order.description}}</p>
+                      
+                      {% endif %}
+                    </li>
+                    <a href="#"
+                       class="btn btn-primary p-2 mt-3 view-offers-btn"
+                       data-group-id="{{ group_order.id }}">
+                       <i class="fi-pricetag-multiple"></i>
+                       see availlable offers
+                    </a>
+                  </ul>
+            
+                </div>
+              </div>
+            
+            </div>      
+                <div class="group-join-card">
+                  <!-- MINI TABLE -->
+                  <div class="table-responsive mb-2">
+                    {% with ordered=group_member_orders|sum_quantity %}
+                    <table class="table table-sm mb-0 group-mini-table">
+                      <thead>
+                        <tr>
+                          <th>Target</th>
+                          <th>Ordered</th>
+                          <th>Remaining</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{{ group_order.target_quantity }}</td>
+                          <td>{{ ordered }}</td>
+                          <td>
+                              {% with diff=group_order.target_quantity|remaining:ordered %}
+                              {% if diff > 0 %}
+                                  <span class="text-success">
+                                    {{ diff }} remaining
+                                  </span>
+                                {% elif diff < 0 %}
+                                  <span class="text-danger">
+                                    Extra {{ diff|abs_value }} ordered
+                                  </span>
+                                {% else %}
+                                  <span class="text-primary">
+                                    Target met 
+                                  </span>
+                                {% endif %}
+                              {% endwith %}                              
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    {% endwith %}
+                  </div>
+                
+                  <!-- JOIN BUTTON -->
+                  <a href="javascript:void(0)"
+                     class="btn btn-primary w-100 join-group-btn"
+                     data-group-id="{{ group_order.id }}"
+                     data-name="{{ group_order.product.product_name }}"
+                     data-price="{{ group_order.product.price_per_unit }}"
+                     data-min-order-quantity="{{ group_order.minimum_order_quantity }}"
+                     data-image="{{ group_order.product.imageUrl }}">
+                    <i class="fi-shopping-cart me-1"></i> Join & Buy
+                  </a>
+                
+                </div>
+            
+
+          <p class="text-center">
+              <a href="#"
+               class="btn btn-primary p-2 mt-3 view-offers-btn"
+               data-group-id="{{ group_order.id }}">
+               <i class="fi-pricetag-multiple"></i>
+               see availlable offers
+               </a>
+              {% if request.user.is_authenticated and request.user.customer %}
+                {% with referral_code=request.user.customer.refferal_code %}
+                  {% add_referral_param request.build_absolute_uri 'referral_code' referral_code as referral_url %}
+                    <a href="#" class="btn btn-primary p-2 mt-3" onclick="copyToClipboard(`{{ referral_url }}`); return false;">Copy Link</a>
+                {% endwith %}
+              {% else %}
+                {% with referral_url=request.build_absolute_uri %}
+                    <a href="#" class="btn btn-primary p-2 mt-3" onclick="copyToClipboard(`{{ referral_url }}`); return false;">Copy Link</a>
+                {% endwith %}
+              {% endif %}
+              <a href="{% url 'buy_in_groups' %}" 
+                      class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i>all groups
+              </a>
+              <a href="{% url 'buy_in_groups' %}?product_id={{group_order.product.id}}" 
+                  class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i>other groups for this product
+              </a>
+              <a href="{% url 'customer_orders_redirect' %}" 
+                      class="btn btn-primary p-2 mt-3 login-to-pay" <i class="fi-bag"></i>all Purchases
+              </a>
+              <a href="{% url 'all_Wholesale_products' %}" 
+                  class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> continue shopping
+              </a>
+                {% if request.user.is_staff %}
+    
+                    {% if group_order.closed %}
+                        <a href="{{ request.build_absolute_uri|cut:request.META.QUERY_STRING|cut:"?" }}?reopen_group=True"
+                           class="btn btn-primary p-2 mt-3">
+                            <i class="fi-bag"></i> Reopen group
+                        </a>
+                    {% else %}
+                        <a href="{{ request.build_absolute_uri|cut:request.META.QUERY_STRING|cut:"?" }}?close_group=True"
+                           class="btn btn-primary p-2 mt-3">
+                            <i class="fi-bag"></i> Close group
+                        </a>
+                    {% endif %}
+                
+                {% endif %}
+          </p>
+          <div class="card-body overflow-auto">
+             <h4>Customer Orders </h4>
+             {% if messages %}
+                {% for message in messages %}
+                  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+             
+            <table class="table">
+              <tr>
+                  <th>Customer</th>
+                  <th>Qty Ordered</th>
+                  <th>Total Amount</th>
+                  <th>Amount Paid</th>
+                  <th>Status</th>
+                  <th>Selected Colours, Sizes</th>
+                  <th>Actions</th>
+              </tr>
+        
+              {% for item in group_member_orders %}
+              
+                <tr>
+                    
+                  <td>({{ item.id }}) {{ item.member }} 
+                    {% if request.user.is_staff %}<br/>
+                        <a 
+                          href="https://wa.me/{{ item.member.phone_number|cut:'+'|cut:' ' }}"
+                          target="_blank"
+                          class="text-decoration-none"
+                        >
+                          <span class="text-success fw-semibold">
+                            {{ item.member.phone_number }}
+                          </span>
+                            
+                        </a>
+                        <small class="fw-semibold">
+                          added by {{ item.created_by.first_name }}
+                        </small>
+                    {% else %}
+                         <span 
+                          class="whatsapp-number text-success fw-semibold"
+                          data-phone="{{ item.member.phone_number }}"
+                          style="cursor: pointer;"
+                        >
+                        </span>
+                   {% endif %}
+                  </td>
+                  <td class="text-center">
+                  {% if item.group.closed and item.amount_paid < 1 %}
+                  --
+                  {%  elif item.group.closed  or item.packed or item.sent  %}
+                  <div class="d-inline-flex align-items-center gap-2">
+                    <span class="fw-semibold px-2">
+                      {%  if item.sent %}
+                        {% with paid_qty=item.amount_paid|floor_divide:item.unit_price %}
+                            <span data-status-for="{{ item.id }}" class="badge bg-success rounded">
+                                sent {{ paid_qty|remaining:item.exchanged_quantity }}
+                            </span>
+                            
+                        {% endwith %}
+                      {% elif item.packed %}
+                        {% with paid_qty=item.amount_paid|floor_divide:item.unit_price %}
+                            <span data-status-for="{{ item.id }}" class="badge bg-warning rounded">
+                                packed {{ paid_qty|remaining:item.exchanged_quantity }}
+                            </span>
+                        {% endwith %}
+                      {% else %}
+                       {% with paid_qty=item.amount_paid|floor_divide:item.unit_price %}
+                            <span data-status-for="{{ item.id }}" class="badge bg-info rounded">
+                               ordered {{ paid_qty|remaining:item.exchanged_quantity }}
+                            </span>
+                        {% endwith %}
+                      {% endif %}
+                    </span>
+                  </div>
+                  {% else %}
+                  <div class="d-inline-flex align-items-center gap-2">
+                    
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary update-qty-btn"
+                      data-item-id="{{ item.id }}"
+                      data-quantity="{{ item.quantity }}"
+                      data-name="{{ item.group.product.product_name }}"
+                      data-image="{{ item.group.product.imageUrl }}"
+                      data-price="{{ item.unit_price }}"
+                      data-moq="{{ item.group.minimum_order_quantity }}"
+                      data-owner-id="{{ item.member.user.id }}"
+                    >
+                      -
+                    </button>
+                
+                    <span class="fw-semibold px-2">
+                      {{ item.quantity }}
+                    </span>
+                    
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary update-qty-btn"
+                      data-item-id="{{ item.id }}"
+                      data-quantity="{{ item.quantity }}"
+                      data-name="{{ item.group.product.product_name }}"
+                      data-image="{{ item.group.product.imageUrl }}"
+                      data-price="{{ item.unit_price }}"
+                      data-moq="{{ item.group.minimum_order_quantity }}"
+                      data-owner-id="{{ item.member.user.id }}"
+                    >
+                      +
+                    </button>
+                    
+                  </div><br/>
+                    {%  if not item.packed and item.amount_paid > 1 %}
+                        {% with paid_qty=item.amount_paid|floor_divide:item.unit_price %}
+                            <span data-status-for="{{ item.id }}" class="badge bg-info px-7">
+                                pack {{ paid_qty|remaining:item.exchanged_quantity }}
+                            </span>
+                            
+                        {% endwith %}
+                    {% endif %}
+                  {% endif %}
+                  </td>
+
+                  <td class="text-center">{{ item.total_price }}<br/>
+                    {% if item.transport_and_errand_amount %}
+                    <small
+                        class=""
+                        style="font-size: 12px; line-height: 1; cursor:pointer;"
+                      >
+                        tr-{{item.transport_and_errand_amount}}
+                     </small><br/>
+                     <small
+                        class="badge bg-secondary rounded"
+                        style="font-size: 12px; line-height: 1; cursor:pointer;"
+                      >
+                        tt-{{item.total_price|add:item.transport_and_errand_amount}}
+                      </small>
+                    {% endif %}
+                  <!-- remaining ammount-->
+                    {% if group_order.product.group_campaign_offers.exists %}
+                    <div class="dropdown d-inline">
+                      <small
+                        class="badge bg-primary px-1 py-0 dropdown-toggle"
+                        style="font-size: 12px; line-height: 1; cursor:pointer;"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        {% if item.selected_offer %}
+                          Offer ✓
+                        {% else %}
+                          No Offer
+                        {% endif %}
+                      </small>
+                    
+                      <ul class="dropdown-menu p-2" style="min-width: 220px; font-size: 12px;">
+                        {% if item.selected_offer %}
+                          <li class="fw-bold text-success">
+                            Got {{ item.selected_offer }} | {{ item.selected_offer.percentage_discount }}% discount
+                          </li>
+                          <li class="text-muted">
+                            Paying <b>{{ item.unit_price }}</b>
+                          </li>
+                          <li class="text-muted">
+                            Normal <s>{{ item.group.product.price_per_unit }}</s>
+                          </li>
+                        {% else %}
+                          <li class="fw-bold text-danger">Got No offer</li>
+                          <li class="text-muted">
+                            Paying <b>{{ item.group.product.price_per_unit }}</b>
+                          </li>
+                          <li class="text-muted">
+                            paying full amount
+                          </li>
+                        {% endif %}
+                      </ul>
+                    </div>
+                    {% endif %}
+                 </td>
+                  <td class="text-center position-static">
+                    {% with product_balance=item.total_price|remaining:item.amount_paid %}
+                    {% with transport_balance=item.transport_and_errand_amount|remaining:item.transport_and_errand_amount_paid %}
+                
+                    <div class="dropdown dropup">
+                
+                        <a class="text-decoration-none dropdown-toggle text-dark"
+                           href="javascript:void(0)"
+                           role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                
+                            {{ item.amount_paid }} <br/>
+                
+                            {% if item.amount_paid > item.total_price %}
+                                <small class="badge bg-danger">
+                                    overpaid {{ item.amount_paid|remaining:item.total_price }}
+                                </small>
+                
+                            {% elif product_balance > 0 %}
+                                <small class="badge bg-info text-white">
+                                    bal {{ product_balance }}
+                                </small>
+                
+                            {% elif transport_balance > 0 %}
+                                <small class="badge bg-warning text-dark">
+                                    t-bal {{ transport_balance }}
+                                </small>
+                
+                            {% elif item.fully_paid %}
+                                <small class="badge bg-success">
+                                    paid
+                                </small>
+                
+                            {% else %}
+                                <small class="badge bg-secondary">
+                                    pending
+                                </small>
+                            {% endif %}
+                
+                        </a>
+                
+                        <!-- Dropdown menu -->
+                        <ul class="dropdown-menu p-2 shadow"
+                                style="position: fixed; min-width: 220px; z-index: 99999;">
+                
+                            <li>
+                                <small class="text-muted">product to pay:</small><br/>
+                                <strong>{{ item.total_price }}</strong>
+                            </li>
+                
+                            <li class="mt-2">
+                                <small class="text-muted">product paid:</small><br/>
+                                <strong>{{ item.amount_paid }}</strong>
+                            </li>
+                
+                            <li><hr class="dropdown-divider"></li>
+                
+                            <li>
+                                <small class="text-muted">transport to pay:</small><br/>
+                                <strong>{{ item.transport_and_errand_amount }}</strong>
+                            </li>
+                
+                            <li class="mt-2">
+                                <small class="text-muted">transport paid:</small><br/>
+                                <strong>{{ item.transport_and_errand_amount_paid }}</strong>
+                            </li>
+                
+                            <li><hr class="dropdown-divider"></li>
+                
+                            <li>
+                                <small class="text-muted">balance:</small><br/>
+                                <strong>
+                                    {% if product_balance > 0 %}
+                                        {{ product_balance }}
+                                    {% elif transport_balance > 0 %}
+                                        {{ transport_balance }}
+                                    {% else %}
+                                        0.00
+                                    {% endif %}
+                                </strong>
+                            </li>
+                
+                            <li class="mt-2">
+                                {% if product_balance <= 0 and transport_balance <= 0 %}
+                                    <span class="badge bg-success w-100 text-center">fully paid</span>
+                                {% else %}
+                                    <span class="badge bg-secondary w-100 text-center">not cleared</span>
+                                {% endif %}
+                            </li>
+                
+                        </ul>
+                    </div>
+                
+                    {% endwith %}
+                    {% endwith %}
+                  </td>
+                  
+                    <!-- status -->
+                  <td class="text-center">
+                    
+                  {% with item=item %}
+
+                  <span
+                    data-status-for="{{ item.id }}"
+                    class="badge
+                      {% if item.sent and item.exchanged_quantity > 0 %}
+                        bg-success
+                      {% elif item.packed and item.exchanged_quantity > 0 %}
+                        bg-warning
+                      {% elif item.sent %}
+                        bg-success
+                      {% elif item.packed %}
+                        bg-warning
+                      {% elif item.exchanged_quantity > 0 %}
+                        bg-warning text-dark
+                      {% elif item.amount_paid > 0 and not item.fully_paid %}
+                        bg-danger
+                      {% elif item.amount_paid <= 0 %}
+                        bg-danger text-white
+                      {% else %}
+                        bg-light text-dark
+                      {% endif %}
+                    "
+                  >
+                    {% if item.sent and item.exchanged_quantity > 0 %}
+                      Sent<br>Exchanged ({{ item.exchanged_quantity }})
+
+                    {% elif item.packed and item.exchanged_quantity > 0 %}
+                      Packed & Sent<br>Exchanged ({{ item.exchanged_quantity }})
+
+                    {% elif item.sent %}
+                      Sent
+
+                    {% elif item.packed %}
+                      Packed
+
+                    {% elif item.exchanged_quantity > 0 %}
+                      Exchanged ({{ item.exchanged_quantity }})
+
+                    {% elif item.amount_paid > 0 and not item.fully_paid %}
+                      Awaiting Full Payment
+
+                    {% elif item.amount_paid <= 0 and not item.group.closed %}
+                      Waiting Payment
+
+                    {% else %}
+                      Waiting Product Arrival
+                    {% endif %}
+                  </span>
+
+                  {% endwith %}
+                  {% if request.user.is_authenticated %}
+                    {% if request.user.is_staff or item.member.user == request.user %}
+                      {% if not item.sent and not item.packed and not item.fully_paid  and not item.group.closed %}
+                        <a href="{% url 'customer_unpaid_orders'%}?phone_number={{item.member.phone_number }}" class="btn btn-primary">pay</a>
+                      {% endif %}
+                    {% endif %}
+                    {% else %}
+                    <a href="{{ request.build_absolute_uri }}"
+                      class="btn btn-primary login-to-pay">
+                        Login to Pay
+                    </a>
+                    {% endif%}
+                  </td>
+
+
+                  <td>
+                    <div class="variant-dropdown">
+
+                      <!-- Toggle button -->
+                      <button type="button"
+                              class="btn btn-sm btn-outline-secondary variant-toggle"
+                              data-target="variant-content-{{ item.id }}">
+                        Select Colours & Sizes
+                      </button>
+                    
+                      <!-- Content (hidden by default) -->
+                      <div id="variant-content-{{ item.id }}" class="variant-content mt-2">
+                        
+                        {% if request.user.is_staff or item.group.product.allow_customer_to_select_colours and item.member.user == request.user %}
+                    
+                          <!-- âœ… Selected variants -->
+                          {% if item.group_order_variants.all %}
+                            <h6>Selected Colours & Sizes</h6>
+                            <ul class="list-unstyled">
+                              {% for v in item.group_order_variants.all %}
+                                <li class="{% if not item.group.closed and not item.packed and not item.sent %} variant-item {% endif %}"
+                                    style="cursor: pointer;"
+                                    data-variant-id="{{ v.id }}">
+                                  {{ v.colour }} / {{ v.size }} — {{ v.quantity }}
+                                  {% if not item.group.closed and not item.packed and not item.sent %}
+                                  <span class="text-danger small ms-2">(click to remove)</span>
+                                  {% endif %}
+                                </li>
+                              {% empty %}
+                                <li>No colours/sizes selected yet.</li>
+                              {% endfor %}
+                            </ul>
+                          {% endif %}
+                    
+                          {% if not item.group.closed and not item.packed and not item.sent %}
+                            <form method="post"
+                                  action="{% url 'add_variants_bulk' %}?next={{ request.path }}&group_member_order_id={{ item.id }}">
+                              {% csrf_token %}
+                            
+                              <h6 class="mb-2">Select Colours & Sizes</h6>
+                            
+                                {% for row in variant_matrix %}
+                                <div class="border rounded p-2 mb-3 bg-light">
+                                    <strong class="text-primary">{{ row.colour.colour }}</strong>
+                                
+                                    <table class="table table-sm mt-2 mb-0">
+                                      <thead>
+                                        <tr>
+                                          <th>Size</th>
+                                          <th>Qty</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {% for size in row.sizes %}
+                                          <tr>
+                                            <td>{{ size.size }}</td>
+                                            <td>
+                                              <input type="hidden" name="variant_{{id}}" value="0">
+
+                                                <input type="checkbox"
+                                                       name="variant_{{ row.colour.id }}_{{ size.id }}"
+                                                       value="1">
+                                            </td>
+                                          </tr>
+                                        {% endfor %}
+                                      </tbody>
+                                    </table>
+                                
+                                  </div>
+                                {% endfor %}
+                            
+                              <button type="submit" class="btn btn-sm btn-outline-primary">
+                                Save Variants
+                              </button>
+                            </form>
+                          {% endif %}
+                        {% else %}
+                          <p class="text-muted"><em>{% if not request.user.is_authenticated %}<a href="{% url 'login_user' %}?next={{ request.build_absolute_uri }}">login to select colours</a>{% else %} fairly distributed {% endif %}</em></p>
+                        {% endif %}
+                    
+                      </div>
+                    </div>
+                  </td>
+                  
+                  <td class="text-center">
+
+                    {% if request.user.is_authenticated %}
+                    {% if request.user.is_staff or item.member.user == request.user %}
+                      {% if not item.sent and not item.packed and not item.fully_paid  and not item.group.closed %}
+                        <a href="{% url 'customer_unpaid_orders'%}?phone_number={{item.member.phone_number }}" class="btn btn-primary">pay</a>
+                      {% endif %}
+                    {% endif %}
+                    {% else %}
+                    <a href="{{ request.build_absolute_uri }}"
+                      class="btn btn-primary login-to-pay">
+                        Login to Pay
+                    </a>
+                    {% endif%}
+
+                    {% if request.user.is_staff %}
+                    
+                        <!-- PAY BUTTON (leave as is) -->
+                        {% if not item.sent and not item.packed and not item.fully_paid  and not item.group.closed %}
+                        
+                        <button 
+                          class="btn btn-success openPaymentModal rounded"
+                          data-order-id="{{ item.id }}"
+                          data-customer="{{ item.member }}"
+                          data-quantity="{{ item.quantity }}"
+                          data-total="{{ item.total_price }}"
+                          data-paid="{{ item.amount_paid }}"
+                          data-phone="{{ item.member.phone_number }}"
+                          data-transport-total="{{ item.transport_and_errand_amount }}"
+                          data-transport-paid="{{ item.transport_and_errand_amount_paid }}"
+                        >
+                          Pay
+                        </button>
+                        {% endif %}
+                        
+                        {% if not item.packed and not item.amount_paid <= 0 %}
+                        <!-- PACKED BUTTON -->
+                        <button 
+                            class="btn btn-primary markPackedBtn mb-1"
+                            data-order-id="{{ item.id }}">
+                            Packed
+                        </button>
+                        {% endif %}
+                        
+                        {% if item.packed and not item.sent %}
+                        <!-- PACKED BUTTON -->
+                        <button 
+                            class="btn btn-primary markSentBtn mb-1"
+                            data-order-id="{{ item.id }}">
+                            sent/picked
+                        </button>
+                        {% endif %}
+                        
+                        {% if item.amount_paid > 0  and not item.group.closed and not item.packed and not item.sent %}
+                        <!-- EXCHANGE BUTTON -->
+                        <button 
+                          class="btn btn-warning openExchangeModal rounded"
+                          data-order-id="{{ item.id }}"
+                          data-customer="{{ item.member }}"
+                          data-quantity="{{ item.quantity }}"
+                          data-paid="{{ item.amount_paid }}"
+                          data-total="{{ item.total_price }}"
+                        >
+                          Exchange
+                        </button>
+                        {% endif %}
+                      <a href="{% url 'all_customer_orders' item.member.id %}" class="btn btn-secondary">all orders</a>
+                      <a href="https://garantiimall.com/admin/store/groupmemberorder/{{item.id}}/change/"
+                        class="btn btn-dark">
+                        edit
+                      </a>
+                    {% endif %}
+                   </td>
+
+                </tr>
+  
+              {% empty %}
+              <tr><td colspan="5">No products in this order.</td></tr>
+              {% endfor %}
+            </table>
+                <div class="group-join-card">
+                  <!-- MINI TABLE -->
+                  <div class="table-responsive mb-2">
+                    {% with ordered=group_member_orders|sum_quantity %}
+                    <table class="table table-sm mb-0 group-mini-table">
+                      <thead>
+                        <tr>
+                          <th>Target</th>
+                          <th>Ordered</th>
+                          <th>Remaining</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{{ group_order.target_quantity }}</td>
+                          <td>{{ ordered }}</td>
+                          <td>
+                              {% with diff=group_order.target_quantity|remaining:ordered %}
+                              {% if diff > 0 %}
+                                  <span class="text-success">
+                                    {{ diff }} remaining
+                                  </span>
+                                {% elif diff < 0 %}
+                                  <span class="text-danger">
+                                    Extra {{ diff|abs_value }} ordered
+                                  </span>
+                                {% else %}
+                                  <span class="text-primary">
+                                    Target met 
+                                  </span>
+                                {% endif %}
+                              {% endwith %}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    {% endwith %}
+                  </div>
+                
+                  <!-- JOIN BUTTON -->
+                  <a href="javascript:void(0)"
+                     class="btn btn-primary w-100 join-group-btn"
+                     data-group-id="{{ group_order.id }}"
+                     data-name="{{ group_order.product.product_name }}"
+                     data-price="{{ group_order.product.price_per_unit }}"
+                     data-min-order-quantity="{{ group_order.minimum_order_quantity }}"
+                     data-image="{{ group_order.product.imageUrl }}">
+                    <i class="fi-shopping-cart me-1"></i> Join & Buy
+                  </a>
+                
+                </div>
+            
+
+          </div>
+          <p class="text-center">
+                <a href="#"
+                   class="btn btn-primary p-2 mt-3 view-offers-btn"
+                   data-group-id="{{ group_order.id }}">
+                   <i class="fi-pricetag-multiple"></i>
+                   see availlable offers
+                </a>
+              {% if request.user.is_authenticated and request.user.customer %}
+                {% with referral_code=request.user.customer.refferal_code %}
+                  {% add_referral_param request.build_absolute_uri 'referral_code' referral_code as referral_url %}
+                    <a href="#" class="btn btn-primary p-2 mt-3" onclick="copyToClipboard(`{{ referral_url }}`); return false;">Copy Link</a>
+                {% endwith %}
+              {% else %}
+                {% with referral_url=request.build_absolute_uri %}
+                    <a href="#" class="btn btn-primary p-2 mt-3" onclick="copyToClipboard(`{{ referral_url }}`); return false;">Copy Link</a>
+                {% endwith %}
+              {% endif %}
+              <a href="{% url 'buy_in_groups' %}" 
+                      class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i>all groups
+              </a>
+              <a href="{% url 'buy_in_groups' %}?product_id={{group_order.product.id}}" 
+                  class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i>other groups for this product
+              </a>
+              <a href="{% url 'customer_orders_redirect' %}" 
+                      class="btn btn-primary p-2 mt-3 login-to-pay" <i class="fi-bag"></i>all Purchases
+              </a>
+              <a href="{% url 'all_Wholesale_products' %}" 
+                  class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> continue shopping
+              </a>
+              <a href="{{ request.build_absolute_uri|cut:request.META.QUERY_STRING|cut:"?" }}?see_all=see_all" 
+                  class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> all members
+              </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- remove variant -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const removeVariantBase = "{% url 'remove_variant' 0 %}".replace(/0\/$/, "");
+
+  document.querySelectorAll(".variant-item").forEach(function(el) {
+    el.addEventListener("click", function() {
+      let variantId = el.getAttribute("data-variant-id");
+
+      if (confirm("Do you want to remove this colour/size selection?")) {
+        fetch(`${removeVariantBase}${variantId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken,
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+          window.location.reload(); // refresh the page
+        }
+         else {
+            alert("Could not remove: " + (data.error || "Unknown error"));
+          }
+        })
+        .catch(err => alert("Request failed: " + err));
+      }
+    });
+  });
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie("csrftoken");
+</script>
+
+<!-- cancel order  -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const cancelButtons = document.querySelectorAll('.cancel-order-btn');
+    
+    cancelButtons.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const orderId = this.getAttribute('data-order-id');
+            const orderType = this.getAttribute('data-order-type');  // Get the order type (retail or wholesale)
+            // âœ… Use Django URL with placeholder replacement
+            const cancelUrlTemplate = "{% url 'cancel_order' 0 %}";
+            const cancelUrl = cancelUrlTemplate.replace('0', orderId);
+
+            if (confirm("Are you sure you want to cancel this order?")) {
+                fetch(cancelUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ order_type: orderType })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Order cancelled successfully.');
+                        location.reload();
+                    } else {
+                        alert('Failed to cancel order.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Something went wrong.');
+                });
+            }
+        });
+    });
+});
+</script>
+
+<!-- modal for updating payment -->
+<div id="paymentModalOverlay" class="custom-modal-overlay">
+  <div class="custom-modal">
+    <button class="btn-close-custom" id="closePaymentModal" aria-label="Close">&times;</button>
+    <h3>Record Payment</h3>
+    <div class="alert alert-light border mb-3">
+      <strong>Payment Verification</strong><br>
+    
+      Customer: <span id="payCustomer"></span><br>
+      Ordered Qty: <span id="payQty"></span><br>
+      Total Price: <span id="payTotal"></span><br>
+      Amount Paid: <span id="payPaid"></span><br>
+      Remaining Balance: <span id="payBalance" class="fw-bold text-danger"></span>
+    </div>
+
+    <form id="paymentForm">
+      {% csrf_token %}
+      <div class="mt-3">
+        <label class="form-label">Partner Info:</label>
+    
+        <input type="tel"
+            id="project_phone"
+            class="form-control text-center"
+            name="project_phone"
+            placeholder="e.g. 0712345678">
+    
+        <small class="text-muted">
+        order will be linked to the partner with above phone number.
+        </small>
+    
+      </div>
+      
+      <div>
+      <label for="payment_method">Payment Method</label>
+      <select class="form-control" id="payment_method" name="payment_method" required>
+        <option value="">-- Select Method --</option>
+        <option value="Wallet">Customer Wallet</option>
+        <option value="M-Pesa">M-Pesa</option>
+        <option value="Cash">Cash</option>
+        <option value="Bank">Bank</option>
+      </select>
+      </div>
+      <div class="alert alert-warning border mb-1" id="walletContainer" style="display:none;">
+         Customer Wallet: <span id="walletName"></span> - Balance: <span id="walletBalance"></span>
+      </div>
+      
+      <div>
+      <label for="amount_paid" class="mt-2">Amount Paid</label>
+      <input type="number" id="amount_paid" name="amount_paid" step="0.01" min="0.01" required>
+      </div>
+       Only show this if M-Pesa or Bank 
+      <div id="mpesa_ref_container">
+        <label for="mpesa_code">Reference Code</label>
+        <input type="text" id="mpesa_code" name="mpesa_code" placeholder="M-Pesa or Bank Ref Code">
+      </div>
+
+      <div class="modal-buttons">
+        <button type="submit" class="btn-primary" id="confirmPaymentBtn">Confirm</button>
+        <button type="button" id="cancelPayment" class="btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!--script for updating payment-->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  const modalOverlay = document.getElementById('paymentModalOverlay');
+  const closeBtn = document.getElementById('closePaymentModal');
+  const cancelBtn = document.getElementById('cancelPayment');
+  const form = document.getElementById('paymentForm');
+  const confirmBtn = document.getElementById('confirmPaymentBtn');
+  const methodSelect = document.getElementById('payment_method');
+  const mpesaContainer = document.getElementById('mpesa_ref_container');
+  const mpesaInput = document.getElementById('mpesa_code');
+
+  /* wallet safe references (prevent crash if missing) */
+  const walletContainer = document.getElementById("walletContainer");
+  const walletName = document.getElementById("walletName");
+  const walletBalance = document.getElementById("walletBalance");
+  
+
+  let currentOrderId = null;
+  let walletBalanceValue = 0;
+
+
+  /* hide reference container initially */
+  mpesaContainer.style.display = "none";
+
+
+  /* ------------------------------
+     Open modal
+  --------------------------------*/
+    document.querySelectorAll('.openPaymentModal').forEach(btn => {
+    
+      btn.addEventListener('click', function () {
+    
+        currentOrderId = this.dataset.orderId;
+    
+        modalOverlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    
+        const total = parseFloat(btn.dataset.total) || 0;
+        const paid = parseFloat(btn.dataset.paid) || 0;
+    
+        const transportTotal = parseFloat(btn.dataset.transportTotal) || 0;
+        const transportPaid = parseFloat(btn.dataset.transportPaid) || 0;
+    
+        const productBalance = total - paid;
+        const transportBalance = transportTotal - transportPaid;
+    
+        const combinedBalance = productBalance + transportBalance;
+    
+        document.getElementById("payCustomer").textContent = btn.dataset.customer;
+        document.getElementById("payQty").textContent = btn.dataset.quantity;
+    
+        document.getElementById("payTotal").textContent = total;
+        document.getElementById("payPaid").textContent = paid;
+    
+        // show combined balance (product + transport)
+        document.getElementById("payBalance").textContent = combinedBalance;
+    
+        // OPTIONAL: show transport info if you have fields in modal
+        const tTotal = document.getElementById("payTransportTotal");
+        const tPaid = document.getElementById("payTransportPaid");
+    
+        if (tTotal) tTotal.textContent = transportTotal;
+        if (tPaid) tPaid.textContent = transportPaid;
+    
+        // Disable confirm ONLY if everything is cleared
+        if (combinedBalance <= 0) {
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = "Cleared";
+        } else {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = "Confirm";
+        }
+    
+      });
+    
+    });
+
+  /* ------------------------------
+     Close modal
+  --------------------------------*/
+  function closeModal() {
+
+    modalOverlay.style.display = 'none';
+
+    document.body.style.overflow = 'auto';
+
+    form.reset();
+
+    confirmBtn.disabled = false;
+
+    confirmBtn.textContent = 'Confirm';
+
+    mpesaContainer.style.display = 'none';
+
+    currentOrderId = null;
+
+  }
+
+
+  if (closeBtn)
+    closeBtn.addEventListener('click', closeModal);
+
+  if (cancelBtn)
+    cancelBtn.addEventListener('click', closeModal);
+
+
+  modalOverlay.addEventListener('click', function (e) {
+
+    if (e.target === modalOverlay)
+      closeModal();
+
+  });
+
+
+  /* ------------------------------
+     Payment method change
+  --------------------------------*/
+  methodSelect.addEventListener('change', async function () {
+
+    if (!currentOrderId)
+      return;
+
+
+    if (this.value === 'M-Pesa' || this.value === 'Bank') {
+
+      mpesaContainer.style.display = 'block';
+
+      mpesaInput.required = true;
+
+    }
+
+    else if (this.value === 'Wallet') {
+    
+        mpesaContainer.style.display = 'none';
+        mpesaInput.required = false;
+    
+        const btn = document.querySelector(`[data-order-id="${currentOrderId}"]`);
+        if (!btn) return;
+    
+        const phone = btn.dataset.phone;
+        const name = btn.dataset.customer;
+    
+        const formData = new FormData();
+        const partnerPhone = document.getElementById("project_phone").value.trim();
+        formData.append("project_phone", partnerPhone);
+        formData.append("phone", phone);
+        formData.append("name", name);
+    
+        // Append API key from Django template
+        {% if request.user.is_staff %}
+        {% with active_api_keys as key_obj %}
+        formData.append("api_key", "{{ key_obj.key|escapejs }}");
+        {% endwith %}
+        {% endif %}
+    
+        // Show loading state to staff
+        if (walletContainer) {
+            walletContainer.style.display = "block";
+            walletName.textContent = "Loading walletâ€¦";
+            walletBalance.textContent = "...";
+        }
+    
+        try {
+            const url = "https://accounts.garantiimall.shop/ajax/get-or-create-wallet/";
+    
+            const response = await fetch(url, {
+                method: "POST",
+                body: formData
+            });
+    
+            const data = await response.json();
+    
+            if (data.success) {
+    
+                walletBalanceValue = parseFloat(data.wallet_balance);
+    
+                if (walletContainer) walletContainer.style.display = "block";
+                if (walletName) walletName.textContent = data.customer_name;
+                if (walletBalance) walletBalance.textContent = data.wallet_balance;
+    
+                // Pre-fill the phone in mpesa input (if needed)
+                mpesaInput.value = data.customer_phone;
+    
+            } else {
+                // Show error to staff
+                if (walletName) walletName.textContent = "Wallet load failed";
+                if (walletBalance) walletBalance.textContent = "";
+                alert(data.error || "Wallet load failed");
+            }
+    
+        } catch (err) {
+            console.error(err);
+            if (walletName) walletName.textContent = "Wallet load failed";
+            if (walletBalance) walletBalance.textContent = "";
+            alert("Wallet load failed (network error)");
+        }
+    }    
+    else {
+    
+      mpesaContainer.style.display = 'none';
+
+      mpesaInput.required = false;
+
+      mpesaInput.value = '';
+      
+      if (walletContainer) walletContainer.style.display = 'none';
+      if (walletName) walletName.textContent = '';
+      if (walletBalance) walletBalance.textContent = '';
+
+    }
+
+  });
+
+
+
+  /* ------------------------------
+     Submit payment
+  --------------------------------*/
+  form.addEventListener('submit', async function (e) {
+
+    e.preventDefault();
+
+    if (!currentOrderId) {
+
+      alert('Invalid order selected.');
+
+      return;
+
+    }
+
+
+    const amount =
+      document.getElementById('amount_paid').value;
+
+    const method =
+      methodSelect.value;
+
+    const mpesaCode =
+      mpesaInput.value.trim();
+
+
+    if (!method) {
+
+      alert('Please select a payment method.');
+
+      return;
+
+    }
+
+
+    if (!amount || parseFloat(amount) <= 0) {
+
+      alert('Please enter a valid amount.');
+
+      return;
+
+    }
+
+
+    if (
+      (method === 'M-Pesa' || method === 'Bank')
+      && !mpesaCode
+    ) {
+
+      alert('Please enter a reference code.');
+
+      return;
+
+    }
+
+
+    if (method === "Wallet") {
+
+      if (
+        parseFloat(amount)
+        > walletBalanceValue
+      ) {
+
+        alert(
+          "Customer wallet has insufficient balance"
+        );
+
+        return;
+
+      }
+
+    }
+
+
+    confirmBtn.disabled = true;
+
+    confirmBtn.textContent = 'Saving...';
+
+
+    const formData = new FormData(form);
+
+
+    {% if request.user.is_staff %}
+    {% with active_api_keys as key_obj %}
+    formData.append("api_key", "{{ key_obj.key|escapejs }}");
+    {% endwith %}
+    {% endif %}
+
+
+    const csrftoken =
+      document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+
+    const urlTemplate =
+      "{% url 'ajax_group_member_record_payment' 0 %}";
+
+
+    const payUrl =
+      urlTemplate.replace('0', currentOrderId);
+
+
+    try {
+
+      const response =
+        await fetch(payUrl, {
+
+          method: 'POST',
+
+          headers: {
+            'X-CSRFToken': csrftoken
+          },
+
+          body: formData
+
+        });
+
+
+      const data =
+        await response.json();
+
+
+      if (response.ok && data.success) {
+
+        alert(data.message);
+
+
+        const statusSpan =
+          document.querySelector(
+            `[data-status-for="${currentOrderId}"]`
+          );
+
+
+        if (statusSpan) {
+
+          if (data.fully_paid) {
+
+            statusSpan.textContent =
+              'Fully Paid';
+
+            statusSpan.className =
+              'text-success';
+
+          }
+
+          else {
+
+            statusSpan.textContent =
+              'Partially Paid';
+
+            statusSpan.className =
+              'text-warning';
+
+          }
+
+        }
+
+
+        closeModal();
+
+        window.location.reload();
+
+      }
+
+      else {
+
+        alert(
+          data.error
+          || 'Payment failed.'
+        );
+
+
+        confirmBtn.disabled = false;
+
+        confirmBtn.textContent = 'Confirm';
+
+      }
+
+    }
+
+    catch (err) {
+
+      console.error(err);
+
+      alert(
+        'Network or server error occurred.'
+      );
+
+
+      confirmBtn.disabled = false;
+
+      confirmBtn.textContent = 'Confirm';
+
+    }
+
+  });
+
+
+});
+</script>
+
+<!-- Update Quantity Modal (unique id) -->
+<div class="modal fade" id="updateQtyModal" tabindex="-1" aria-labelledby="updateQtyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updateQtyModalLabel">Update Quantity</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <img id="updateQtyProductImage" src="" alt="Product Image" class="img-fluid mb-3" style="max-height: 150px;">
+        <h5 id="updateQtyProductName"></h5>
+   
+        <div class="quantity-control mt-2">
+          <label class="form-label">Quantity</label>
+          <div class="d-flex align-items-center justify-content-center gap-2">
+            <button class="btn btn-danger btn-sm" id="updateQtyMinusBtn" type="button">-</button>
+            <input type="text" id="updateQtyInput" class="form-control text-center" value="1" readonly style="width: 60px;">
+            <button class="btn btn-danger btn-sm" id="updateQtyPlusBtn" type="button">+</button>
+          </div>
+          <small class="text-muted d-block mt-2">Minimum order quantity: <span id="updateQtyMOQ"></span></small>
+        </div>
+      </div>
+
+      <div id="updateQtyFeedback"></div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <a href="#" id="updateQtySaveBtn" class="btn btn-primary">Save</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!--script for updating quantity-->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }} === true;
+  
+  const loginUrl = "{% url 'login_user' %}";
+  let currentUserId = null
+  
+  if(isAuthenticated){
+      currentUserId = {{ request.user.id }};
+  }
+
+  const updateButtons = document.querySelectorAll('.update-qty-btn');
+  const modalEl = document.getElementById('updateQtyModal');
+  const modal = new bootstrap.Modal(modalEl);
+
+  const imgEl = document.getElementById('updateQtyProductImage');
+  const nameEl = document.getElementById('updateQtyProductName');
+  const qtyInput = document.getElementById('updateQtyInput');
+  const minusBtn = document.getElementById('updateQtyMinusBtn');
+  const plusBtn = document.getElementById('updateQtyPlusBtn');
+  const saveBtn = document.getElementById('updateQtySaveBtn');
+  const moqEl = document.getElementById('updateQtyMOQ');
+  const feedbackEl = document.getElementById('updateQtyFeedback');
+
+  let currentMOQ = 1;
+  let currentItemId = null;
+  let currentOwnerId = null;
+
+  function showFeedback(message, type = 'info') {
+    feedbackEl.innerHTML = `<div class="alert alert-${type} mt-2 mb-0">${message}</div>`;
+  }
+
+  function updateQuantityButtons() {
+    const qty = parseInt(qtyInput.value);
+    minusBtn.disabled = qty <= currentMOQ;
+  }
+
+  updateButtons.forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+
+      if (!isAuthenticated) {
+        const loginModal = new bootstrap.Modal(document.getElementById("login-required-modal"));
+        loginModal.show();
+
+        document.getElementById("login-required-continue").onclick = function () {
+          const redirectModal = new bootstrap.Modal(document.getElementById("redirecting-modal"));
+          redirectModal.show();
+
+          setTimeout(() => {
+            window.location.href = loginUrl + '?next=' + window.location.pathname;
+          }, 2000);
+        };
+        return;
+      }
+
+      currentItemId = btn.dataset.itemId;
+      currentOwnerId = parseInt(btn.dataset.ownerId);
+      const productName = btn.dataset.name;
+      const image = btn.dataset.image;
+      const price = parseFloat(btn.dataset.price);
+      currentMOQ = parseInt(btn.dataset.moq);
+      const currentQty = parseInt(btn.dataset.quantity);
+
+      if (!{{ request.user.is_staff|yesno:"true,false" }} && currentOwnerId !== currentUserId) {
+        alert("You cannot update a product that isn't yours.");
+        return;
+      }
+
+      imgEl.src = image;
+      nameEl.textContent = productName;
+      qtyInput.value = currentQty;
+      moqEl.textContent = currentMOQ;
+
+      feedbackEl.innerHTML = '';
+      updateQuantityButtons();
+
+      modal.show();
+    });
+  });
+
+  plusBtn.addEventListener('click', () => {
+    qtyInput.value = parseInt(qtyInput.value) + 1;
+    updateQuantityButtons();
+  });
+
+  minusBtn.addEventListener('click', () => {
+    let currentQty = parseInt(qtyInput.value);
+    if (currentQty > currentMOQ) {
+      qtyInput.value = currentQty - 1;
+      updateQuantityButtons();
+    }
+  });
+
+  saveBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const quantity = parseInt(qtyInput.value);
+
+    showFeedback('Updating quantity...', 'info');
+    saveBtn.disabled = true;
+
+    try {
+      const response = await fetch(`/e-store/update-group-item-quantity/${currentItemId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ quantity })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        showFeedback('Quantity updated successfully!', 'success');
+        setTimeout(() => {
+          modal.hide();
+          location.reload(); // optional: reload table to reflect change
+        }, 800);
+      } else {
+        showFeedback(data.error || 'Could not update quantity.', 'danger');
+        saveBtn.disabled = false;
+      }
+    } catch (err) {
+      console.error(err);
+      showFeedback('Error updating quantity. Try again.', 'danger');
+      saveBtn.disabled = false;
+    }
+  });
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+});
+</script>
+
+
+<!--script for enhancing dropdown behavior for colour selection-->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".variant-toggle").forEach(button => {
+    button.addEventListener("click", function () {
+      const targetId = this.getAttribute("data-target");
+      const content = document.getElementById(targetId);
+
+      content.classList.toggle("show");
+
+      // Optional: change button text
+      this.textContent = content.classList.contains("show")
+        ? "Hide Colours & Sizes"
+        : "Select Colours & Sizes";
+    });
+  });
+});
+</script>
+
+<!-- script for masking phone number so as if customer exists with same name they can check phone number-->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.whatsapp-number').forEach(el => {
+    const phone = el.dataset.phone.replace(/\s+/g, '').replace('+', '');
+
+    // Mask middle digits
+    const masked =
+      phone.slice(0, 3) +
+      '****' +
+      phone.slice(-3);
+
+    el.textContent = masked;
+  });
+});
+</script>
+
+<!-- script for updating packed-->
+<script>
+
+document.addEventListener("click", function(e){
+
+    if(e.target.classList.contains("markPackedBtn")){
+
+        let orderId = e.target.dataset.orderId;
+
+        if(confirm("Are you sure order is packed and sent?")){
+
+            fetch(`/e-store/staff/order/${orderId}/packed/`, {
+
+                method:"POST",
+
+                headers:{
+                    "X-CSRFToken":"{{ csrf_token }}",
+                }
+
+            })
+            .then(res=>res.json())
+            .then(data=>{
+
+                alert(data.message);
+
+                location.reload();
+
+            });
+
+        }
+
+    }
+
+});
+
+</script>
+
+<!-- script for updating  sent-->
+<script>
+
+document.addEventListener("click", function(e){
+
+    if(e.target.classList.contains("markSentBtn")){
+
+        let orderId = e.target.dataset.orderId;
+
+        if(confirm("Are you sure order is sent or picked?")){
+
+            fetch(`/e-store/staff/order/${orderId}/sent/`, {
+
+                method:"POST",
+
+                headers:{
+                    "X-CSRFToken":"{{ csrf_token }}",
+                }
+
+            })
+            .then(res=>res.json())
+            .then(data=>{
+
+                alert(data.message);
+
+                location.reload();
+
+            });
+
+        }
+
+    }
+
+});
+
+</script>
+
+
+<!-- modal for product exchange -->
+<div class="modal fade" id="exchangeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <h5 class="modal-title">Process Exchange</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      
+
+      <!-- Body -->
+      <div class="modal-body">
+        <div class="alert alert-light border mb-3">
+          <strong>Order Verification</strong><br>
+        
+          Customer: <span id="exCustomer"></span><br>
+          Ordered Qty: <span id="exQty"></span><br>
+          Amount Paid: <span id="exPaid"></span><br>
+          Total Price: <span id="exTotal"></span>
+        </div>
+
+
+        <input type="hidden" id="exchangeOrderId">
+        
+        <!-- pattner project-->
+        <div class="mt-3">
+        <label class="form-label">Partner Info:</label>
+    
+        <input type="tel"
+            id="partner_project_phone"
+            class="form-control text-center"
+            name="project_phone"
+            placeholder="e.g. 0712345678">
+    
+        <small class="text-muted">
+        order will be linked to the partner with above phone number.
+        </small>
+    
+      </div>
+        <!-- Exchange Type -->
+        <div class="mb-3">
+          <label class="form-label">Exchange Type</label>
+          <select class="form-select" id="exchangeType">
+            <option value="">Select Type</option>
+            <option value="money">Money</option>
+            <option value="product">Product</option>
+          </select>
+        </div>
+
+        <!-- Quantity -->
+        <div class="mb-3">
+          <label class="form-label">Quantity</label>
+          <input type="number" min="1" class="form-control" id="exchangeQty">
+        </div>
+
+        <!-- MONEY SECTION -->
+        <div id="moneySection" class="d-none">
+
+          <div class="mb-3">
+            <label class="form-label">Amount Returned</label>
+            <input type="number" step="0.01" class="form-control" id="exchangeAmount">
+          </div>
+
+        </div>
+
+        <!-- PRODUCT SECTION -->
+        <div id="productSection" class="d-none">
+
+          <!-- Search -->
+          <div class="mb-2">
+            <label class="form-label">Search Group Order</label>
+            <input type="text"
+                   id="groupOrderSearch"
+                   class="form-control"
+                   placeholder="Search order...">
+          </div>
+
+          <!-- Result List -->
+          <div class="list-group"
+               id="groupOrderResults"
+               style="max-height:200px;overflow-y:auto;">
+          </div>
+
+          <input type="hidden" id="selectedGroupOrder">
+
+        </div>
+
+        <!-- Note -->
+        <div class="mb-3">
+          <label class="form-label">Note</label>
+          <textarea class="form-control" id="exchangeNote"></textarea>
+        </div>
+
+        <!-- Feedback -->
+        <div id="exchangeFeedback"></div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+
+        <button class="btn btn-primary" id="saveExchangeBtn">
+          Save Exchange
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- script for product exchange -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  /* ==============================
+     SAFE ELEMENT REFERENCES
+  ============================== */
+
+  const modalEl = document.getElementById("exchangeModal");
+  if (!modalEl) return;
+
+  const exchangeModal = new bootstrap.Modal(modalEl);
+  const partnerPhone = document.getElementById("partner_project_phone");
+  const exchangeType = document.getElementById("exchangeType");
+  const exchangeQty = document.getElementById("exchangeQty");
+  const exchangeAmount = document.getElementById("exchangeAmount");
+  const exchangeNote = document.getElementById("exchangeNote");
+  const exchangeOrderId = document.getElementById("exchangeOrderId");
+  const groupSearch = document.getElementById("groupOrderSearch");
+  const groupResults = document.getElementById("groupOrderResults");
+  const selectedGroup = document.getElementById("selectedGroupOrder");
+  const saveBtn = document.getElementById("saveExchangeBtn");
+  const feedbackEl = document.getElementById("exchangeFeedback");
+
+  const moneySection = document.getElementById("moneySection");
+  const productSection = document.getElementById("productSection");
+
+  let allGroupOrders = [];
+  let isSubmitting = false;
+
+  /* ==============================
+     OPEN MODAL (DELEGATED EVENT)
+  ============================== */
+  document.addEventListener("click", function (e) {
+
+      const btn = e.target.closest(".openExchangeModal");
+      if (!btn) return;
+    
+      e.preventDefault();
+    
+      // set order id
+      document.getElementById("exchangeOrderId").value = btn.dataset.orderId;
+    
+      // populate verification info
+      document.getElementById("exCustomer").textContent = btn.dataset.customer;
+      document.getElementById("exQty").textContent = btn.dataset.quantity;
+      document.getElementById("exPaid").textContent = btn.dataset.paid;
+      document.getElementById("exTotal").textContent = btn.dataset.total;
+    
+      const orderId = btn.dataset.orderId;
+      exchangeOrderId.value = orderId;
+    
+      resetForm();
+      exchangeModal.show();
+    });
+
+//   document.addEventListener("click", function (e) {
+//     const btn = e.target.closest(".openExchangeModal");
+//     if (!btn) return;
+
+//     e.preventDefault();
+
+//     const orderId = btn.dataset.orderId;
+//     exchangeOrderId.value = orderId;
+
+//     resetForm();
+//     exchangeModal.show();
+//   });
+
+  /* ==============================
+     RESET FORM
+  ============================== */
+
+  function resetForm() {
+    exchangeType.value = "";
+    exchangeQty.value = "";
+    exchangeAmount.value = "";
+    exchangeNote.value = "";
+    groupSearch.value = "";
+    groupResults.innerHTML = "";
+    selectedGroup.value = "";
+    feedbackEl.innerHTML = "";
+    partnerPhone.value = "";
+    hideSections();
+    isSubmitting = false;
+    saveBtn.disabled = false;
+  }
+
+  /* ==============================
+     SHOW / HIDE SECTIONS
+  ============================== */
+
+  function hideSections() {
+    moneySection.classList.add("d-none");
+    productSection.classList.add("d-none");
+  }
+
+  exchangeType.addEventListener("change", function () {
+    hideSections();
+
+    if (this.value === "money") {
+      moneySection.classList.remove("d-none");
+    }
+
+    if (this.value === "product") {
+      productSection.classList.remove("d-none");
+      fetchOpenGroupOrders();
+    }
+  });
+
+  /* ==============================
+     FETCH GROUP ORDERS
+  ============================== */
+
+  async function fetchOpenGroupOrders() {
+    try {
+      groupResults.innerHTML = `<div class="text-center p-2">Loading...</div>`;
+
+      const response = await fetch("/e-store/api/open-group-orders/");
+      const data = await response.json();
+
+      allGroupOrders = data;
+      renderOrders(data);
+
+    } catch (error) {
+      groupResults.innerHTML =
+        `<div class="text-danger text-center p-2">Error loading orders</div>`;
+    }
+  }
+
+  /* ==============================
+     RENDER ORDERS
+  ============================== */
+
+  function renderOrders(list) {
+    groupResults.innerHTML = "";
+
+    if (!list.length) {
+      groupResults.innerHTML =
+        `<div class="text-muted text-center p-2">No orders found</div>`;
+      return;
+    }
+
+    list.forEach(order => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "list-group-item list-group-item-action";
+      item.textContent = `${order.name} (ID: ${order.id})`;
+
+      item.addEventListener("click", function () {
+        selectedGroup.value = order.id;
+        groupSearch.value = order.name;
+        groupResults.innerHTML = "";
+      });
+
+      groupResults.appendChild(item);
+    });
+  }
+
+  /* ==============================
+     SEARCH FILTER
+  ============================== */
+
+  groupSearch.addEventListener("input", function () {
+    const value = this.value.toLowerCase();
+    const filtered = allGroupOrders.filter(order =>
+      order.name.toLowerCase().includes(value)
+    );
+    renderOrders(filtered);
+  });
+
+  /* ==============================
+     SAVE EXCHANGE
+  ============================== */
+
+  saveBtn.addEventListener("click", async function () {
+
+    if (isSubmitting) return;
+    
+    
+    const project_phone = partnerPhone.value.trim();
+
+    const type = exchangeType.value;
+    const quantity = parseInt(exchangeQty.value);
+
+    if (!type) {
+      showMessage("danger", "Please select exchange type.");
+      return;
+    }
+
+    if (!quantity || quantity < 1) {
+      showMessage("danger", "Enter valid quantity.");
+      return;
+    }
+
+    if (type === "money" && !exchangeAmount.value) {
+      showMessage("danger", "Enter amount returned.");
+      return;
+    }
+
+    if (type === "product" && !selectedGroup.value) {
+      showMessage("danger", "Select replacement product.");
+      return;
+    }
+
+    isSubmitting = true;
+    saveBtn.disabled = true;
+    showMessage("info", "Processing exchange...");
+
+    try {
+      const response = await fetch("/e-store/api/create-exchange/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken()
+        },
+        body: JSON.stringify({
+          order_id: exchangeOrderId.value,
+          type: type,
+          project_phone : project_phone,
+          quantity: quantity,
+          amount: exchangeAmount.value,
+          replacement_group: selectedGroup.value,
+          note: exchangeNote.value
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        showMessage("success", "Exchange saved successfully!");
+        setTimeout(() => location.reload(), 800);
+      } else {
+        showMessage("danger", data.error || "Failed to save exchange.");
+        saveBtn.disabled = false;
+        isSubmitting = false;
+      }
+
+    } catch (error) {
+      showMessage("danger", "Server error. Try again.");
+      saveBtn.disabled = false;
+      isSubmitting = false;
+    }
+  });
+
+  /* ==============================
+     FEEDBACK
+  ============================== */
+
+  function showMessage(type, message) {
+    feedbackEl.innerHTML =
+      `<div class="alert alert-${type} mt-2">${message}</div>`;
+  }
+
+  /* ==============================
+     CSRF
+  ============================== */
+
+  function getCSRFToken() {
+    let cookieValue = null;
+    if (document.cookie) {
+      document.cookie.split(';').forEach(cookie => {
+        cookie = cookie.trim();
+        if (cookie.startsWith('csrftoken=')) {
+          cookieValue = decodeURIComponent(cookie.substring('csrftoken='.length));
+        }
+      });
+    }
+    return cookieValue;
+  }
+
+});
+</script>
+
+
+{% endblock %}

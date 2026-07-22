@@ -1,0 +1,262 @@
+{% extends 'store/wholesalers/wholesale-main.html' %}
+{% load static %}
+{% load math_filters %}
+{% load query_append %}
+{% load custom_product_filters %}
+{% load to_filter %}
+{% load url_filters %}
+{% load math_extras %}
+
+{% block content %}
+<style>
+/* Upload Area Styling */
+.uploadfile {
+    border: 2px dashed #d3d3d3;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    background-color: #fafafa;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    position: relative;
+}
+
+.uploadfile.dragover {
+    border-color: #007bff;
+    background-color: #f0f8ff;
+}
+
+.btn-upload {
+    display: inline-block;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    background-color: #007bff;
+    color: white;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-upload:hover {
+    background-color: #0056b3;
+}
+
+.btn-upload input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+}
+
+.file-name {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Preview Area */
+.box-img-upload {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.item-upload {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #fff;
+    transition: border 0.2s ease;
+}
+
+.item-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.item-upload .remove-file {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(255, 0, 0, 0.8);
+    color: #fff;
+    padding: 4px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.item-upload.dragging {
+    opacity: 0.6;
+}
+
+.item-upload.over {
+    border: 2px dashed #007bff;
+}
+
+/* Responsive tweaks */
+@media (max-width: 576px) {
+    .item-upload {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+</style>
+<main>
+    <!-- Page Title -->
+    <div class="bg-no-repeat bg-cover bg-right-center position-relative" style="background-image: url(../../assets/img/fashion2/home-banner-3.jpg);">
+        <div class="position-absolute top-0 end-0 start-0 bottom-0 opacity-3 bg-dark"></div>
+        <!-- Header Height Bar -->
+        <div class="header-height-bar border-bottom opacity-3"></div>
+        <div class="container-fluid px-container py-6 position-relative">
+            <div class="row align-items-center">
+                <div class="col-lg-6 my-2">
+                    <h1 class="m-0 h4 text-center text-lg-start text-white">My Wholesale Orders </h1>
+                </div>
+                <div class="col-lg-6 my-2">
+                    <ol class="breadcrumb breadcrumb-light m-0 small justify-content-center justify-content-lg-end">
+                        <!-- <li class="breadcrumb-item"><a class="text-nowrap" href="#">Home</a></li>
+                        <li class="breadcrumb-item text-nowrap active" aria-current="page">My Account</li> -->
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Page Title -->
+
+    <!-- orders sectin  -->
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Orders</h5>
+                <div class="shortby-dropdown ms-auto">
+                    <div class="dropdown">
+                        <form method="get" class="mb-4">
+                            <select name="sort" onchange="this.form.submit()" class="form-select">
+                                <option value="">-- Sort Orders: --</option>
+                                <option value="recent" {% if sort == "recent" %}selected{% endif %}>Recently Added</option>
+                                <option value="oldest" {% if sort == "oldest" %}selected{% endif %}>Oldest</option>
+                                <option value="price_asc" {% if sort == "price_asc" %}selected{% endif %}>Price Low to High</option>
+                                <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Price High to Low</option>
+                                <option value="received" {% if sort == "received" %}selected{% endif %}>Only Received</option>
+                                <option value="paid" {% if sort == "paid" %}selected{% endif %}>Only Paid</option>
+                                <option value="not_paid" {% if sort == "not_paid" %}selected{% endif %}>Not Paid</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+              <!-- Table with stripped rows -->
+                <table class="table datatable">
+                    <thead>
+                        <tr>
+                        <th>Time Ordered</th>
+                        <th>Order Id</th>
+                        <th>Image</th>
+                        <th>Products You Ordered</th>
+                        <th>Total Amount</th>
+                        <th>Paid</th>
+                        <th>Received</th>
+                        <th>Cancelled</th>
+                        <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                        <td>{{ order.ordered_at|timesince }} ago</td>
+                        <td>#{{ order.id }}</td>
+                        <td>
+                        
+                        <div class="swiper" data-swiper-options='{
+                                "slidesPerView": 1,
+                                "spaceBetween": 0,
+                                "pagination": {
+                                "el": ".swiper-pagination",
+                                "clickable": true
+                                },
+                                "navigation": {
+                                "nextEl": ".swiper-next-01",
+                                "prevEl": ".swiper-prev-01"
+                                },
+                                "autoplay": {
+                                "delay": 5000,
+                                "disableOnInteraction": false
+                                }
+                            }'>
+                            <div class="swiper-wrapper">
+                                {% for order_product in order.wholesale_products.all %}
+                                <div class="swiper-slide">
+                                  <a href="{% url 'my_wholesale_orders_details' order.id %}">
+                                    <img src="{{ order_product.product.imageUrl }}" alt="Product Image" width="100">  
+                                  </a> 
+                                </div>
+                                {% endfor %}
+                            </div>
+
+
+                            <!-- <div class="swiper-arrow-style-01 swiper-next swiper-next-01"><i class="bi bi-chevron-right"></i></div> -->
+                            <!-- <div class="swiper-arrow-style-01 swiper-prev swiper-prev-01"><i class="bi bi-chevron-left"></i></div> -->
+                        </div>
+                                
+                        </td>
+                        <td>
+                            {% for order_product in order.wholesale_products.all %} {{order_product.product.product_name}},  {% endfor %}
+                        </td>
+                        <td>KSH{{order.total_price}}</td>
+                        <td>{% if order.is_paid %} Yes {% else %}NO {% endif %}</td>
+                        <td>{% if order.received %} Yes {% else %}NO {% endif %}</td>
+                        <td>{% if order.cancelled %} Yes {% else %}NO {% endif %}</td>
+                        <td><a href="{% url 'my_wholesale_orders_details' order.id %}" class="btn btn-primary btn-sm">View Details</a></td>
+                        </tr>
+                        {% empty %}
+                            <p>You've made no order' </p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+              <!-- End Table with stripped rows -->
+                <p class="text-center">
+                    <a href="{% url 'all_customer_orders' request.user.customer.id %}" 
+                            class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> see all your Purchases
+                    </a>
+                    <a href="{% url 'group_orders_list' %}" 
+                            class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> My Group Purchases
+                    </a>
+                    <a href="{% url 'all_Wholesale_products' %}" 
+                        class="btn btn-primary p-2 mt-3" <i class="fi-bag"></i> head shopping
+                    </a>
+                </p>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+    <!-- Shop Section -->
+    
+</main>
+{% endblock content %}

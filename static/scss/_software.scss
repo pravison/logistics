@@ -1,0 +1,204 @@
+//software_setup
+.software_setup{
+	display: block;
+	overflow: hidden;
+	padding-top: 80px;
+	position: relative; 
+	z-index: 1;
+     .focus_bg {
+        position: absolute !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: 640px !important;
+		 z-index: -1;
+    }
+	h2{
+		text-align: center;
+		font: 600 42px $pop;
+		color: $heding;
+		padding-bottom: 90px;
+	}
+	.software_img{
+		img{
+			margin-left: -60px;
+		}
+	}
+	.software_text{
+		max-width: 447px;
+		box-shadow: 0px 38px 30px 0px rgba(229, 229, 229, 0.35);
+		background: #fff;
+		float: right;
+		margin-right: 50px;
+		padding: 50px;
+		padding-right: 70px;
+		padding-bottom: 40px;
+		position: relative;
+		&:before{
+			content: "";
+			position: absolute;
+			top: 0;
+			right: 0;
+			background: url("../images/softwer-style.png") no-repeat;
+			height: 183px;
+			width: 88px;
+			display: block;
+		}
+		&:after{
+			content: "";
+			position: absolute;
+			bottom: -140px;
+			left: 0;
+			right: 0; 
+			background: url("../images/down-arrow.png") no-repeat;
+			height: 111px;
+			width: 12px;
+			margin: 0 auto;
+		}
+		span{ 
+			border:1px solid rgb(238, 238, 255);
+			border-radius: 50%;
+			background: #fff;
+			box-shadow: 0px 18px 27px 0px rgba(181, 180, 252, 0.35); 
+			width: 58px;
+			height: 58px; 
+			color: $hover;
+			font: 500 26px/58px $pop;
+			display: block;
+			text-align: center;
+		}
+		a{
+			display: block;
+			font: 500 21px/31.5px $pop;
+			color: #242425;
+			padding-top: 35px;
+			padding-bottom: 25px;
+			&:hover, &:focus{
+				color: $bc;
+			}
+		}
+	}
+	.software_inner{
+		padding-top: 180px;
+		.software_img img{
+			margin: 0;
+			margin-left: 65px;
+		}
+		.software_text{
+			margin: 0;
+			margin-top: 80px;
+			&:after{
+				display: none;
+			}
+		}
+	}
+}
+//software_setup
+ 
+//application_setup
+.application_setup{
+	display: block;
+	overflow: hidden;
+	padding-top: 160px;
+	padding-bottom: 120px;
+	position: relative;
+	&:before{
+		position: absolute;
+		content: "";
+		top: 150px;
+		right: 115px;
+		background: url(../images/get-shap-5.png) no-repeat;
+		height: 142px;
+		width: 142px;
+		animation: heartbeat 0.5s cubic-bezier(0.245, 0.325, 0.51, 1.305) infinite alternate;
+	}
+	&:after{
+		position: absolute;
+		content: "";
+		bottom: 0;
+		right: 115px;
+		background: url(../images/services-shap-6.png) no-repeat;
+		height: 73px;
+		width: 82px;
+		animation: heartbeat 0.5s cubic-bezier(0.245, 0.325, 0.51, 1.305) infinite alternate;
+	}
+	.software_text{
+		max-width: 447px;
+		box-shadow: 0px 38px 30px 0px rgba(229, 229, 229, 0.35);
+		background: #fff; 
+		padding: 50px;
+		padding-right: 70px;
+		padding-bottom: 40px;
+		position: relative;
+		margin-bottom: 40px; 
+		&:after{
+			content: "";
+			position: absolute;
+			bottom: -10px;
+			right: -60px;
+			background: url("../images/down-arrow-2.png") no-repeat;
+			height: 111px;
+			width: 12px;
+			margin: 0 auto;
+		}
+		span{  
+			background-image: -moz-linear-gradient( 140deg, rgb(240,210,253) 0%, rgb(221,65,249) 100%);
+			background-image: -webkit-linear-gradient( 140deg, rgb(240,210,253) 0%, rgb(221,65,249) 100%);
+			background-image: -ms-linear-gradient( 140deg, rgb(240,210,253) 0%, rgb(221,65,249) 100%);
+			box-shadow: 0px 18px 27px 0px rgba(181, 180, 252, 0.35);
+			border-radius: 50%;  
+			width: 58px;
+			height: 58px; 
+			color: #fff;
+			font: 500 26px/58px $pop;
+			display: block;
+			text-align: center;
+		}
+		a{
+			display: block;
+			font: 500 21px/31.5px $pop;
+			color: #242425;
+			padding-top: 35px;
+			padding-bottom: 25px;
+			&:hover, &:focus{
+				color: $bc;
+			}
+		}
+	}
+	.st_2{
+		margin-left: 100px;
+		&:after{
+			left: -50px;
+			right: auto;
+			background: url("../images/down-arrow-3.png") no-repeat;
+		}
+		span{
+			background-image: -moz-linear-gradient( 140deg, rgb(99,242,255) 0%, rgb(254,229,229) 100%);
+			background-image: -webkit-linear-gradient( 140deg, rgb(99,242,255) 0%, rgb(254,229,229) 100%);
+			background-image: -ms-linear-gradient( 140deg, rgb(99,242,255) 0%, rgb(254,229,229) 100%);
+		}
+	} 
+	.st_3{ 
+		&:after{
+			display: none;
+		}
+		span{
+			background-image: -moz-linear-gradient( 140deg, rgb(39,217,119) 0%, rgb(218,250,230) 100%);
+			background-image: -webkit-linear-gradient( 140deg, rgb(39,217,119) 0%, rgb(218,250,230) 100%);
+			background-image: -ms-linear-gradient( 140deg, rgb(39,217,119) 0%, rgb(218,250,230) 100%);
+		}
+	} 
+	.application_contant{
+		h2{
+			font: 600 42px/55px $pop;
+			color: #39436f;
+			padding-bottom: 125px;
+		}
+	}
+	.focus_bg{
+		position: absolute !important;
+		bottom: 0 !important;
+		top: auto !important;
+	}
+} 
+//application_setup
+

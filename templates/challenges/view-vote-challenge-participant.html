@@ -1,0 +1,795 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      color: #333;
+    }
+
+    header {
+      background: #ffffff;
+      padding: 0px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    header img {
+      max-height: 60px;
+    }
+
+    .profile-section {
+      background-color: #fff;
+      padding: 20px;
+      max-width: 98%;
+      margin: 30px auto;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .profile-container {
+      display: flex;
+      align-items: flex-start;
+      margin-top: 20px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .profile-image {
+      flex: 1 1 100%;
+      text-align: center;
+    }
+
+    .profile-image img {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #e91e63;
+    }
+
+    .profile-name {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .submission-image {
+      /* flex: 1 1 100%; */
+      position: relative;
+    }
+
+    .submission-caption {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .submission-image img {
+      width: 100%;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .profile-info {
+      flex: 1 1 100%;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .vote-stats {
+      margin-top: 10px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .vote-button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    .vote-button:hover {
+      background-color: #c2185b;
+    }
+
+    .share {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .share a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #1da1f2;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+
+  <style>
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+}
+</style>
+
+  <style>
+  .popup {
+      display: none; /* Hidden by default */
+      position: fixed; /* Ensures the popup stays on the screen */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+      justify-content: center;
+      align-items: center;
+      z-index: 9999; /* Higher z-index to appear on top of other elements */
+  }
+
+  /* Popup content box */
+  .popup-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      width: 90%;
+      z-index: 10000; /* Ensures the content box stays above the overlay */
+  }
+  /* #cc922e */ 
+  /* #1563df blue color */
+
+  .popup-content input {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+  }
+
+  .popup-content button {
+      margin: 5px;
+      padding: 8px 16px;
+      background: #1563df;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+  }
+
+  .popup-content button:hover {
+      background: #1563df;
+  }
+  </style>
+  
+
+  <section class="profile-section">
+    <div class="profile-container">
+      <div class="col-xl-4  profile-image">
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {% endfor %}
+        {% endif %}
+        <div>
+           
+          <img src="{% if participant.participant.profile_image %} {{participant.participant.imageUrl}} {% else %}{% static 'images/profile.png' %} {% endif %}" alt="User Profile">
+          <div class="profile-name">{{participant.participant}}</div>
+        </div>
+      </div>
+      <div class="col-xl-12 text-center">
+        {% if participant.challenge.type_of_results == 'image' %}
+        {% if participant.results_image %}
+        <div class="submission-image">
+          <h3 style="text-decoration: underline;"><b>My Submission!!!</b></h3>
+          <img src="{{participant.imageUrl}}" alt="Submitted Challenge Image">
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="submission-image">
+          <h3 style="text-decoration: underline;"><b>My Submission!!!</b></h3>
+          {{participant.results_text }}
+        </div>
+        {% endif %}
+        <div class="profile-info">
+          <div class="vote-stats">
+            <p><strong>Current Votes:</strong> {{participant.total_votes|intcomma}}</p>
+            <!-- <p><strong>Current Position:</strong> #2</p> -->
+            <p>Help {{participant.participant}} win the {{ participant.challenge.challenge_name}} challenge by casting your vote. Your support matters!</p>
+          </div>
+          <button class="vote-button" onclick="castVote(event, `{{customer.total_available_votes}}`, `{{participant.id}}`)">VOTE FOR {{participant.participant|upper}}</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="share">
+    Share this challenge: 
+    <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri|urlencode }}" target="_blank">Twitter</a> |
+  <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri |urlencode }}" target="_blank">Facebook</a> |
+  <a href="https://wa.me/?text={{ request.build_absolute_uri |urlencode }}" target="_blank">WhatsApp</a>|
+  <a  href="" onclick="showPopup(event)"><b>Copy</b></a>
+  </section>
+  <section class="share">
+  <a href="{% url 'vote_challenge_opportunities' %}" target="_blank">View Challenges</a> |
+  <a href="{% url 'view_vote_challenge' participant.challenge.id %}" target="_blank">Vote For other participants</a> 
+  </section>
+
+  <!-- Business Partners Carousel Section -->
+<section class="partners-carousel" style="margin-top: 40px; padding: 20px; background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+  <h3 class="text-center mb-4">Challenge Brought To You By</h3>
+  
+  <div id="partnersCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        <div class="d-flex justify-content-center align-items-center flex-column">
+          <h4>{{participant.challenge.challenge_owner}}</h4>
+          <p>
+              {% if participant.challenge.challenge_owner %}
+                  {{ participant.challenge.challenge_owner.description|truncatechars:200 }}
+              {% else %}
+                  Jirani Mall is an e-commerce marketplace where you earn points from every purchase you make.<br/>
+                  You can redeem these points for shopping, airtime, or even cash.
+              {% endif %}
+          </p>
+
+          {% if participant.challenge.challenge_owner %}
+              <b class="text-center">Visit our shop and earn loyalty for shopping, airtime, or even cash.</b>
+              <a class="btn btn-primary text-white" href="{{ participant.challenge.challenge_owner.google_maps_location_url }}" target="_blank" style="color: #007bff; text-decoration: none;">View Our Shop Location</a>
+          {% else %}
+              <a class="btn btn-primary text-white" href="{% url 'index' %}" target="_blank" style="color: #007bff; text-decoration: none;">Visit Our Page to earn points</a>
+          {% endif %}
+        </div>
+      </div>
+      <!-- Partner 1 -->
+       {% for patner in participant.challenge.challenge_patners.all %}
+      <div class="carousel-item">
+        <div class="d-flex justify-content-center align-items-center flex-column">
+          <h4>{{patner}}</h4>
+          <p>
+            {{ patner.description|truncatechars:200 }}
+          </p>
+          <b>Visit our shop and earn loyalty for shopping, airtime, or even cash.</b>
+          <a class="btn btn-primary text-white" href="{{ participant.challenge.challenge_owner.google_maps_location_url }}" target="_blank" style="color: #007bff; text-decoration: none;">View Our Shop Location</a>
+          
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+    <!-- Carousel controls -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#partnersCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#partnersCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+</section>
+  <footer>
+    &copy; 2025 Jirani Mall. All rights reserved. | <a href="#">Terms</a> | <a href="#">Privacy</a>
+  </footer>
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+<script>
+  const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+  const loginUrl = "{% url 'login_user' %}"; // Replace with your actual login URL
+</script>
+<!-- script for chalenge results upload -->
+<script>
+    // These variables would typically be defined globally or passed from your Django template context.
+    // For this example, assuming they are accessible.
+    function castVote(event, totalAvailableVotes, participantId) {
+        event.preventDefault();
+        if (!isAuthenticated) {
+          window.location.href = loginUrl + '?next=' + window.location.pathname;
+          return;
+        }
+
+        document.getElementById('participant-id-field').value = participantId; // Assuming challengeId is defined elsewhere
+        document.getElementById('upload-popup').style.display = 'flex';
+        document.getElementById('upload-status').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+
+        // Set the available votes display
+        document.getElementById('availableVotesDisplay').textContent = totalAvailableVotes;
+        // Pre-fill the input with the total available votes for convenience
+        document.getElementById('numberOfVotesInput').value = totalAvailableVotes;
+        // Store totalAvailableVotes for client-side validation
+        document.getElementById('numberOfVotesInput').dataset.maxVotes = totalAvailableVotes;
+    }
+
+    function closeUploadPopup() {
+        document.getElementById('upload-popup').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadForm = document.getElementById('customUploadForm');
+        const uploadStatus = document.getElementById('upload-status');
+        const submitBtn = document.getElementById('submitBtn');
+        const numberOfVotesInput = document.getElementById('numberOfVotesInput');
+
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Client-side validation for number of votes
+                const enteredVotes = parseInt(numberOfVotesInput.value, 10);
+                const maxAllowedVotes = parseInt(numberOfVotesInput.dataset.maxVotes, 10);
+
+                if (isNaN(enteredVotes) || enteredVotes <= 0) {
+                    uploadStatus.textContent = 'Please enter a valid number of votes greater than zero.';
+                    uploadStatus.style.display = 'block';
+                    return;
+                }
+
+                if (enteredVotes > maxAllowedVotes) {
+                    uploadStatus.textContent = `You can only cast a maximum of ${maxAllowedVotes} votes.`;
+                    uploadStatus.style.display = 'block';
+                    return;
+                }
+
+
+                // Disable submit and show loading
+                submitBtn.disabled = true;
+                uploadStatus.textContent = 'Casting votes...';
+                uploadStatus.style.display = 'block';
+
+                const form = e.target;
+                const formData = new FormData(form);
+                const participantId = document.getElementById('participant-id-field').value;
+
+                const csrfToken = getCookie('csrftoken');
+
+                fetch(`/challenges/cast-vote-for-participant/${participantId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            uploadStatus.textContent = 'Votes cast successfully! Redirecting...';
+                            window.location.href = data.redirect_url;
+                        } else {
+                            uploadStatus.textContent = data.error || 'Failed to cast votes.';
+                            submitBtn.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Voting error:', error);
+                        uploadStatus.textContent = 'An error occurred while casting votes.';
+                        submitBtn.disabled = false;
+                    });
+            });
+        }
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+</script>
+
+<div id="upload-popup" class="popup">
+    <div class="popup-content">
+        <b>You have <span id="availableVotesDisplay"></span> votes available. <br/>
+          <a class="btn btn-primary" href="#" type="button" onclick="openPurchaseVotesModal(); return false;">Purchase Votes</a>
+        </b>
+        <h5>Enter Number of votes you want to cast</h5>
+        <form id="customUploadForm" enctype="multipart/form-data">
+            <input type="hidden" type="number" name="participant_id" id="participant-id-field">
+            <input type="number" id="numberOfVotesInput" name="number_of_votes" min="1" required><br><br>
+            <button type="submit" id="submitBtn">Submit</button>
+            <button type="button" onclick="closeUploadPopup()">Close</button>
+        </form>
+        <p id="upload-status" style="margin-top: 10px; display: none; color: green;">Uploading...</p>
+    </div>
+</div>
+
+
+<!-- script forpurchasing votes -->
+<script>
+
+/// --- Configuration (unchanged) ---
+const POINTS_PER_VOTE = 10;
+
+// --- Global Variable (unchanged) ---
+let customerLoyaltyPointsForPurchase = `{{customer.total_loyalty_points}}`;
+
+// --- Modal Control Functions (unchanged) ---
+function openPurchaseVotesModal() {
+    event.preventDefault();
+    if (!isAuthenticated) {
+      window.location.href = loginUrl + '?next=' + window.location.pathname;
+      return;
+    }
+    const availableLoyaltyPointsDisplay = document.getElementById('availableLoyaltyPointsDisplay');
+    if (availableLoyaltyPointsDisplay) {
+        availableLoyaltyPointsDisplay.textContent = customerLoyaltyPointsForPurchase.toLocaleString();
+    }
+    const votesToPurchaseInput = document.getElementById('votesToPurchaseInput');
+    const pointsRequiredDisplay = document.getElementById('pointsRequiredDisplay');
+    const purchaseStatus = document.getElementById('purchase-status');
+    const purchaseSubmitBtn = document.getElementById('purchaseSubmitBtn');
+
+    if (votesToPurchaseInput) votesToPurchaseInput.value = '';
+    if (pointsRequiredDisplay) pointsRequiredDisplay.textContent = '0';
+    if (purchaseStatus) {
+        purchaseStatus.style.display = 'none';
+        purchaseStatus.textContent = '';
+    }
+    if (purchaseSubmitBtn) purchaseSubmitBtn.disabled = false;
+    const purchaseModal = document.getElementById('purchase-votes-popup');
+    if (purchaseModal) {
+        purchaseModal.style.display = 'flex';
+    }
+}
+
+function closePurchaseVotesPopup() {
+    const purchaseModal = document.getElementById('purchase-votes-popup');
+    if (purchaseModal) {
+        purchaseModal.style.display = 'none';
+    }
+}
+
+// --- Dynamic Calculation Function (unchanged) ---
+function calculateRequiredPoints() {
+    const votesInput = document.getElementById('votesToPurchaseInput');
+    const pointsDisplay = document.getElementById('pointsRequiredDisplay');
+    if (!votesInput || !pointsDisplay) return;
+    const votes = parseInt(votesInput.value, 10);
+    if (isNaN(votes) || votes < 1) {
+        pointsDisplay.textContent = '0';
+    } else {
+        pointsDisplay.textContent = (votes * POINTS_PER_VOTE).toLocaleString();
+    }
+}
+
+// --- Event Listener for Form Submission (UPDATED) ---
+
+document.addEventListener('DOMContentLoaded', function () {
+    const purchaseVotesForm = document.getElementById('purchaseVotesForm');
+    const purchaseStatus = document.getElementById('purchase-status');
+    const votesToPurchaseInput = document.getElementById('votesToPurchaseInput');
+    const purchaseSubmitBtn = document.getElementById('purchaseSubmitBtn');
+
+    if (purchaseVotesForm) {
+        purchaseVotesForm.addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            const votesToPurchase = parseInt(votesToPurchaseInput.value, 10);
+            const pointsRequired = votesToPurchase * POINTS_PER_VOTE;
+
+            // --- Client-side Validation ---
+            if (isNaN(votesToPurchase) || votesToPurchase <= 0) {
+                purchaseStatus.textContent = 'Please enter a valid number of votes (greater than zero).';
+                purchaseStatus.style.color = 'red';
+                purchaseStatus.style.display = 'block';
+                return; // Stop execution if validation fails
+            }
+
+            if (pointsRequired > customerLoyaltyPointsForPurchase) {
+                purchaseStatus.textContent = `You need ${pointsRequired.toLocaleString()} points to purchase ${votesToPurchase} votes, but you only have ${customerLoyaltyPointsForPurchase.toLocaleString()} points.`;
+                purchaseStatus.style.color = 'red';
+                purchaseStatus.style.display = 'block';
+                return; // Stop execution if validation fails
+            }
+
+            // --- Feedback to User: Disable Button & Show Processing Message ---
+            purchaseSubmitBtn.disabled = true; // Disable the button immediately
+            purchaseStatus.textContent = 'Processing purchase, please wait...';
+            purchaseStatus.style.color = 'blue'; // Use a neutral color for processing
+            purchaseStatus.style.display = 'block';
+
+            // Prepare data for backend (unchanged)
+            const csrfToken = getCookie('csrftoken'); // Assuming getCookie function is available
+            const formData = new FormData();
+            formData.append('votes_to_purchase', votesToPurchase);
+
+            // --- Send purchase request to Backend ---
+            fetch('/challenges/purchase-votes/', { // Ensure this URL matches your Django urls.py
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                },
+                body: formData
+            })
+            .then(response => {
+                // Check if response is OK (status 200-299), then parse JSON
+                if (!response.ok) {
+                    // If response is not ok, read the error message from JSON
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Server error occurred.');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // --- Success Handling ---
+                purchaseStatus.textContent = `Successfully purchased ${votesToPurchase} votes!`;
+                purchaseStatus.style.color = 'green';
+
+                // Update the customer's loyalty points if the backend sends it back
+                if (data.new_loyalty_points !== undefined) {
+                    customerLoyaltyPointsForPurchase = data.new_loyalty_points;
+                    document.getElementById('availableLoyaltyPointsDisplay').textContent = customerLoyaltyPointsForPurchase.toLocaleString();
+                }
+
+                // Give the user a moment to see the success message before reloading
+                setTimeout(() => {
+                    window.location.reload(); // Reload the page to reflect updated points and votes
+                }, 1500);
+
+            })
+            .catch(error => {
+                // --- Error Handling ---
+                console.error('Purchase error:', error);
+                purchaseStatus.textContent = error.message || 'An unexpected error occurred during purchase.';
+                purchaseStatus.style.color = 'red';
+                purchaseSubmitBtn.disabled = false; // Re-enable button on error
+            });
+        });
+    }
+});
+
+// --- Utility function: getCookie (Assumed to be available, unchanged) ---
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+<div id="purchase-votes-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+        <h5>Purchase More Votes with Loyalty Points</h5>
+        <p>Your available loyalty points: <span id="availableLoyaltyPointsDisplay">{{customer.total_loyalty_points}}</span> points</p>
+        <p>Conversion Rate: <strong>1 Vote = 10 Points</strong></p>
+
+        <form id="purchaseVotesForm" class=" mb-2">
+            <label for="votesToPurchaseInput">Enter Number of votes to purchase:</label><br>
+            <input type="number" id="votesToPurchaseInput" name="votes_to_purchase" min="1" required oninput="calculateRequiredPoints()">
+            <p>Points required: <span id="pointsRequiredDisplay">0</span> points</p>
+            <button type="submit" id="purchaseSubmitBtn">Purchase</button>
+            <button type="button" onclick="closePurchaseVotesPopup()">Close</button>
+        </form>
+        <p id="purchase-status" style="margin-top: 20px; display: none; color: blue;"></p>
+
+        <div class="business-card" style="
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            text-align: center;
+        ">
+            <h4>Challenge hosted by {% if participant.challenge.challenge_owner %} {{ participant.challenge.challenge_owner.business_name }} {% else %} Jirani Mall {% endif %}</h4>
+          <p>
+              {% if participant.challenge.challenge_owner %}
+                  {{ participant.challenge.challenge_owner.description|truncatechars:200 }}
+              {% else %}
+                  Jirani Mall is an e-commerce marketplace where you earn points from every purchase you make.<br/>
+                  You can redeem these points for shopping, airtime, or even cash.
+              {% endif %}
+          </p>
+
+          {% if participant.challenge.challenge_owner %}
+              <b>Visit our shop and earn loyalty for shopping, airtime, or even cash.</b>
+              <a href="{{ participant.challenge.challenge_owner.google_maps_location_url }}" target="_blank" style="color: #007bff; text-decoration: none;">View Our Shop Location</a>
+          {% else %}
+              <a href="{% url 'index' %}" target="_blank" style="color: #007bff; text-decoration: none;">Visit Our Page to earn points</a>
+          {% endif %}
+          </div>
+        
+    </div>
+</div>
+
+<!-- script for copying link -->
+<script>
+    function showPopup(event) {
+        event.preventDefault(); // Prevent default link behavior
+        
+        const popup = document.getElementById('popup');
+        const shareUrlInput = document.getElementById('share-url');
+        
+        // Construct the referral URL
+        var  currrent_url= '{{request.build_absolute_uri}}'
+
+        const referralUrl = `${currrent_url}`;
+        
+        console.log(referralUrl)
+        // Set the referral URL in the input field
+        shareUrlInput.value = referralUrl;
+
+        popup.style.display = 'flex'; // Show the popup
+    }
+
+    function closePopup() {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'none'; // Hide the popup
+    }
+
+    function copyToClipboard() {
+        const urlField = document.getElementById('share-url');
+        urlField.select(); // Select the text
+        document.execCommand('copy'); // Copy the text to the clipboard
+        alert('Referral URL copied to clipboard!');
+    }
+</script>
+
+<!-- Popup Modal -->
+<div id="popup" class="popup" style="display:none;">
+    <div class="popup-content">
+        <p>Share this URL:</p>
+        <input type="text" id="share-url" readonly />
+        <button onclick="copyToClipboard()">Copy</button>
+        <button onclick="closePopup()">Close</button>
+    </div>
+</div>
+
+{% endblock %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Vote For {{participant.participant}}</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{% static 'images/logo.jpg' %}" rel="icon">
+  <link href="{% static 'images/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+  
+</head>
+<body>
+  <header id="header" class="header fixed-top d-flex align-items-center">
+    
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="{% url 'index' %}" class="logo d-flex align-items-center">
+        <img src="{% static 'assets-shopap/img/jiranimall-logo.jpg' %}" alt="">
+        <span class="d-none d-lg-block">Jirani Mall</span>
+      </a>
+      <!-- <i class="bi bi-list toggle-sidebar-btn"></i> -->
+    </div><!-- End Logo -->
+
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+        <li class="nav-item d-block d-lg-none">
+          <a class="nav-link nav-icon " href="{% url 'index' %}">
+            <span class="d-lg-block">Jirani Mall</span>
+          </a>
+        </li><!-- End Search Icon-->
+        <li class="nav-item dropdown pe-3">
+
+          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="" data-bs-toggle="dropdown">
+            <i class="bi bi-person"></i>
+            <span class="d-none d-md-block dropdown-toggle ps-2">{{ request.user.first_name }}</span>
+          </a><!-- End Profile Iamge Icon -->
+
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+            
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'profile' %}">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="https://wa.me/254706420043/">
+                <i class="bi bi-question-circle"></i>
+                <span>Need Help?</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_user' %}">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign Out</span>
+              </a>
+            </li>
+
+          </ul><!-- End Profile Dropdown Items -->
+        </li><!-- End Profile Nav -->
+
+      </ul>
+    </nav><!-- End Icons Navigation -->
+
+  </header><!-- End Header -->
+
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Template Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+</body>
+</html>
+

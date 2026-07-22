@@ -1,0 +1,390 @@
+
+{% load query_params %}
+<style>
+.nav-tabs-02 .nav-link {
+    white-space: nowrap;
+    margin-right: 0.5rem;
+}
+
+.nav-tabs::-webkit-scrollbar {
+    display: none; /* Hide scrollbar in WebKit (Chrome/Safari) */
+}
+
+</style>
+<!-- Main -->
+<main>
+    <!-- Home Slider -->
+    <div class="swiper swiper-container" data-swiper-options='{
+                "slidesPerView": 1,
+                "spaceBetween": 0,
+                "pagination": {
+                "el": ".swiper-pagination",
+                "clickable": true
+                },
+                "navigation": {
+                "nextEl": ".swiper-next-01",
+                "prevEl": ".swiper-prev-01"
+                },
+                "autoplay": {
+                "delay": 5000,
+                "disableOnInteraction": false
+                }
+            }'>
+        <div class="swiper-wrapper">
+            {% for challenge in challenges %}
+            <div class="swiper-slide">
+                
+                 <!-- style="background-image: url('{{challenge.imageUrl}}'); background-size: 50% 100%;" -->
+                <div class="bg-no-repeat bg-cover bg-50 px-8"
+                 >
+                    <div class="container">
+                        <div class="row min-vh-65 align-items-center py-6">
+                            <div class="col-lg-6 pe-xl-12">
+                                <!-- Challenge Type -->
+                                <span class="badge bg-success text-uppercase px-3 py-2 mb-3">
+                                    {{ challenge.challenge_type_label }}
+                                </span>
+                    
+                                <!-- Headline -->
+                                <h1 class="display-5 fw-bold text-dark mb-3">
+                                    {{ challenge.challenge_name }}
+                                </h1>
+                    
+                                <!-- Brief -->
+                                <p class="lead text-secondary mb-4">
+                                    {{ challenge.challenge_brief|default:''|truncatechars:150 }}
+                                </p>
+                    
+                                <!-- Reward Section -->
+                                <div class="bg-light p-3 rounded shadow-sm mb-4">
+                                    <p class="mb-1 text-dark">
+                                        🏆 <strong>Win:</strong> {{ challenge.challenge_reward }}<br>
+                                        {% if challenge.participating_reward %}
+                                        🎁 <strong>Earn:</strong> {{ challenge.participating_reward }} points just for participating!
+                                        {% endif %}
+                                    </p>
+                                </div>
+                    
+                                <!-- CTA Button -->
+                                <div class="pt-2">
+                                    {% if challenge.challenge_type_label == 'Quiz Challenge' %}
+                                    <a class="btn btn-primary btn-lg px-4 shadow" href="{% url 'view_qna_challenge' challenge.id %}">
+                                        🎮 Join the Quiz – Earn Rewards
+                                    </a>
+                                    {% elif challenge.challenge_type_label == 'Referral Challenge' %}
+                                    <a class="btn btn-primary btn-lg px-4 shadow" href="{% url 'view_refferal_challenge' challenge.id %}">
+                                        🤝 Refer & Win Rewards
+                                    </a>
+                                    {% elif challenge.challenge_type_label == 'Creative Challenge' %}
+                                    <a class="btn btn-primary btn-lg px-4 shadow" href="{% url 'view_vote_challenge' challenge.id %}">
+                                        🎨 Submit & Compete for Prizes
+                                    </a>
+                                    {% endif %}
+                                </div>
+                    
+                                <!-- Optional FOMO -->
+                                 <!--<p class="small text-muted mt-2">🔥 Over 320 participants already joined. Don't miss out!</p> -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+
+        <div class="swiper-arrow-style-01 swiper-next swiper-next-01"><i class="bi bi-chevron-right"></i></div>
+        <div class="swiper-arrow-style-01 swiper-prev swiper-prev-01"><i class="bi bi-chevron-left"></i></div>
+        <div class="swiper-pagination swiper-pagination-white"></div>
+    </div>
+    <!-- End Home Slider -->
+    <!--Product  Section -->
+    <section class="section">
+        <div class="container">
+            <div class="col-sm-12 col-lg-12 my-3 text-center">
+              {% if request.user.is_authenticated and request.user.customer %}
+                {% with referral_code=request.user.customer.refferal_code %}
+                  {% add_referral_param request.build_absolute_uri 'referral_code' referral_code as referral_url %}
+                  {% with message="🔥 Shop & EARN POINTS INSTANTLY! %0 and spend them in ANY other shop on the platform! 🛍️✨%0A%0A✅ Get 50 Points FREE on sign-up%0A🎯 Use my link to join:%0A👉 "|add:referral_url %}
+            
+                    📣 Share:
+                    <a href="https://wa.me/?text={{ message }}" target="_blank">WhatsApp</a> |
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ referral_url|urlencode }}" target="_blank">Facebook</a> |
+                    <a href="https://x.com/intent/tweet?text={{ message }}" target="_blank">X</a> |
+                    <a href="#" onclick="copyToClipboard(`{{ referral_url }}`); return false;">Copy Link</a>
+            
+                  {% endwith %}
+                {% endwith %}
+              {% else %}
+                {% with referral_url=request.build_absolute_uri %}
+                  {% with message="🔥 Shop & EARN POINTS INSTANTLY! %0 and spend them in ANY other shop on the platform! 🛍️✨%0A%0A✅ Get 50 Points FREE on sign-up%0A🎯 Use my link to join:%0A👉 "|add:referral_url %}
+            
+                    📣 Share:
+                    <a href="https://wa.me/?text={{ message }}" target="_blank">WhatsApp</a> |
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ referral_url|urlencode }}" target="_blank">Facebook</a> |
+                    <a href="https://x.com/intent/tweet?text={{ message }}" target="_blank">X</a> |
+                    <a href="#" onclick="copyToClipboard(`{{ referral_url }}`); return false;">Copy Link</a>
+            
+                  {% endwith %}
+                {% endwith %}
+              {% endif %}
+            </div>
+
+            <div class="row gy-4">
+                <div class="col-lg-4">
+                    <div class="px-4 position-relative pt-5 text-center rounded" style="background-color: #ffe1db;">
+                        <div class="pb-1">
+                            <h6 style="color: #f62b22;">Physical Product</h6>
+                            <!-- <h3 class="m-0 text-dark">Organic and fresh<br>30% off</h3> -->
+                        </div><a href="{% url 'all_products' %}?type=physical" class="stretched-link"><img src="../../assets/img/grocery/food-banner-2.png" title="" alt=""></a></div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="px-4 position-relative pt-5 text-center rounded" style="background-color: #e6ffd6;">
+                        <div class="pb-1">
+                            <h6 style="color: #2e6b1c;">Services </h6>
+                            <!-- <h3 class="m-0 text-dark">Organic and fresh<br>30% off</h3> -->
+                        </div><a href="{% url 'all_products' %}?type=service" class="stretched-link"><img src="../../assets/img/grocery/food-banner-1.png" title="" alt=""></a></div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="px-4 position-relative pt-5 text-center rounded" style="background-color: #e3f2fd;">
+                        <div class="pb-1">
+                            <h6 style="color: #0b0b0b;">Digital Products</h6>
+                            <!-- <h3 class="m-0 text-dark">Organic and fresh<br>30% off</h3> -->
+                        </div><a href="{% url 'all_products' %}?type=digital" class="stretched-link"><img src="../../assets/img/grocery/food-banner-3.png" title="" alt=""></a></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End Section -->
+    <!-- Product section -->
+    <section class="section pt-0">
+        <div class="container">
+            <div class="row justify-content-center section-heading">
+                <div class="col-lg-6 text-center">
+                    <h3 class="h2 mt-2 mb-0">Our Recommendation</h3>
+                </div>
+            </div>
+            <div class="nav-tabs-wrapper overflow-auto">
+                <ul class="nav nav-tabs nav-tabs-02 flex-nowrap justify-content-start" id="home-6_tabs" role="tablist" style="white-space: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="h3_tabnav_0" data-bs-toggle="tab" data-bs-target="#h6_tab_0" type="button" role="tab" aria-controls="h6_tab_0" aria-selected="true">All</button>
+                    </li>
+                    {% for subcategory in subcategories %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="h3_tabnav_{{ subcategory.id }}" data-bs-toggle="tab" data-bs-target="#h6_tab_{{ subcategory.id }}" type="button" role="tab" aria-controls="h6_tab_{{ subcategory.id }}" aria-selected="false">
+                            {{ subcategory.sub_category_name }}
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="tab-content" id="home-6_tabsContent">
+                <!-- All Products Tab -->
+                <div class="tab-pane fade show active" id="h6_tab_0" role="tabpanel" aria-labelledby="h3_tabnav_0">
+                    <div class="row g-3 g-lg-4">
+                        {% for product in products %}
+                        {% include "store/partials/product_card.html" %}
+                        {% empty %}
+                            <p>No products in this category.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Subcategory Tabs -->
+                {% for subcategory in subcategories %}
+                <div class="tab-pane fade" id="h6_tab_{{ subcategory.id }}" role="tabpanel" aria-labelledby="h3_tabnav_{{ subcategory.id }}">
+                    <div class="row g-3 g-lg-4">
+                        {% for product in products %}
+                            {% if product.sub_category.id == subcategory.id %}
+                                {% include "store/partials/product_card.html" %}
+                            {% endif %}
+                        {% empty %}
+                            <p>No products in this category.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- End Tab Content -->
+        </div>
+    </section>
+    <!-- End Product section -->
+    <!-- Category section -->
+    <section class="section pt-0">
+        <div class="container">
+            <div class="row justify-content-center section-heading">
+                <div class="col-lg-6 text-center">
+                    <h3 class="h2 mt-2 mb-0">Departments</h3>
+                </div>
+            </div>
+            <div class="row gy-4">
+                {% for category in categories %}
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <div class="p-2 rounded d-flex align-items-center position-relative hover-scale" style=`background-color: {{category.background_color}};`>
+                        <div class="avatar avatar-xl hover-scale-in"><img src="{{ category.imageUrl }}" title="{{ category.category_name }}" alt=""></div>
+                        <div class="col px-4">
+                            <h5 class="mb-0 text-dark"><a href="{% url 'categories' category.slug %}" class="stretched-link text-reset">{{ category.category_name }}</a></h5>
+                            <span>{{category.total_products }} items</span>
+                        </div>
+                        
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    <!-- End Category section -->
+    <!-- CTA -->
+    <section>
+        <div class="container">
+            <div class="row g-0 px-4 px-lg-5 py-5 rounded bg-cover bg-fiex bg-center border mb-2" style="background-image: url(../../assets/img/grocery/food-home-banner-3.jpg);">
+                <div class="col-md-8 my-3 text-center text-md-start">
+                    <h3 class="h2 m-0 text-dark">Celebrate You, At least Once a Week.</h3>
+                </div>
+                <div class="col-md-4 my-3 text-center text-md-end"><a class="btn btn-primary" href="{% url 'all_products' %}?type=experience" tabindex="0">Discover More</a></div>
+            </div>
+        </div>
+    </section>
+    <!-- End CTA -->
+    <!-- Deal section -->
+    <!-- <section class="section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h5 class="mb-4">New Arrivals</h5>
+                    <div class="product-card-4">
+                        <div class="product-card-image"><a href="#"><img src="../../assets/img/grocery/muberry.jpg" title="" alt=""></a></div>
+                        <div class="product-card-info">
+                            <h6 class="product-title"><a href="#" tabindex="0">Fine-knit sweater</a></h6>
+                            <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="fs-sm text-muted">$38.<small>50</small></del></div>
+                            <div class="produc-card-cart"><a class="link-effect" href="#">Buy Now</a></div>
+                        </div>
+                    </div>
+                    <div class="product-card-4">
+                        <div class="product-card-image"><a href="#"><img src="../../assets/img/grocery/onion.jpg" title="" alt=""></a></div>
+                        <div class="product-card-info">
+                            <h6 class="product-title"><a href="#" tabindex="0">Fine-knit sweater</a></h6>
+                            <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="fs-sm text-muted">$38.<small>50</small></del></div>
+                            <div class="produc-card-cart"><a class="link-effect" href="#">Buy Now</a></div>
+                        </div>
+                    </div>
+                    <div class="product-card-4">
+                        <div class="product-card-image"><a href="#"><img src="../../assets/img/grocery/orange.jpg" title="" alt=""></a></div>
+                        <div class="product-card-info">
+                            <h6 class="product-title"><a href="#" tabindex="0">Fine-knit sweater</a></h6>
+                            <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="fs-sm text-muted">$38.<small>50</small></del></div>
+                            <div class="produc-card-cart"><a class="link-effect" href="#">Buy Now</a></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="mb-4">Upcoming</h5>
+                    <div class="product-card-4">
+                        <div class="product-card-image"><a href="#"><img src="../../assets/img/grocery/pineapple.jpg" title="" alt=""></a></div>
+                        <div class="product-card-info">
+                            <h6 class="product-title"><a href="#" tabindex="0">Fine-knit sweater</a></h6>
+                            <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="fs-sm text-muted">$38.<small>50</small></del></div>
+                            <div class="produc-card-cart"><a class="link-effect" href="#">Buy Now</a></div>
+                        </div>
+                    </div>
+                    <div class="product-card-4">
+                        <div class="product-card-image"><a href="#"><img src="../../assets/img/grocery/potato.jpg" title="" alt=""></a></div>
+                        <div class="product-card-info">
+                            <h6 class="product-title"><a href="#" tabindex="0">Fine-knit sweater</a></h6>
+                            <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="fs-sm text-muted">$38.<small>50</small></del></div>
+                            <div class="produc-card-cart"><a class="link-effect" href="#">Buy Now</a></div>
+                        </div>
+                    </div>
+                    <div class="product-card-4">
+                        <div class="product-card-image"><a href="#"><img src="../../assets/img/grocery/strawberry.jpg" title="" alt=""></a></div>
+                        <div class="product-card-info">
+                            <h6 class="product-title"><a href="#" tabindex="0">Fine-knit sweater</a></h6>
+                            <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="fs-sm text-muted">$38.<small>50</small></del></div>
+                            <div class="produc-card-cart"><a class="link-effect" href="#">Buy Now</a></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="mb-4">New Arrivals</h5>
+                    <div class="product-card-4">
+                        <div class="product-card-image"><a href="#"><img src="../../assets/img/grocery/muberry.jpg" title="" alt=""></a></div>
+                        <div class="product-card-info">
+                            <h6 class="product-title"><a href="#" tabindex="0">Fine-knit sweater</a></h6>
+                            <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="fs-sm text-muted">$38.<small>50</small></del></div>
+                            <div class="produc-card-cart"><a class="link-effect" href="#">Buy Now</a></div>
+                        </div>
+                    </div>
+                    <div class="product-card-4">
+                        <div class="product-card-image"><a href="#"><img src="../../assets/img/grocery/onion.jpg" title="" alt=""></a></div>
+                        <div class="product-card-info">
+                            <h6 class="product-title"><a href="#" tabindex="0">Fine-knit sweater</a></h6>
+                            <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="fs-sm text-muted">$38.<small>50</small></del></div>
+                            <div class="produc-card-cart"><a class="link-effect" href="#">Buy Now</a></div>
+                        </div>
+                    </div>
+                    <div class="product-card-4">
+                        <div class="product-card-image"><a href="#"><img src="../../assets/img/grocery/orange.jpg" title="" alt=""></a></div>
+                        <div class="product-card-info">
+                            <h6 class="product-title"><a href="#" tabindex="0">Fine-knit sweater</a></h6>
+                            <div class="product-price"><span class="text-primary">$28.<small>50</small></span> <del class="fs-sm text-muted">$38.<small>50</small></del></div>
+                            <div class="produc-card-cart"><a class="link-effect" href="#">Buy Now</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+    <!-- End Deal section -->
+    <!-- news Section -->
+    <!-- 
+        <div class="container">
+            <div class="row justify-content-center section-heading">
+                <div class="col-lg-6 text-center">
+                    <p class="fs-6 m-0">Read Today’s News.</p>
+                    <h3 class="h2 mt-2 mb-0">New Blog Posts</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 my-3">
+                    <div class="hover-scale text-center">
+                        <div class="hover-scale-in position-relative"><a href="#"><img class="img-fluid" src="../../assets/img/grocery/food-blog-2.jpg" title="" alt=""></a>
+                            <div class="position-absolute top-0 start-0 mt-3 ms-3 d-flex flex-column align-items-center px-3 py-2 bg-mode-re"><span class="h4 m-0">25</span> <small>MAR</small></div>
+                        </div>
+                        <div class="px-3 py-4 mx-3 mx-lg-5 bg-mode-re mt-n6 position-relative">
+                            <h5><a class="text-reset" href="#">Make your Marketing website</a></h5>
+                            <p class="m-0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 my-3">
+                    <div class="hover-scale text-center">
+                        <div class="hover-scale-in position-relative"><a href="#"><img class="img-fluid" src="../../assets/img/grocery/food-blog-1.jpg" title="" alt=""></a>
+                            <div class="position-absolute top-0 start-0 mt-3 ms-3 d-flex flex-column align-items-center px-3 py-2 bg-mode-re"><span class="h4 m-0">25</span> <small>MAR</small></div>
+                        </div>
+                        <div class="px-3 py-4 mx-3 mx-lg-5 bg-mode-re mt-n6 position-relative">
+                            <h5><a class="text-reset" href="#">Make your Marketing website</a></h5>
+                            <p class="m-0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 my-3">
+                    <div class="hover-scale text-center">
+                        <div class="hover-scale-in position-relative"><a href="#"><img class="img-fluid" src="../../assets/img/grocery/food-blog-3.jpg" title="" alt=""></a>
+                            <div class="position-absolute top-0 start-0 mt-3 ms-3 d-flex flex-column align-items-center px-3 py-2 bg-mode-re"><span class="h4 m-0">25</span> <small>MAR</small></div>
+                        </div>
+                        <div class="px-3 py-4 mx-3 mx-lg-5 bg-mode-re mt-n6 position-relative">
+                            <h5><a class="text-reset" href="#">Make your Marketing website</a></h5>
+                            <p class="m-0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+    <!-- End Section -->
+</main>
+<!-- End Main -->

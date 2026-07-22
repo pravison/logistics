@@ -1,0 +1,240 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% load math_filters %}  <!-- Load the custom filter module -->
+{% block title %} Customer Orders{% endblock%}
+{% block content %}
+
+<main id="main" class="main">
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+
+    {% endfor %}
+{% endif %}
+
+    <div class="pagetitle">
+      <h1>Customer Orders</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' business.slug %}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'wholesale_store' business.slug %}">visit Website</a></li>
+          <li class="breadcrumb-item active">Data</li>
+          
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body overflow-auto">
+              <h5 class="card-title">Orders</h5>
+              <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                search anything 
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              <!-- Table with stripped rows -->
+              <table class="table datatable">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Product Name</th>
+                  <th>Selected Colours, Sizes</th>
+                  <th>Category</th>
+                  <th>Unit Price</th>
+                  <th>Quantity</th>
+                  <th>Total Price</th>
+                  <th>Customer</th>
+                  <th>Phone Number</th>
+                  <th>Delivery Option</th>
+                  <th>Where It Came From</th>
+                  <th>Seller</th>
+                  <th>Status</th>
+                  <th>Supplier</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in orders %}
+                <tr>
+                  <td><img src="{{ order.product.imageUrl }}" alt="Product Image" width="60"></td>
+                  <td>{{ order.product.product_name }}</td>
+                  <td>
+                     <!-- Toggle Button -->
+                    <button class="btn btn-sm btn-outline-secondary mb-2"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#variantDropdown-{{ order.id }}"
+                            aria-expanded="false">
+                        Select Colours & Sizes
+                    </button>
+                    
+                    <div class="collapse" id="variantDropdown-{{ order.id }}">
+                    
+                      {% if order.product.allow_customer_to_select_colours or request.user.is_staff  %}
+                        
+                        {% if order.variants.all %}
+                          <h6>Selected Colours & Sizes</h6>
+                          <ul class="list-unstyled">
+                            {% for v in order.variants.all %}
+                              <li class="variant-item" style="cursor: pointer;"
+                                  data-variant-id="{{ v.id }}">
+                                {{ v.colour }} / {{ v.size }} × {{ v.quantity }}
+                                <span class="text-danger small ms-2">(click to remove)</span>
+                              </li>
+                            {% empty %}
+                              <li>No colours/sizes selected yet.</li>
+                            {% endfor %}
+                          </ul>
+                        {% endif %}
+                    
+                        <form method="post" action="{% url 'add_variants_bulk' %}?next={{ request.path }}&order_id={{ order.id }}">
+                          {% csrf_token %}
+                        
+                          <div class="mb-2">
+                            <label for="colour-{{ order.id }}" class="form-label">Select Colour</label>
+                            <select name="colour" id="colour-{{ order.id }}" class="form-select form-select-sm" required>
+                              <option value="">-- Choose Colour --</option>
+                              {% for colour in order.product.available_colours.all %}
+                                <option value="{{ colour.id }}">{{ colour.colour }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        
+                          <table class="table table-sm">
+                            <thead>
+                              <tr>
+                                <th>Size</th>
+                                <th>Quantity</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {% for size in order.product.available_sizes.all %}
+                                <tr>
+                                  <td>{{ size.size }}</td>
+                                  <td>
+                                    <input type="number"
+                                           name="size_{{ size.id }}"
+                                           min="0"
+                                           value="0"
+                                           class="form-control form-control-sm">
+                                  </td>
+                                </tr>
+                              {% endfor %}
+                            </tbody>
+                          </table>
+                        
+                          <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                        </form>
+                    
+                      {% else %}
+                        <p class="text-muted">
+                          <em>The seller will mix colours and sizes for you.</em>
+                        </p>
+                      {% endif %}
+                    
+                    </div>
+                  </td>
+                  <td>{{ order.product.sub_category }}</td>
+                  <td>{{ order.price_at_purchase }}</td>
+                  <td>{{ order.quantity }}</td>
+                  <td>{{ order.price_at_purchase|mul:order.quantity }}</td>
+                  <td>{{ order.customer.user.first_name }} {{ order.customer.user.last_name }}</td>
+                  <td>
+                      {% if  order.dropshiped_order %} 
+                      sellers phone  {{ order.dropshiped_order.product.business.phone_number}}
+                      {% if request.user.is_staff %}{{ order.dropshiped_order.product.business.phone_number}}{% else %} 0706420043 {% endif %}
+                      {% else %}
+                      
+                      {% if request.user.is_staff %} {{ order.customer.phone_number }}{% else %} 0706420043 
+                      {% endif %}
+                      {% endif %}
+                  </td>
+                  <td>{{ order.delivery_option }}</td>
+                  <td>{% if  order.dropshiped_order %}Dropshipper{% else%}Your Stock {% endif %}
+                  </td>
+                  <td>
+                      {% if  order.dropshiped_order %} 
+                      {{ order.dropshiped_order.product.business.business_name }} {{ order.dropshiped_order.product.business.phone_number}}
+                      {% endif %}
+                  </td>
+                  <td>{{ order.order_status }}</td>
+                  <td>{{ order.product.product_supplier }}</td>
+                  <td>
+                    {% if not order.seller_sent and order.delivery_option == 'delivery' %}
+                      <a href="{% url 'update-order-status' order.id 'sent' %}" class="btn btn-sm btn-primary">Mark as Sent</a>
+                    {% elif not order.customer_received and order.delivery_option == 'pickup' %}
+                      <a href="{% url 'update-order-status' order.id 'pickup' %}" class="btn btn-sm btn-success">Confirm Pickup</a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+              <!-- End Table with stripped rows -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const removeVariantBase = "{% url 'remove_variant' 0 %}".replace(/0\/$/, "");
+
+  document.querySelectorAll(".variant-item").forEach(function(el) {
+    el.addEventListener("click", function() {
+      let variantId = el.getAttribute("data-variant-id");
+
+      if (confirm("Do you want to remove this colour/size selection?")) {
+        fetch(`${removeVariantBase}${variantId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken,
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+          window.location.reload(); // refresh the page
+        }
+         else {
+            alert("Could not remove: " + (data.error || "Unknown error"));
+          }
+        })
+        .catch(err => alert("Request failed: " + err));
+      }
+    });
+  });
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie("csrftoken");
+</script>
+
+{% endblock %}

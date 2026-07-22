@@ -1,0 +1,1267 @@
+
+{% extends 'main.html' %}
+{% load static %}
+{% load humanize %}
+{% load math_filters %}
+
+{% block title %} Customer Dispatch {% endblock %}
+
+{% block content %}
+
+<style>
+
+section{
+    background:#f6f7fb;
+}
+
+.card{
+    border:none;
+    border-radius:14px;
+}
+
+.small-label{
+    font-size:12px;
+    color:#6c757d;
+    margin-bottom:3px;
+}
+
+.dispatch-item{
+    transition:0.2s ease-in-out;
+    border-radius:14px;
+}
+
+.dispatch-item.ready{
+    border-left:6px solid #198754;
+}
+
+.dispatch-item.not-ready{
+    border-left:6px solid #dc3545;
+}
+
+.form-control,
+.form-select{
+    min-height:48px;
+    font-size:16px;
+}
+
+.form-check-input{
+    width:1.3rem;
+    height:1.3rem;
+}
+
+.sticky-save{
+    position:sticky;
+    bottom:0;
+    background:white;
+    padding:12px;
+    border-top:1px solid #ddd;
+    z-index:100;
+}
+
+@media(max-width:768px){
+
+    .sticky-save{
+        position:fixed;
+        left:0;
+        right:0;
+        bottom:0;
+    }
+
+    body{
+        padding-bottom:100px;
+    }
+
+}
+
+</style>
+
+<style>
+.mpesa-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.mpesa-modal {
+    background: white;
+    width: 320px;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.mpesa-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.mpesa-status {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #444;
+}
+
+.hidden {
+    display: none;
+}
+body {
+    padding-bottom: 200px;
+}
+</style>
+
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-warning alert-dismissible fade show m-2" role="alert">
+            {{ message }}
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+
+
+<section>
+
+<div class="container py-3">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <div>
+            <h5 class="mb-0">
+                book parcel
+            </h5>
+        </div>
+
+        <span class="badge bg-primary">
+            add
+        </span>
+
+    </div>
+
+    <!-- ====================================== -->
+    <!-- ADD Dispatch-->
+    <!-- ====================================== -->
+
+    <form method="POST" action="{% url 'book_parcel' %}">
+
+        {% csrf_token %}
+
+        <div class="card shadow-sm mb-3">
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <h6 class="mb-0">
+                        Add Dispatch
+                    </h6>
+
+                    <span class="badge bg-dark">
+                        Outside Website
+                    </span>
+
+                </div>
+
+
+                <div class="row g-2 mb-4">
+                    <strong>Vendor/Sender Information</strong>
+
+                    <div class="col-12">
+                        <label>sender name</label>
+                        <input type="text"
+                               step="0.01"
+                               name="sender_name"
+                               class="form-control"
+                               placeholder="type sender name">
+
+                        
+                    </div>
+
+                    <div class="col-12">
+
+                        <input type="number"
+                               step="0.01"
+                               name="sender_phone"
+                               class="form-control"
+                               placeholder="sender Phone Number"
+                               required>
+
+                    </div>
+
+                    <strong>Where are you sending from</strong>
+
+                    <div class="col-12">
+                        <label>From County</label>
+                        <select id="county" name="county" class="form-control">
+                            <option value="">Search County</option>
+                            {% for county in counties %}
+                                <option value="{{ county.id }}">{{ county.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <div class="col-12" id="locationDiv" style="display:none;">
+                        <label>From Location</label>
+                        <select id="location" name="location" class="form-control">
+                            <option value="">Search Location</option>
+                        </select>
+                    </div>
+
+
+                    <div class="col-12" id="agentDiv" style="display:none;">
+                        <label>From Agent</label>
+                        <select id="agent" name="agent" class="form-control">
+                            <option value="">Search Agent</option>
+                        </select>
+                    </div>
+                    
+                </div>
+                <hr style="height: 4px; border: none; background-color: black;">
+                <div class="row g-2 mb-4">
+                    <strong>Receiver Information</strong>
+
+                    <div class="col-12">
+                        <label>receiver name</label>
+                        <input type="text"
+                               step="0.01"
+                               name="receiver_name"
+                               class="form-control"
+                               placeholder="type receiver name">
+
+                        
+                    </div>
+
+                    <div class="col-12">
+
+                        <input type="number"
+                               step="0.01"
+                               name="receiver_phone"
+                               class="form-control"
+                               placeholder="receiver Phone Number"
+                               required>
+
+                    </div>
+                    <strong> <b>Where are you sending to</b></strong>
+
+                    <div class="col-12">
+                        <label>To County</label>
+                        <select id="toCounty" name="t0_county" class="form-control">
+                            <option value="">Search County</option>
+                            {% for county in counties %}
+                                <option value="{{ county.id }}">{{ county.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <div class="col-12" id="toLocationDiv" style="display:none;">
+                        <label>To Location</label>
+                        <select id="location" name="to_location" class="form-control">
+                            <option value="">Search Location</option>
+                        </select>
+                    </div>
+
+
+                    <div class="col-12" id="toAgentDiv" style="display:none;">
+                        <label>To Agent</label>
+                        <select id="agent" name="to_agent" class="form-control">
+                            <option value="">Search Agent</option>
+                        </select>
+                    </div>
+                    
+                    
+                </div>
+                <hr style="height: 4px; border: none; background-color: black;">
+                <div class="row g-2 mb-4">
+                    <strong><b>Package Details</b></strong>
+
+                    <div class="col-12">
+                        <label>Whats in the package </label>
+                        <input type="text"
+                               step="0.01"
+                               name="whats_in_the_package"
+                               class="form-control"
+                               placeholder="e.g shoes, clothes, electronics, food ...">
+
+                        
+                    </div>
+
+                    <div class="col-12">
+                    <label for="package_type">Select Packaging Type</label>
+                    <select name="packaging_type" class="form-control">
+                        <option value="">Select Type</option>
+                        <option value="envelope">Envelope</option>
+                        <option value="box">Box</option>
+                        <option value="sack">Sack</option>
+                        <option value="uhuru_bag">Uhuru Bag</option>
+                        <option value="cylinder">Cylinder</option>
+                        <option value="other">Other</option>
+                    </select>
+                    </div>
+                    <div class="col-12">
+                    <label for="packaging_colour">Select Packaging Colour</label>
+                    <select name="packaging_colour" id="packaging_colour" class="form-control">
+                        <option value="" selected disabled>-- Select Packaging Colour--</option>
+                        <option value="branded">Branded</option>
+                        <option value="black">Black</option>
+                        <option value="white">white</option>
+                        <option value="green">green</option>
+                        <option value="blue">blue</option>
+                        <option value="brown">brown</option>
+                        <option value="grey">grey</option>
+                        <option value="maroon">maroon</option>
+                        <option value="orange">orange</option>
+                        <option value="pink">pink</option>
+                        <option value="red">red</option>
+                        <option value="purple">purple</option>
+                        <option value="yellow">yellow</option>
+                    </select>
+                    </div>
+
+                    <div class="col-12">
+                    <label for="package_type">Select weight range</label>
+                    <select name="package_type" id="package_type" class="form-control">
+                        <option value="">Select Weight</option>
+                        <option value="0-1kg">0 - 2 Kg</option>
+                        <option value="1-5kg">2 - 5 Kg</option>
+                        <option value="5-10kg">5 - 10 Kg</option>
+                        <option value="10-20kg">10 - 20 Kg</option>
+                        <option value="20-50kg">20 - 50 Kg</option>
+                        <option value="50kg+">Above 50 Kg</option>
+                    </select>
+                    </div>
+                    <div class="col-12">
+                    <label for="package_type">Select volume range</label>
+                    <select name="volume_range" class="form-control">
+                        <option value="">Approximate Volume</option>
+                        <option value="small">Small (0-500 cm³)</option>
+                        <option value="medium">Medium (500-5000 cm³)</option>
+                        <option value="large">Large (5000-20000 cm³)</option>
+                        <option value="xlarge">Extra Large (20000+ cm³)</option>
+                    </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label>Package Value</label>
+                        <input type="number"
+                               step="0.01"
+                               name="package_value"
+                               class="form-control"
+                               placeholder="sender Phone Number"
+                               required>
+
+                    </div>
+                    <div class="col-12">
+                    <label class="d-block">Package Properties</label>
+
+                    <div class="form-check">
+                        <input type="checkbox" name="is_fragile" value="1">
+                        <label class="form-check-label" for="fragile">
+                            Fragile
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" name="is_spill_prone" value="1">
+                        <label class="form-check-label" for="spill_prone">
+                            Spill Prone
+                        </label>
+                    </div>
+
+                    <div class="col-12">
+                    <label for="package_details" class="d-block">Package Details</label>
+                    <textarea
+                        id="package_details"
+                        name="package_details"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Enter item names, quantities, and variations (e.g., 10 pairs of shoes, 2 pieces of clothes)."
+                        required></textarea>
+                    </div>
+                </div>  
+                </div>
+
+                <button class="btn btn-dark w-100 mt-3">
+                    continue
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+    <!-- FOOTER LINKS -->
+    <p class="text-center">
+
+        <a href="{{ previous_url|default:'/' }}"
+           class="btn btn-primary p-2 mt-2">
+
+            Back
+
+        </a>
+
+        <a href="#"
+           class="btn btn-primary p-2 mt-2">
+
+            Customers With Orders
+
+        </a>
+
+        <a href="#"
+           class="btn btn-primary p-2 mt-2">
+
+            Shop
+
+        </a>
+
+        <a href="#"
+           class="btn btn-primary p-2 mt-2">
+
+            Dashboard
+
+        </a>
+
+    </p>
+
+</div>
+
+
+</section>
+
+<script>
+$(function () {
+
+    $('#locationDiv').hide();
+    $('#agentDiv').hide();
+
+
+    $('#county').change(function () {
+
+        console.log("County changed");
+
+        let county = $(this).val();
+
+        console.log("Selected county:", county);
+
+        $('#location').html('<option>Loading...</option>');
+        $('#agentDiv').hide();
+
+        if (!county) {
+            console.log("No county selected");
+            $('#locationDiv').hide();
+            return;
+        }
+
+        console.log("Showing location");
+
+        $('#locationDiv').show();
+
+
+        $.ajax({
+            url: "/agents/ajax/locations/",
+            data: {
+                county: county
+            },
+            success: function(data){
+
+                $('#location').empty();
+                $('#location').append(
+                    '<option value="">Search Location</option>'
+                );
+
+                $.each(data.results, function(index, item){
+
+                    $('#location').append(
+                        `<option value="${item.id}">
+                            ${item.text}
+                        </option>`
+                    );
+
+                });
+
+            }
+        });
+
+    });
+
+
+
+    $('#location').change(function(){
+
+        let location = $(this).val();
+
+
+        if(!location){
+            $('#agentDiv').hide();
+            return;
+        }
+
+
+        $('#agentDiv').show();
+
+
+        $.ajax({
+
+            url:"/agents/ajax/agents/",
+
+            data:{
+                location:location
+            },
+
+            success:function(data){
+
+                $('#agent').empty();
+
+                $('#agent').append(
+                    '<option value="">Search Agent</option>'
+                );
+
+
+                $.each(data.results,function(index,item){
+
+                    $('#agent').append(
+                        `<option value="${item.id}">
+                            ${item.text}
+                        </option>`
+                    );
+
+                });
+
+            }
+
+        });
+
+
+    });
+
+
+});
+</script>
+
+{% endblock %}
+now when user selctes county show location field for user to select and if user selects location show agents with the location for user to select
+both for sending from and sending to also improve all apescts return fully updated code i copy and paste
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    /* =========================
+       GLOBAL DATA
+    ========================= */
+    const dispatchId = "{{ dispatch.id }}";
+    const transportCost = parseFloat("{{ dispatch.total_transport_cost|default:'0' }}") || 0;
+    const customerPhone = "{{ dispatch.sending_customer.phone_number }}";
+
+    /* =========================
+       ELEMENTS
+    ========================= */
+    const mpesaBtn = document.getElementById("mpesaBtn");
+    const overlay = document.getElementById("mpesaOverlay");
+
+    const phoneInput = document.getElementById("mpesaPhone");
+    const totalInput = document.getElementById("mpesaTotal");
+
+    const continueBtn = document.getElementById("mpesaContinueBtn");
+    const closeBtn = document.getElementById("mpesaCloseBtn");
+
+    const statusBox = document.getElementById("mpesaStatus");
+
+    /* =========================
+       UTILITIES
+    ========================= */
+
+    function getCookie(name) {
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== "") {
+
+            const cookies = document.cookie.split(";");
+
+            for (let cookie of cookies) {
+
+                cookie = cookie.trim();
+
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1)
+                    );
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+    function showStatus(message = "", isError = false) {
+
+        if (!statusBox) return;
+
+        statusBox.innerHTML = message;
+        statusBox.style.color = isError ? "#dc3545" : "#198754";
+    }
+
+    /* =========================
+       OPEN MODAL
+    ========================= */
+
+    if (mpesaBtn) {
+
+        mpesaBtn.addEventListener("click", () => {
+
+            phoneInput.value = customerPhone;
+            totalInput.value = transportCost.toFixed(2);
+
+            showStatus("");
+
+            overlay.classList.remove("hidden");
+        });
+    }
+
+    /* =========================
+       CLOSE MODAL
+    ========================= */
+
+    if (closeBtn) {
+
+        closeBtn.addEventListener("click", () => {
+
+            overlay.classList.add("hidden");
+
+        });
+
+    }
+
+    /* =========================
+       SEND STK PUSH
+    ========================= */
+
+    if (continueBtn) {
+
+        continueBtn.addEventListener("click", async () => {
+
+            const payingPhoneNumber = phoneInput.value.trim();
+            const amount = parseFloat(totalInput.value);
+
+            if (!payingPhoneNumber) {
+                alert("Enter phone number.");
+                return;
+            }
+
+            if (isNaN(amount) || amount < 10) {
+                alert("Minimum payment amount is Ksh 10.");
+                return;
+            }
+
+            if (amount > transportCost) {
+                alert(`Maximum payable amount is Ksh ${transportCost.toFixed(2)}.`);
+                return;
+            }
+
+            continueBtn.disabled = true;
+            continueBtn.innerText = "Processing...";
+
+            showStatus("⏳ Sending STK Push...");
+
+            try {
+
+                const response = await fetch(
+                    "{% url 'mpesa_stk_push' %}",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": getCookie("csrftoken")
+                        },
+                        body: JSON.stringify({
+                            customer_phone: customerPhone,
+                            paying_phone_number: payingPhoneNumber,
+                            amount: amount,
+                            dispatch_id: dispatchId
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+
+                    showStatus(
+                        "❌ " + (data.message || "STK Push failed"),
+                        true
+                    );
+
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+
+                    return;
+                }
+
+                showStatus(
+                    "📱 STK Push sent. Check your phone and enter your M-Pesa PIN."
+                );
+
+                pollPayment(data.checkout_request_id);
+
+            } catch (error) {
+
+                console.error(error);
+
+                showStatus(
+                    "❌ Unable to send STK Push.",
+                    true
+                );
+
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+
+            }
+
+        });
+
+    }
+
+    /* =========================
+       POLL PAYMENT
+    ========================= */
+
+    function pollPayment(checkoutId) {
+
+        let attempts = 0;
+        const maxAttempts = 60;
+
+        const interval = setInterval(async () => {
+
+            attempts++;
+
+            try {
+
+                const response = await fetch(
+                    `/payments/mpesa-payment/status/${checkoutId}/`
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to check payment.");
+                }
+
+                const data = await response.json();
+
+                showStatus(
+                    data.message,
+                    data.status === "FAILED"
+                );
+
+                if (
+                    data.status === "PROCESSED" ||
+                    data.status === "EXTRA_PAID"
+                ) {
+
+                    clearInterval(interval);
+
+                    showStatus("✅ Payment received successfully.");
+
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+
+                    return;
+                }
+
+                if (data.status === "FAILED") {
+
+                    clearInterval(interval);
+
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+
+                    return;
+                }
+
+                if (attempts >= maxAttempts) {
+
+                    clearInterval(interval);
+
+                    showStatus(
+                        "⏳ Payment is still processing. If you completed the M-Pesa prompt, please wait a little longer.",
+                        false
+                    );
+
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+                clearInterval(interval);
+
+                showStatus(
+                    "❌ Unable to verify payment status. Please refresh later.",
+                    true
+                );
+
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+            }
+
+        }, 3000);
+
+    }
+
+});
+</script>
+
+<!-- <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* =========================
+       GLOBAL STATE
+    ========================= */
+    // let currentProductTotal = 0;
+    // let currentTransportTotal = 0;
+    // let currentGrandTotal = 0;
+
+    const dispatchId = "{{ dispatch.id }}";
+    const transportCost = "{{ dispatch.total_transport_cost }}";
+    const customerPhone = "{{ dispatch.sending_customer.phone_number }}";
+
+    const form = document.getElementById("checkoutForm");
+    const container = document.getElementById("itemsContainer");
+
+    const saveBtn = document.getElementById("saveBtn");
+    const mpesaBtn = document.getElementById("mpesaBtn");
+
+    const overlay = document.getElementById("mpesaOverlay");
+    const phoneInput = document.getElementById("mpesaPhone");
+    const totalInput = document.getElementById("mpesaTotal");
+    const statusBox = document.getElementById("mpesaStatus");
+    const continueBtn = document.getElementById("mpesaContinueBtn");
+    const closeBtn = document.getElementById("mpesaCloseBtn");
+
+    const walletBtn = document.getElementById("walletBtn");
+    const walletOverlay = document.getElementById("walletOverlay");
+    const walletCancelBtn = document.getElementById("walletCancelBtn");
+    const walletPayBtn = document.getElementById("walletPayBtn");
+
+    const walletBalance = document.getElementById("walletBalance");
+    const walletAmount = document.getElementById("walletAmount");
+    const walletStatus = document.getElementById("walletStatus");
+
+
+
+    /* =========================
+       UTILITIES
+    ========================= */
+    function formatMoney(num) {
+        return Number(num || 0).toLocaleString("en-KE", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function safeNumber(value) {
+        return parseFloat(String(value || "0").replace(/,/g, "")) || 0;
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1)
+                    );
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+    function showStatus(message, isError = false) {
+        if (!statusBox) return;
+
+        statusBox.innerHTML = message;
+        statusBox.style.color = isError ? "#dc3545" : "#198754";
+    }
+
+    /* =========================
+       OPEN MPESA
+    ========================= */
+    mpesaBtn.addEventListener("click", function () {
+    
+        phoneInput.value = customerPhone;
+        totalInput.value = transportCost;
+        console.log(totalInput)
+        showStatus("");
+
+        overlay.classList.remove("hidden");
+    });
+
+    /* =========================
+       CLOSE MPESA
+    ========================= */
+    closeBtn.addEventListener("click", function () {
+        overlay.classList.add("hidden");
+    });
+
+    /* =========================
+       STK PUSH
+    ========================= */
+    continueBtn.addEventListener("click", async function () {
+
+        const paying_phone_number  = phoneInput.value.trim();
+        const amount = parseFloat(document.getElementById("mpesaTotal").value);
+        const customer_phone = `{{ phone_number }}`;
+
+        // Validate minimum amount
+        if (isNaN(amount) || amount < 10) {
+            alert("Minimum payment amount is Ksh 10.");
+            return;
+        }
+
+        // Don't allow paying more than outstanding balance
+        if (amount > transportCost) {
+            alert(`Maximum payable amount is Ksh ${transportCost.toFixed(2)}.`);
+            return;
+        }
+
+        continueBtn.disabled = true;
+        continueBtn.innerText = "Processing...";
+
+        showStatus("⏳ Sending STK Push...");
+
+        try {
+
+            const response = await fetch(
+                "{% url 'mpesa_stk_push' %}",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    body: JSON.stringify({
+                        customer_phone:customer_phone,
+                        paying_phone_number:paying_phone_number,
+                        amount: amount,
+                        dispatch_id: dispatchId,
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Server returned " + response.status
+                );
+            }
+
+            const data = await response.json();
+
+            if (!data.success) {
+
+                showStatus(
+                    "❌ " + (data.message || "STK Push failed"),
+                    true
+                );
+
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+
+                return;
+            }
+
+            showStatus(
+                "📱 STK Push sent. Enter your M-Pesa PIN."
+            );
+
+            pollPayment(data.checkout_request_id);
+
+        } catch (error) {
+
+            console.error(error);
+
+            showStatus(
+                "❌ Network error. Please try again.",
+                true
+            );
+
+            continueBtn.disabled = false;
+            continueBtn.innerText = "Continue";
+        }
+    });
+
+    /* =========================
+       POLL PAYMENT
+    ========================= */
+    function pollPayment(checkoutId) {
+
+        let attempts = 0;
+        const maxAttempts = 60;
+
+        const interval = setInterval(async () => {
+
+            attempts++;
+
+            try {
+
+                const response = await fetch(
+                    `/payments/mpesa-payment/status/${checkoutId}/`
+                );
+
+                if (!response.ok) {
+                    throw new Error("Status request failed");
+                }
+
+                const data = await response.json();
+
+                // Always show backend message
+                showStatus(
+                    data.message,
+                    data.status === "FAILED"
+                );
+
+                if (
+                    data.status === "PROCESSED" ||
+                    data.status === "EXTRA_PAID"
+                ) {
+
+                    clearInterval(interval);
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+
+                    return;
+                }
+
+                if (data.status === "FAILED") {
+
+                    clearInterval(interval);
+
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+
+                    return;
+                }
+
+                if (attempts >= maxAttempts) {
+
+                    clearInterval(interval);
+
+                    showStatus(
+                        "⏳ This is taking longer than expected. If you completed the M-Pesa prompt, please wait a little longer while we finish updating your payment.",
+                        false
+                    );
+
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+                clearInterval(interval);
+
+                showStatus(
+                    "❌ Unable to verify payment status. Please refresh the page or contact customer care if payment was deducted.",
+                    true
+                );
+
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+            }
+
+        }, 3000);
+    }
+    updateTotalsAndSort();
+
+});
+</script> -->
+<!-- CUSTOM MPESA MODAL (NO BOOTSTRAP) -->
+<div id="mpesaOverlay" class="mpesa-overlay hidden">
+    <div class="mpesa-modal">
+
+        <h5>Complete Payment</h5>
+
+        <label>Phone Number</label>
+        <input type="text" id="mpesaPhone" class="mpesa-input" placeholder="2547XXXXXXXX">
+
+        <label>Total Amount</label>
+        <input type="text" id="mpesaTotal" min="10" step="1" class="mpesa-input">
+        <small>unaeza lipa kidogo kidogo</small>
+
+        <button id="mpesaContinueBtn" class="btn btn-success w-100 mt-2">
+            Continue
+        </button>
+
+        <button id="mpesaCloseBtn" class="btn btn-light w-100 mt-2">
+            Cancel
+        </button>
+
+        <div id="mpesaStatus" class="mpesa-status"></div>
+
+    </div>
+</div>
+
+<!-- walet payment modal -->
+ <div id="walletOverlay" class="mpesa-overlay hidden">
+
+    <div class="mpesa-modal">
+
+        <h4>Wallet Payment</h4>
+
+        <hr>
+
+        <div class="mb-3">
+
+            <strong>Wallet Balance</strong>
+
+            <h3 class="text-success">
+                Ksh <span id="walletBalance">...</span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Amount To Pay</strong>
+
+            <h3 class="text-primary">
+                Ksh <span id="walletAmount"></span>
+            </h3>
+
+        </div>
+
+        <div
+            id="walletStatus"
+            class="alert alert-info"
+            style="display:none">
+        </div>
+
+        <div class="d-flex justify-content-between">
+
+            <button
+                id="walletCancelBtn"
+                class="btn btn-secondary">
+
+                Cancel
+
+            </button>
+
+            <button
+                id="walletPayBtn"
+                class="btn btn-success">
+
+                Pay
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+<div id="pointsOverlay" class="mpesa-overlay hidden">
+
+    <div class="mpesa-modal">
+
+        <h4>Pay With Points</h4>
+
+        <hr>
+
+        <div class="mb-3">
+
+            <strong>Available Points</strong>
+
+            <h3 class="text-success">
+                <span id="availablePoints">...</span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Equivalent Value</strong>
+
+            <h3 class="text-success">
+                KSh <span id="pointsValue">...</span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Amount To Pay</strong>
+
+            <h3 class="text-primary">
+                KSh <span id="pointsAmount"></span>
+            </h3>
+
+        </div>
+
+        <div class="mb-3">
+
+            <strong>Points Required</strong>
+
+            <h3 class="text-warning">
+                <span id="pointsRequired"></span>
+            </h3>
+
+        </div>
+
+        <div
+            id="pointsStatus"
+            class="alert alert-info"
+            style="display:none">
+        </div>
+
+        <div class="d-flex justify-content-between">
+
+            <button
+                id="pointsCancelBtn"
+                class="btn btn-secondary">
+
+                Cancel
+
+            </button>
+
+            <button
+                id="pointsPayBtn"
+                class="btn btn-success">
+
+                Redeem Points
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,155 @@
+{% extends 'main.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %} Package Dispatches {% endblock %}
+
+{% block content %}
+<style>
+    section { min-height: 100vh; }
+    .card { border: none; border-radius: 16px; margin-bottom: 20px; }
+    .section-title { font-size: 0.9rem; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 15px; }
+    .form-label { font-weight: 600; color: #333; margin-top: 5px; font-size: 0.85rem; }
+    .form-control, .form-select { border-radius: 8px; padding: 10px; font-size: 0.9rem; }
+    .table-container { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); }
+    .badge-status { padding: 6px 12px; font-weight: 600; border-radius: 6px; font-size: 0.75rem; text-transform: uppercase; }
+</style>
+
+<section class="get_touch_area py-4">
+<div class="container from_area">
+    
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0 fw-bold">Package Dispatches</h4>
+        <span class="badge bg-primary px-3 py-2">Management</span>
+    </div>
+
+    <!-- FILTER & SEARCH FORM -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="section-title">Filter & Search Package Dispatches</div>
+            <form method="GET" action="" class="row g-3">
+                
+                <!-- Search Box -->
+                <div class="col-md-12">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search by dispatch ID, delivery phone, or agent shop name...">
+                </div>
+
+                <!-- Sending Agent Filter -->
+                <div class="col-md-3">
+                    <label class="form-label">Sending Agent</label>
+                    <select name="sending_agent" class="form-select">
+                        <option value="">All Sending Agents</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}" {% if selected_sending_agent == agent.id|stringformat:"s" %}selected{% endif %}>{{ agent.shop_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Receiving Agent Filter -->
+                <div class="col-md-3">
+                    <label class="form-label">Receiving Agent</label>
+                    <select name="receiving_agent" class="form-select">
+                        <option value="">All Receiving Agents</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}" {% if selected_receiving_agent == agent.id|stringformat:"s" %}selected{% endif %}>{{ agent.shop_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="OPEN" {% if selected_status == "OPEN" %}selected{% endif %}>Open</option>
+                        <option value="SENT" {% if selected_status == "SENT" %}selected{% endif %}>Sent</option>
+                        <option value="ON_ROAD" {% if selected_status == "ON_ROAD" %}selected{% endif %}>On Road</option>
+                        <option value="ARRIVED" {% if selected_status == "ARRIVED" %}selected{% endif %}>Arrived</option>
+                        <option value="PICKED" {% if selected_status == "PICKED" %}selected{% endif %}>Picked</option>
+                    </select>
+                </div>
+
+                <!-- Payment Status Filter -->
+                <div class="col-md-3">
+                    <label class="form-label">Payment Status</label>
+                    <select name="payment" class="form-select">
+                        <option value="">All Payments</option>
+                        <option value="paid" {% if selected_payment == "paid" %}selected{% endif %}>Fully Paid</option>
+                        <option value="pending" {% if selected_payment == "pending" %}selected{% endif %}>Pending Balance</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-12 mt-3 text-end">
+                    <a href="{% url 'package_dispatch_list' %}" class="btn btn-outline-secondary btn-sm px-4">Reset</a>
+                    <button type="submit" class="btn btn-dark btn-sm px-4">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PACKAGE DISPATCHES LIST TABLE -->
+    <div class="table-container shadow-sm">
+        <div class="section-title">Package Dispatch Records</div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#ID</th>
+                        <th>Sending Agent</th>
+                        <th>Receiving Agent</th>
+                        <th>Delivery Phone</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pkg_dispatch in dispatches %}
+                    <tr>
+                        <td><strong>#{{ pkg_dispatch.id }}</strong></td>
+                        <td>
+                            <div class="fw-bold">{{ pkg_dispatch.sending_agent.shop_name|default:"N/A" }}</div>
+                            <small class="text-muted">Cust: {{ pkg_dispatch.sending_customer.username|default:"Walk-in" }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-bold">{{ pkg_dispatch.receiving_agent.shop_name|default:"N/A" }}</div>
+                            <small class="text-muted">Cust: {{ pkg_dispatch.receiving_customer.username|default:"N/A" }}</small>
+                        </td>
+                        <td>{{ pkg_dispatch.delivery_phone|default:"N/A" }}</td>
+                        <td>
+                            {% if pkg_dispatch.fully_paid %}
+                                <span class="badge bg-success">Paid</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge-status 
+                                {% if pkg_dispatch.status == 'OPEN' %}bg-secondary text-white
+                                {% elif pkg_dispatch.status == 'SENT' %}bg-info text-dark
+                                {% elif pkg_dispatch.status == 'ON_ROAD' %}bg-warning text-dark
+                                {% elif pkg_dispatch.status == 'ARRIVED' %}bg-primary text-white
+                                {% elif pkg_dispatch.status == 'PICKED' %}bg-success text-white{% endif %}">
+                                {{ pkg_dispatch.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'package_dispatch_detail' pkg_dispatch.id %}" class="btn btn-sm btn-outline-dark">View More</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No package dispatches found matching your search or filters.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</section>
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<section class="get_touch_area" style="padding-top: 120px;">
+    <div class="row" style="justify-content: center;">
+        <div class="col-lg-6">
+            <div class="row" style="justify-content: center;"><b>Create Offer</b></div>
+            <div class="from_area">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!--<form class="from_main" action="{% url 'create_offer' %}" method="POST">-->
+                <!--    {% csrf_token %}-->
+
+                <!--    <div class="form-group">-->
+                <!--        <label>Offer Name</label>-->
+                <!--        <input type="text" name="name" class="form-control" placeholder="Offer Name" required>-->
+                <!--    </div>-->
+
+                <!--    <div class="form-group">-->
+                <!--        <label>Offer Type</label>-->
+                <!--        <select name="offer_type" class="form-control" id="offerType" required>-->
+                <!--            <option value="discount">Discount</option>-->
+                <!--            <option value="reward">Reward</option>-->
+                <!--        </select>-->
+                <!--    </div>-->
+
+                    <!-- Discount fields -->
+                <!--    <div id="discountFields">-->
+                <!--        <div class="form-group">-->
+                <!--            <label>Discount Type</label>-->
+                <!--            <select name="discount_type" class="form-control">-->
+                <!--                <option value="percentage">Percentage</option>-->
+                <!--                <option value="fixed">Fixed Amount</option>-->
+                <!--            </select>-->
+                <!--        </div>-->
+                <!--        <div class="form-group">-->
+                <!--            <label>Discount Value</label>-->
+                <!--            <input type="number" step="0.01" name="discount_value" class="form-control" placeholder="e.g. 20">-->
+                <!--        </div>-->
+                <!--    </div>-->
+
+                    <!-- Reward fields -->
+                <!--    <div id="rewardFields" style="display:none;">-->
+                <!--        <div class="form-group">-->
+                <!--            <label>Reward Name</label>-->
+                <!--            <input type="text" name="reward_name" class="form-control" placeholder="e.g. VIP Event Ticket">-->
+                <!--        </div>-->
+                <!--        <div class="form-group">-->
+                <!--            <label>Reward Description</label>-->
+                <!--            <textarea name="reward_description" class="form-control"></textarea>-->
+                <!--        </div>-->
+                <!--    </div>-->
+
+                <!--    <div class="form-group">-->
+                <!--        <label>Applicability</label>-->
+                <!--        <select name="applicability" class="form-control" required>-->
+                <!--            <option value="all_products">All Products</option>-->
+                <!--            <option value="business_products">All Products of a Business</option>-->
+                <!--            <option value="specific_products">Specific Products</option>-->
+                <!--        </select>-->
+                <!--    </div>-->
+
+                <!--    <div class="form-group">-->
+                <!--        <label>Business (optional)</label>-->
+                <!--        <select name="business" class="form-control">-->
+                <!--            <option value="">-- None (Platform-wide) --</option>-->
+                <!--            {% for biz in businesses %}-->
+                <!--                <option value="{{ biz.id }}">{{ biz.name }}</option>-->
+                <!--            {% endfor %}-->
+                <!--        </select>-->
+                <!--    </div>-->
+
+                <!--    <div class="form-group m-0 btn_g">-->
+                <!--        <button class="theme_btn btn" id="createOfferButton" type="submit">Create Offer</button>-->
+                <!--    </div>-->
+                <!--</form>-->
+                <form class="from_main" action="{% url 'create_offer' %}" method="POST">
+                    {% csrf_token %}
+                
+                    <div class="form-group">
+                        <label>Offer Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                
+                    <div class="form-group">
+                        <label>Offer Type</label>
+                        <select name="offer_type" class="form-control" id="offerType" required>
+                            <option value="discount">Discount</option>
+                            <option value="reward">Reward</option>
+                        </select>
+                    </div>
+                
+                    <!-- Discount fields -->
+                    <div class="form-group discount-field">
+                        <label>Discount Type</label>
+                        <select name="discount_type" class="form-control">
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount</option>
+                        </select>
+                    </div>
+                
+                    <div class="form-group discount-field">
+                        <label>Discount Value</label>
+                        <input type="number" name="discount_value" step="0.01" class="form-control">
+                    </div>
+                
+                    <!-- Reward fields -->
+                    <div class="form-group reward-field d-none">
+                        <label>Reward Name</label>
+                        <input type="text" name="reward_name" class="form-control" placeholder="e.g. VIP Ticket">
+                    </div>
+                
+                    <div class="form-group reward-field d-none">
+                        <label>Reward Description</label>
+                        <textarea name="reward_description" class="form-control"></textarea>
+                    </div>
+                
+                    <div class="form-group">
+                        <label>Applicability</label>
+                        <select name="applicability" class="form-control" required>
+                            <option value="all_products">All Products</option>
+                            <option value="business_products">All Products of a Business</option>
+                            <option value="specific_products">Specific Products</option>
+                        </select>
+                    </div>
+                
+                    <div class="form-group">
+                        <label>Business (optional)</label>
+                        <select name="business" class="form-control">
+                            <option value="">-- None (Platform-wide) --</option>
+                            {% for biz in businesses %}
+                                <option value="{{ biz.id }}">{{ biz.business_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                
+                    <button class="theme_btn btn" id="createOfferButton" type="submit">Create Offer</button>
+                </form>
+                
+
+
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    // Toggle discount/reward fields
+    document.addEventListener('DOMContentLoaded', function () {
+        const offerType = document.getElementById('offerType');
+        const discountFields = document.querySelectorAll('.discount-field');
+        const rewardFields = document.querySelectorAll('.reward-field');
+
+        function toggleFields() {
+            if (offerType.value === 'discount') {
+                discountFields.forEach(f => f.classList.remove('d-none'));
+                rewardFields.forEach(f => f.classList.add('d-none'));
+            } else {
+                discountFields.forEach(f => f.classList.add('d-none'));
+                rewardFields.forEach(f => f.classList.remove('d-none'));
+            }
+        }
+
+        offerType.addEventListener('change', toggleFields);
+        toggleFields(); // initial state
+    });
+</script>
+<!--<script>-->
+<!--    document.addEventListener('DOMContentLoaded', function () {-->
+<!--        const offerTypeSelect = document.getElementById("offerType");-->
+<!--        const discountFields = document.getElementById("discountFields");-->
+<!--        const rewardFields = document.getElementById("rewardFields");-->
+
+<!--        offerTypeSelect.addEventListener("change", function() {-->
+<!--            if (this.value === "discount") {-->
+<!--                discountFields.style.display = "block";-->
+<!--                rewardFields.style.display = "none";-->
+<!--            } else {-->
+<!--                discountFields.style.display = "none";-->
+<!--                rewardFields.style.display = "block";-->
+<!--            }-->
+<!--        });-->
+
+<!--        const btn = document.getElementById('createOfferButton');-->
+<!--        const form = btn.closest('form');-->
+<!--        if (form) {-->
+<!--            form.addEventListener('submit', function () {-->
+<!--                btn.disabled = true;-->
+<!--                btn.textContent = "Creating offer...";-->
+<!--            });-->
+<!--        }-->
+<!--    });-->
+<!--</script>-->
+{% endblock %}
