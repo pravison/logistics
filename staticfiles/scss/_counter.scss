@@ -1,0 +1,125 @@
+// Countarup Area Start//
+.countarup_area { 
+    display: block;
+    overflow: hidden;
+    padding: 95px 0 30px;
+    background: url(../images/counter-bg.png) no-repeat left top;
+    position: relative;
+    z-index: 1;
+    &:after{
+        content: "";
+        position: absolute;
+        right: 0;
+        bottom: 90px;
+        background: url("../images/counter-bg-2.png") no-repeat;
+        width: 558px;
+        height: 415px;
+        z-index: -1;
+    }
+    .years_fild{
+        position: relative;
+        h4{
+            font: 500 40px/1 $pop;
+            color: #537097;
+            position: absolute;
+            left: -140px;
+            top: 0;
+        }
+        h1{
+            background: $bc;
+            border-radius: 50%;
+            width: 240px;
+            height: 240px;
+            text-align: center;
+            display: block;
+            color: #fff;
+            font: 600 118px/200px $pop; 
+            border: 26px solid #fff3f1;
+            position: relative;
+            top: 65px;
+        }
+    }
+    .customer{
+        box-shadow: 0px 22px 30px 0px rgba(202, 202, 203, 0.35);
+        background: #fff;
+        text-align: center;
+        padding: 35px 35px 25px;
+        margin-bottom: 30px;
+        margin-top: 120px;
+        h4{
+            font: 500 20px/1 $pop;
+            color: #242425;
+            padding-bottom: 25px;
+        }
+        h3{
+            font: 400 30px/1 $pop;
+            color: $hover;
+            span{
+                font-weight: 600;
+                font-size: 60px;
+            }
+        }
+    } 
+    .client_logo{
+        display: block;
+        overflow: hidden;
+        max-width: 937px;
+        border-radius: 10px;
+        background-color: rgb(255, 255, 255);
+        box-shadow: 0px 0px 68px 0px rgba(218, 221, 254, 0.35);
+        float: right;
+        margin-top: 90px;
+        .item{
+            a{ 
+                text-align: center;
+                margin: 0 auto;
+                height: 224px; 
+                display: flex;
+                align-items: center;
+                img{
+                    width: auto;
+                    margin: 0 auto;
+                    opacity: 0.3;
+                    @include transition; 
+                }
+                &:hover, &:focus, &.active{
+                    img{
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+}  
+.counter_2{
+	padding-bottom: 150px;
+	.client_logo{
+		margin-top: -80px;
+	}
+	.right_innner{
+		margin-right: -235px;
+		.customer{
+			margin-top: -30px;
+			box-shadow: 0px 22px 30px 0px rgba(207, 179, 252, 0.35);
+		}
+	}
+	&:after{
+		background: url(../images/counter-bg-3.png) no-repeat;
+		bottom: 0;
+	}
+}
+.c_banner{
+	margin-top: 220px;
+}
+.counter_3{
+	background: #fff;
+	padding-top: 50px;
+	&:after{
+		display: none;
+	}
+	.client_logo{
+		max-width: 100%;
+		margin: 0;
+	}
+}
+// Countarup Area End//

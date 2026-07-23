@@ -1,0 +1,154 @@
+//pricing_plan
+.pricing_plan{
+	display: block;
+	overflow: hidden;
+	padding: 65px 0 210px;
+	position: relative;
+	z-index: 1;
+	&:before{
+		content: "";
+		position: absolute;
+		left: 0;
+		bottom: 20px;
+		background: url("../images/pp-shap.png") no-repeat;
+		width: 150px;
+		height: 234px; 
+	}
+	&:after{
+		content: "";
+		position: absolute;
+		right: 0;
+		top: 0;
+		background: url("../images/pp-shap.png") no-repeat;
+		width: 150px;
+		height: 234px;
+		transform: rotate(180deg);
+	}
+	.tittle{
+		padding-bottom: 90px;
+		h2{
+			font: 600 42px/1 $pop;
+			color: #39436f;
+			padding-bottom: 35px;
+		}
+		p{
+			font: 400 21px/35.5px $pop;
+			color: #39436f;
+			max-width: 660px;
+		}
+	}
+	.plan{
+		padding: 65px;
+		padding-right: 30px;
+		padding-left: 60px;
+		background:#f1f7fe url("../images/plan-bg-1.png") no-repeat center top;
+		background-size: cover;
+		margin-bottom: 40px;
+		@include transition;
+		min-height: 555px;
+		h3{
+			font: 500 32px/1 $pop;
+			color: #39436f;
+			b{
+				font-weight: 600;
+				font-size: 42px;
+				color: #ff846e;
+			}
+		}
+		h6{
+			font: 400 18px/1 $pop;
+			color: $pfont;
+			padding-top: 18px; 
+		}
+		ul{
+			padding: 50px 0;
+			li{
+				font: 400 16px/38px $pop;
+				color: #39436f;
+			}
+		}
+		.theme_btn{
+			line-height: 50px;
+			min-width: 205px;
+			background: #fff; 
+			color: #ff846e;
+			&:before{
+				background: $bc;
+			}
+		}
+		&:hover, &:focus, &.active{
+			box-shadow: 0px 0px 34px 0px rgba(185, 147, 255, 0.35);
+			.theme_btn{
+				background: #ff846e;
+				color: #fff;  
+			}
+		}
+	}
+	.plan_2{
+		background:#f1f7fe url("../images/plan-bg-2.png") no-repeat center top;
+	}
+	.plan_3{
+		background:#f1f7fe url("../images/plan-bg-3.png") no-repeat center top;
+	}
+	.pp_shap{
+		position: absolute;
+		left: 134px;
+		bottom: 530px;
+		z-index: -1;
+		animation: heartbeat 0.5s cubic-bezier(0.245, 0.325, 0.51, 1.305) infinite alternate;
+	}
+	.pp_shap_2{
+		position: absolute;
+		right: 115px;
+		top: 315px;
+		z-index: -1;
+		animation: heartbeat 0.5s cubic-bezier(0.245, 0.325, 0.51, 1.305) infinite alternate;
+	}
+}
+.pp_2{
+	padding-bottom: 180px;
+	&:before{
+		top: 0;
+	}
+	&:after{
+		display: none;
+	}
+	.plan{
+		background:#f8fdff url("../images/plan-bg-4.png") no-repeat center; 
+		.theme_btn{
+			background: #f1f7fe;
+		}
+	}
+	.plan_2{
+		background:#f8fdff url("../images/plan-bg-5.png") no-repeat center;
+	}
+	.plan_3{
+		background:#f8fdff url("../images/plan-bg-6.png") no-repeat center;
+	}
+}
+.pp_3{
+	padding-bottom: 140px;
+	position: relative;
+	&:before{
+		background: url("../images/services-shap-7.png") no-repeat;
+		width: 73px;
+		height: 82px;
+		left: auto;
+		right: 150px;
+		top: 20px;
+		z-index: -1;
+		animation: heartbeat 0.5s cubic-bezier(0.245, 0.325, 0.51, 1.305) infinite alternate;
+	}
+	&:after{
+		content: ""; 
+		position: absolute;
+		bottom: 140px;
+		right: 100px;
+		background: url("../images/get-shap.png") no-repeat; 
+		height: 30px;
+		width: 30px;
+	}
+}
+//pricing_plan
+
+

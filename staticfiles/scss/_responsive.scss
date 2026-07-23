@@ -1,0 +1,1016 @@
+// Extra Large devices (desktops, less than 1700px)
+@media (max-width: 1780px) {
+	.mh_2{
+		padding-left: 30px;
+		padding-right: 30px;
+	}
+	.mh_2.navbar_fixed{ 
+		padding-left: 30px;
+		padding-right: 30px;
+	}
+}
+@media (max-width: 1650px) {
+	.main_header_area {
+		padding-right: 30px;
+		padding-left: 30px;
+	}
+	.main_header_area.navbar_fixed{
+		padding: 5px 30px;
+	}
+	.banner_area .banner_img{
+		max-width: 50%;
+	}
+	.countarup_area .years_fild h4{
+		font-size: 25px;
+		left: 0;
+	}
+	.focus_approach .focus_right_img{
+		padding-top: 50px;
+		img{
+			max-width: 100%;
+		}
+	}
+	.seo_insights {
+		.recovered_img {
+			img{
+				max-width: 100%;
+			}
+			.benefits_btn{
+				right: 0; 
+				bottom: auto;
+			}
+		}
+		.insights_contant{
+			padding-top: 100px;
+		}
+	}
+	.counter_2 .right_innner{
+		margin-right: -15px;
+	}
+	.portfolio_list {
+		.portfolio_row .pl_img img{
+			max-width: 100%;
+		}
+		.l_img .pl_img img{
+			margin: 0;
+		}
+	}
+	.si_3 .insights_contant{
+		padding-top: 0;
+	}
+	.da_2 .digital_agency_img{
+		padding-left: 0;
+	}
+	.summer_collerction{
+		margin: 0;
+		padding-top: 100px;
+	}
+}
+@media (max-width: 1441px) {
+	.performance_optimized {
+		padding-top: 0;
+		.list_optimized{
+			padding-top: 0;
+		}
+		.po_img img{
+			max-width: 100%;
+		}
+	}
+	.mh_2 .navbar .mail_nav{
+		display: none;
+	}
+	.pages_banner{
+		background-color: #7f34fa;
+		padding: 250px 0 150px;
+	}
+	.portfolio_2, .portfolio_single{
+		margin: 0;
+		padding: 100px 0;
+	} 
+	.da_3 .agency-right_img img{
+		margin: 0;
+		max-width: 100%;
+	}
+}
+@media (max-width: 1366px) {
+	.main_header_area .navbar .navbar_supported .navbar-nav li a{
+		font-size: 16px;
+		margin: 0 15px;
+	}
+	.testimonial_area .user_img img{
+		max-width: 100%;
+	}
+	.at_2 .agency_contant {
+		margin-right: 0;
+		padding-left: 15px;
+		padding-right: 15px;
+		float: none;
+		.task_btn{
+			display: none;
+		}
+	}
+	.banner_a3 .banner_img_2{
+		margin-top: 40px;  
+		max-width: 100%;
+	}
+	.software_setup {
+		.software_img img{
+			margin: 0 !important;
+			max-width: 100%;
+		}
+		.software_text{
+			float: none;
+		}
+	}
+	.get_touch_area .from_main{
+		padding-left: 15px;
+		padding-right: 15px;
+	}
+	.banner_a4 {
+		padding-bottom: 600px;
+		.banner_img_2{
+			top: 300px;
+		}
+	}
+	.application_setup {
+		.focus_bg{
+			z-index: -1;
+		}
+		.application_contant img{
+			max-width: 100%;
+		}
+	}
+	
+}
+
+// Large devices (desktops, less than 1231px)
+@media (max-width: 1199px) {
+	.main_header_area {
+		padding-top: 50px;
+		.navbar {
+			.mail_nav{
+				display: none;
+			}
+			.navbar_supported .navbar-nav li .mail_nav{
+				display: none;
+			}
+		}
+	}
+	.banner_area {
+		padding-top: 250px;
+		padding-bottom: 50px; 
+		&:after{
+			display: none;
+		}
+		.banner_img{
+			position: relative !important;
+			max-width: 100%;
+			top: 0 !important;
+		}
+	}
+	.service_icon_area{
+		margin: 0;
+		padding-top: 100px;
+	}
+	.countarup_area .customer{
+		margin-top: 70px;
+	}
+	.agency_task .agency_contant{
+		margin: 0;
+		h5{
+			padding: 0;
+		}
+	}
+	.focus_approach{
+		padding-bottom: 0;
+	}
+	.pricing_plan .plan{
+		min-height: auto;
+		padding: 30px 20px;
+	}
+	.footer_area .suppoet_footer{
+		padding-left: 15px;
+	}
+	.seo_insights .insights_contant{
+		margin: 0;
+		padding-left: 15px;
+		padding-right: 15px;
+	}
+	.counter_2 {
+		padding-bottom: 0;
+		.client_logo{
+			margin-top: 100px;
+			margin-bottom: 50px;
+		}
+		.right_innner .customer{
+			margin-top: 0;
+		}
+	}
+	.sia_3 {
+		background: #ebf9fb;
+		padding: 100px 0;  
+		h2{
+			padding-bottom: 20px;
+			float: none;
+		}
+		.nav_control{
+			padding-top: 20px;
+		}
+	}
+	.portfolio_list .portfolio_row .pl_contant{
+		padding-top: 0;
+		padding-bottom: 50px;
+		padding-left: 15px;
+	} 
+	.portfolio .tittle{
+		float: none;
+		padding-bottom: 20px;
+		max-width: 250px;
+	}
+	.c_banner{
+		margin: 0;
+	}
+	.si_3 {
+		padding-bottom: 0;
+		.insights_contant{
+			padding-top: 80px;
+		}
+	} 
+	.shop_with_sidebar .shop_single {
+		.review-tab .nav-tabs li{
+			padding-right: 30px;
+			a{
+				padding-bottom: 0;
+				font-size: 18px;
+			}
+		}
+		.interface .tags{
+			padding-left: 80px;
+		}
+	}
+	.general_communication {
+		margin: 0;
+		padding: 100px 0;
+		.quick_find li{
+			padding: 0 20px;
+			&:first-child{
+				padding: 0 20px;
+			}
+		}
+		.help_support .support {
+			padding-left: 15px;
+			padding-right: 15px;
+			p{
+				font-size: 16px;
+			}
+		}
+	}
+	.banner_a4 .banner_img_2{
+		position: relative;
+		top: 0;
+		float: right;
+		max-width: 100%;
+	}
+	
+	.banner_a4{
+		overflow: hidden;
+	}
+}
+
+
+// Medium devices (tablets, less than 992px)
+@media (max-width: 991px) { 
+    .main_header_area{ 
+        padding: 20px 15px 0; 
+        .navbar{   
+            .navbar-toggler{ 
+                font-size: 25px;
+                color: #fff;
+                background: $bc;
+                padding: 0 20px;
+                margin: 0; 
+                margin-left: 15px;
+                line-height: 50px;
+                border: 0;
+                float: right; 
+                border-radius: 0; 
+            }
+            .navbar_supported{
+                float: none;
+                width: 100%;
+            }
+            .navbar-nav{ 
+                margin: 0;  
+                max-height: 370px;
+                overflow-y: auto; 
+                background: $hover;
+                border: 1px dashed #fff;
+                padding-left: 0 !important;
+                li{
+                    border-bottom: 1px dashed #fff;
+                    &:last-child{
+                        border: 0
+                    }
+                    a{ 
+                        line-height: 45px !important;
+                        margin: 0 20px !important;
+                        color: #fff !important;
+                        &:after{
+                            display: none !important;
+                        }
+                        &:before{
+                            display: none;
+                        }
+                        &.theme_btn{
+                            background: transparent !important;
+                            text-align: left !important;
+                            color: #fff; 
+                            background-image: none;
+                        }
+                    }
+                    &.dropdown{
+                        position: relative;
+                        &:after{
+                            content: "\f103";
+                            position: absolute;
+                            top: 0;
+                            right: 20px;
+                            font: normal normal normal 15px/48px FontAwesome;
+                            color: #fff;
+                        }
+                        .dropdown-menu{
+                            background-color: transparent;
+                            border: 0;
+                            border-top: 1px dashed #fff;
+                            border-radius: 0 !important;
+                            padding: 0 !important;
+                            box-shadow: none !important;
+                            &:before{
+                                display: none;
+                            }
+                            li a{ 
+                                border: 0;
+                                color: #fff; 
+                                margin: 0 10px;
+                                &:hover, &:focus, &.active{
+                                    color: #fff;
+                                    border: 0;
+                                    padding: 0 20px;
+                                }
+                            }
+                            .dropdown:after{
+                                display: none;
+                            }
+                        }
+                    } 
+                } 
+            }
+        }     
+    } 
+	.digital_agency{
+		padding-top: 50px;
+		.agency-right_img {
+			padding-top: 50px;
+			img{
+				position: relative !important;
+				max-width: 100%;
+			} 
+		}
+	}
+	.agency_task{
+		padding-top: 50px;
+		padding-bottom: 50px;
+		.agency_task_img .task_btn{
+			right: 0;
+			line-height: 60px;
+			&:after, &:before{
+				top: 30px;
+			}
+		}
+		.agency_contant{
+			padding-left: 15px;
+			padding-right: 15px;
+			padding-top: 50px;
+			.media{
+				padding-left: 0;
+			}
+		}
+	}
+	.testimonial_area{
+		padding-top: 0;
+		padding-bottom: 50px;
+		.user_img{
+			padding-top: 50px;
+			text-align: center;
+			&:after{
+				display: none;
+			}
+		}
+		.testimonial{
+			padding-left: 15px;
+			padding-right: 15px;
+		}
+	}
+	.banner_a2{
+		background-image: none;
+		 h2{
+			font-size: 50px;
+			line-height: 60px;
+		}
+	}
+	.analytics_area{
+		padding: 100px 0 70px;
+		.analytics{
+			margin: 0 auto 30px;
+		}
+	}
+	.seo_insights .recovered_img .benefits_btn{
+		bottom: 0; 
+		line-height: 60px;
+		&:after, &:before{
+			top: 30px;
+		}
+	}
+	.sia_2{
+		background-size: cover;
+		.tittle{
+			position: relative;
+			padding-bottom: 100px;
+			margin-bottom: 50px;
+		}
+		h2{
+			float: none; 
+			padding-bottom: 0;
+			padding-top: 50px;
+		}
+		.nav_control{
+			float: none;
+			position: absolute;
+			bottom: 0;
+			left: 0; 
+			
+		}
+	}
+	.at_2{
+		padding-top: 0;
+	}
+	.aa_2{
+		padding-top: 0;
+	}
+	.performance_optimized .po_img{
+		margin-top: 50px;
+	}
+	.software_setup{
+		padding-top: 0;
+		.software_img {
+			text-align: center;
+		}
+		.software_text{
+			margin: 0 auto !important;
+		}
+	}
+	.pages_banner {
+		padding-top: 200px; 
+		padding-bottom: 100px;
+		h2{
+			font-size: 30px;
+			line-height: 40px;
+			max-width: 400px;
+		}
+	}
+	.sia_3 { 
+		.nav_control{
+			position: relative;
+		}
+		.tittle{
+			margin: 0;
+			padding: 0;
+			h2{
+				padding-bottom: 40px;
+			}
+		}
+	}
+	.team_area{
+		padding: 100px 0 70px;
+	}
+	.portfolio_list{
+		padding: 100px 0 60px;
+	} 
+	.portfolio_single {
+		.tittle_row{
+			padding: 50px 15px 0;
+		}
+		h4{
+			padding-top: 40px;
+		}
+	}
+	.da_2 {
+		padding-top: 0;
+		padding-bottom: 0;
+		.digital_agency_img{
+			padding: 0;
+			img{
+				max-width: 100%;
+			}
+		}
+	}
+	.blog_list_area.pl{
+		padding-left: 15px;
+	}
+	.blog_sidebar{
+		.widget{
+			padding-top: 70px;
+			padding-bottom: 0;
+		}
+	}
+	.blog_area{
+		padding-top: 100px;
+		padding-bottom: 0;
+	} 
+    .summer_collerction{ 
+        .shop_caption{
+            left: 0;
+            right: 0;
+            h3{
+                font-size: 20px;
+            }
+            h2{
+                font-size: 25px;
+                padding: 10px 0;
+            }
+        }
+    }
+    .shop_with_sidebar{
+        padding-top: 150px;
+        .shop_left_sidebar{
+            padding-top: 50px;
+        }
+    }
+	.faq_area{padding-bottom: 0;}
+	.general_communication .quick_find{
+		margin-bottom: 80px;
+	}
+	.get_touch_area{
+		.from_area{
+			padding-bottom: 0;
+		}
+		.from_main{
+			max-width: 100%;
+		}
+		.map_area{
+			margin: 0;
+			 iframe{
+				height: 350px;
+			}
+		}
+	} 
+	.ps_2 .tittle_row{
+		padding-top: 0;
+		padding-bottom: 80px;
+	}
+	.banner_a4 h2{
+		font-size: 35px;
+		line-height: 45px;
+	}
+	.application_setup .application_contant h2{
+		padding: 50px 0;
+	}
+}
+
+// Small devices (landscape phones, less than 768px)
+@media (max-width: 767px) {
+	.banner_area {
+		padding-top: 200px;
+		h2{
+			font-size: 30px;
+			line-height: 40px;
+			max-width: 360px;
+		}
+		p{
+			font-size: 16px;
+			line-height: 28px;
+			padding: 30px 0;
+		}
+	}
+	.agency_task .agency_contant {
+		h2{
+			font-size: 25px;
+			line-height: 35px;
+		}
+		.media .media-body{
+			padding-left: 10px;
+			h1 span{
+				font-size: 70px;
+			}
+			h6{
+				font-size: 20px;
+			}
+		}
+	}
+	.focus_approach{
+		h2{
+			font-size: 20px;
+			line-height: 35px;
+		}
+	}
+	.testimonial_area {
+		padding-bottom: 50px; 
+		.testimonial_carousel .item .testimonial_item{
+			padding: 30px 20px;
+		}
+		.testimonial .tittle{
+			padding: 0 15px;
+			padding-bottom: 40px;
+			h2{
+				font-size: 25px;
+				line-height: 35px;
+			}
+		}
+	}
+	.pricing_plan {
+		padding-bottom: 70px;
+		.tittle {
+			h2{
+				font-size: 25px;
+				line-height: 35px;
+				padding-bottom: 20px;
+			}
+			p{
+				font-size: 18px;
+			}
+		}
+		.plan{
+			max-width: 370px;
+			margin: 0 auto 30px;
+		}
+	}
+	.get_touch{
+		padding: 100px 0; 
+		&:after{
+			right: 20px;
+			top: 20px;
+		}
+		span{
+			left: 20px;
+			bottom: 20px;
+		}
+		p{
+			font-size: 20px;
+			line-height: 35px;
+			padding-bottom: 40px;
+		}
+	}
+	.footer_area {
+		.language_item p{
+			font-size: 16px;
+		}
+		.download a{
+			float: none;
+			margin: 0;
+			margin-bottom: 5px;
+			min-width: 100%;
+		}
+		.copy_right{
+			padding-bottom: 30px;
+			 ul{
+				text-align: center;
+				padding-bottom: 10px; 
+			}
+			p{
+				text-align: center;
+				padding: 0;
+			}
+		}
+	}
+	.seo_insights {
+		padding-bottom: 100px;
+		.insights_contant h2{
+			font-size: 25px;
+			line-height: 35px;
+		}
+	}
+	.sia_2{
+		padding-bottom: 180px;
+		 h2{
+			font-size: 25px;
+			line-height: 35px;
+			padding-top: 0;
+		}
+	}
+	.blog_posts_area h2{
+		font-size: 25px;
+		line-height: 35px;
+	}
+	.banner_a3 h2{
+		padding-bottom: 50px;
+	}
+	.aa_2 h2{
+		font-size: 25px;
+		line-height: 35px;
+		float: none;
+		padding-bottom: 40px;
+	}
+	.sia_3{
+		padding-bottom: 80px;
+	}
+	.portfolio{
+		padding: 100px 0;
+	}
+	.portfolio_single {
+		.tittle_row h2{
+			font-size: 25px;
+			line-height: 35px;
+		}
+		.protfolio_small_img{
+			padding-bottom: 30px;
+		}
+	}
+	.da_2 .agency_left_text{
+		padding-top: 0;
+	}
+	.blog_list_area .blog_list .blog_contant .heding{
+		font-size: 20px;
+		line-height: 30px;
+	} 
+    .shop_with_sidebar .shop_items{
+        max-width: 460px;
+        margin: 0 auto 60px; 
+		 .more_btn{
+			margin-right: 0;
+		}
+    } 
+    .shop_with_sidebar .shop_single{
+        .shop_slide .indicators{
+            margin-top: 20px;
+             li{
+                width: calc(100%/4);
+            }
+        }
+        .interface .tags{
+            padding: 0;
+            padding-top: 40px;
+        }
+    } 
+    .general_communication .help_support .socail_icons li{
+        padding: 0 10px 20px !important;
+    }
+	.banner_a4 h2{
+		max-width: 400px;
+		padding-bottom: 50px;
+	}
+	.sia_4 {
+		padding: 0;
+		.tittle h2{
+			font-size: 20px;
+			line-height: 30px;
+		}
+	}
+	.da_3:after{
+		display: none;
+	}
+	.application_setup .st_2{
+		margin-left: 0;
+	}
+	.gt_2 .iphone{
+		max-width: 50%;
+		bottom: 0;
+	}
+	.email_us {
+		padding: 30px 20px;
+		h2{
+			font-size: 20px;
+			line-height: 30px;
+		}
+	}
+	.footer_2{
+		padding-top: 100px;
+	}
+}
+// Extra small devices (portrait phones, less than 576p)
+@media (max-width: 575px) {
+	.main_header_area .navbar .right_nav li .theme_btn{
+		display: none;
+	}
+	.digital_agency{
+		padding-top: 0;
+		.agency_left_text h2{
+			font-size: 25px;
+			line-height: 35px;
+		}
+	}
+	.countarup_area .years_fild {
+		text-align: center;
+		h4{
+			right: 0;
+			position: relative;
+			padding-bottom: 20px;
+		}
+		h1{
+			margin: 0 auto;
+			margin-bottom: 40px;
+			top: 0;
+		}
+	}
+	.footer_area{
+		 .footer_about{
+			padding-top: 50px;
+			padding-bottom: 0;
+		}
+		.suppoet_footer{
+			padding-top: 50px;
+			padding-bottom: 50px;
+		}
+	}
+	.seo_insights .insights_contant .list_line, .performance_optimized .list_line {
+		.icons{
+			float: none;
+		}
+		h4{
+			padding-left: 0;
+			display: block;
+		}
+	} 
+	.blog_posts_area .bp_item .blog_img{
+		margin-bottom: 20px;
+	}
+	.software_setup{
+		.software_text{
+			padding: 30px 15px; 
+			padding-top: 100px;
+		}
+		h2{
+			font-size: 25px;
+			line-height: 35px;
+			padding-bottom: 40px;
+		}
+	} 
+	.pages_banner {
+		padding-top: 150px;
+		h2{
+			font-size: 20px;
+			line-height: 30px;
+			max-width: 250px;
+		}
+	}
+	.portfolio_list .portfolio_row .pl_contant .heding{
+		font-size: 25px;
+		line-height: 35px;
+	}
+	.pagination_area .pagination li{
+		padding-left: 10px;
+	}
+	.portfolio .portfolio_filter li a{
+		margin: 0 10px;
+	}
+	.portfolio_single .prev_btn {
+		a{
+			margin: 0 auto;
+		}
+		.next{
+			float: none;
+		}
+	}
+	.related_posts{
+		text-align: center;
+	}
+	.team_p h2{
+		font-size: 25px;
+		line-height: 35px;
+		text-align: center;
+	}
+	.blog_single{
+		h2{
+			font-size: 25px;
+			line-height: 35px;
+		}
+		.blog_info {
+			.author_date{
+				float: none;
+			}
+			.social_share{
+				float: none;
+				padding-top: 30px;
+				display: block;
+				overflow: hidden;
+			}
+		}
+		.quote{
+			padding: 30px 20px;
+			font-size: 16px;
+			line-height: 28px;
+			i{
+				top: 0;
+				left: 10px;
+			}
+		}
+		.author{
+			display: block;
+			padding: 20px 15px;
+			.media-body{
+				padding-left: 0;
+				padding-top: 30px;
+			}
+		}
+		.comments_area {
+			.author{
+				padding: 20px 15px;
+				 .media-body{
+					padding-left: 0;
+				}
+			}
+			.author_r{
+				margin-left: 0;
+			}
+		}
+	} 
+	.leave_reply{
+		padding-top: 0;
+	} 
+	.faq_area .faq_item h4{
+		font-size: 18px;
+		line-height: 30px;
+	}
+	.coming_soon_area{
+		background-color: #8F49FF;
+		padding-bottom: 100px;
+		h2{
+			font-size: 40px;
+			padding-top: 80px;
+		}
+		p{
+			font-size: 18px;
+			line-height: 30px;
+		}
+	}
+	
+}
+
+// Extra small devices (portrait phones, less than 360p) 
+@media (max-width: 400px) {
+	.main_header_area .navbar .right_nav {
+		padding-left: 0;
+		li {
+			a{
+				margin: 0 5px;
+			}
+			.cart:after{
+				display: none;
+			}
+		}
+	}
+	.search_dropbown .dropdown-menu{
+		min-width: 240px !important;
+		margin-left: -190px !important;
+	}
+	.blog_list_area .blog_list .blog_contant{
+		padding: 30px 15px;
+	} 
+    .shop_with_sidebar .shop_single h2{
+        font-size: 20px;
+		line-height: 30px;
+    }
+    .shop_with_sidebar .shop_single .value_buy{
+        display: block;
+        .value-section{
+            display: block;
+            margin-bottom: 30px;
+        }
+        .theme_btn{
+            margin: 0;
+        }
+    }
+	.shop_with_sidebar .shop_single .interface .price .reting li span{
+		padding-left: 0;
+	}
+	.ta_3 .tittle h2{
+		font-size: 25px;
+		line-height: 35px;
+	}
+	.gt_2{
+		p{
+			font-size: 18px;
+		}
+		 .theme_btn{
+			min-width: 100%;
+			 margin: 0;
+		}
+	}
+}
+@media (max-width: 360px) {
+	.service_icon_area .single_box{
+		padding: 20px 15px;
+	}
+	.banner_a2 .theme_btn{
+		font-size: 14px;
+	}
+	.banner_area h2{
+		font-size: 20px;
+		line-height: 30px;
+	}
+	.blog_posts_area .bp_item .blog_contant a{
+		font-size: 18px;
+	}
+}
+
+
+

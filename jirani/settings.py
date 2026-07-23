@@ -107,7 +107,7 @@ DATABASES = {
 
 # DATABASES = {
 #     'default': dj_database_url.parse(
-#         env('POSTGRESQL_DB'),
+#         env('DATABASE_URL'),
 #         conn_max_age=600,
 #         conn_health_checks=True,
 #     )
@@ -133,12 +133,12 @@ DATABASES = {
 
 
 
-# SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
-# SESSION_COOKIE_SECURE = True  # Send session cookies only over HTTPS
-# CSRF_COOKIE_SECURE = True  # Send CSRF cookies only over HTTPS
-# SECURE_BROWSER_XSS_FILTER = True  # Enable browser XSS protection
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
-# SECURE_HSTS_PRELOAD = True  # Allow site to be included in browser preload lists
+SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
+SESSION_COOKIE_SECURE = True  # Send session cookies only over HTTPS
+CSRF_COOKIE_SECURE = True  # Send CSRF cookies only over HTTPS
+SECURE_BROWSER_XSS_FILTER = True  # Enable browser XSS protection
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
+SECURE_HSTS_PRELOAD = True  # Allow site to be included in browser preload lists
 
 
 # Password validation
@@ -174,54 +174,14 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-STORAGES = {
-    "default": {
-        "BACKEND": "jirani.storage_backends.MediaStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-    },
-}
 
-# DigitalOcean Spaces credentials
-AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
-
-# Bucket/Space name
-AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
-
-# Region + endpoint
-AWS_S3_REGION_NAME = "fra1"
-AWS_S3_ENDPOINT_URL = "https://fra1.digitaloceanspaces.com"
-
-# CDN domain
-AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.fra1.cdn.digitaloceanspaces.com"
-
-# REQUIRED for Spaces uploads
-AWS_S3_ADDRESSING_STYLE = "virtual"
-
-# File settings
-AWS_DEFAULT_ACL = "public-read"
-AWS_QUERYSTRING_AUTH = False
-
-AWS_S3_OBJECT_PARAMETERS = {
-    "CacheControl": "max-age=86400",
-    "ACL": "public-read",
-}
-
-# MEDIA FILES
-MEDIA_LOCATION = "media"
-
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIA_LOCATION}/"
-
-# REQUIRED fallback compatibility
-DEFAULT_FILE_STORAGE = "jirani.storage_backends.MediaStorage"
-
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_URL = 'media/'
 
-
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -273,7 +233,6 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 
 # accounting variable 
-CARGO_PHONE =env('CARGO_PHONE')
 PAYMENT_RECEIVING_MPESA_NUMBER=env('PAYMENT_RECEIVING_MPESA_NUMBER')
 PAYMENT_RECEIVING_BANK_ACCOUNT_NUMBER =env('PAYMENT_RECEIVING_BANK_ACCOUNT_NUMBER')
 
