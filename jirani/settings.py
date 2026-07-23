@@ -113,26 +113,6 @@ DATABASES = {
     )
 }
 
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE'  : 'django.db.backends.mysql',
-#         'NAME': env('NAME'),
-#         'USER': env('USER'),
-#         'PASSWORD': env('PASSWORD'),      
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#         "OPTIONS": {
-#             "init_command": 'SET time_zone = "+03:00"'
-#         }
-#         # 'OPTIONS': {
-#         #     'init_command': "SET sql_mode='STRICT_TRANS_TABLES'; SET time_zone = \"+03:00\";"
-#         # }
-#     }
-# }
-
-
-
 SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
 SESSION_COOKIE_SECURE = True  # Send session cookies only over HTTPS
 CSRF_COOKIE_SECURE = True  # Send CSRF cookies only over HTTPS
