@@ -164,6 +164,31 @@ USE_TZ = True
 #     },
 # }
 
+# DigitalOcean Spaces credentials
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
+
+# Bucket/Space name
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
+
+# Region + endpoint
+AWS_S3_REGION_NAME = "fra1"
+AWS_S3_ENDPOINT_URL = "https://fra1.digitaloceanspaces.com"
+
+# CDN domain
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.fra1.cdn.digitaloceanspaces.com"
+
+# REQUIRED for Spaces uploads
+AWS_S3_ADDRESSING_STYLE = "virtual"
+
+# File settings
+AWS_DEFAULT_ACL = "public-read"
+AWS_QUERYSTRING_AUTH = False
+
+AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=86400",
+    "ACL": "public-read",
+}
 
 
 
