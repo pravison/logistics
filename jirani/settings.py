@@ -155,6 +155,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "jirani.storage_backends.MediaStorage",
+#     },
+#     "staticfiles": {
+#         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+#     },
+# }
+
+
+
+
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -213,6 +225,7 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 
 # accounting variable 
+CARGO_PHONE =env('CARGO_PHONE')
 PAYMENT_RECEIVING_MPESA_NUMBER=env('PAYMENT_RECEIVING_MPESA_NUMBER')
 PAYMENT_RECEIVING_BANK_ACCOUNT_NUMBER =env('PAYMENT_RECEIVING_BANK_ACCOUNT_NUMBER')
 
