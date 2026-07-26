@@ -562,7 +562,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (data.status === "PROCESSED" || data.status === "EXTRA_PAID") {
                     clearInterval(interval);
-                    setTimeout(() => window.location.reload(), 3000);
+                   setTimeout(() => {
+                        window.location.href = "{% url 'parcel_receipt' dispatch.id %}";
+                    }, 3000);
                     return;
                 }
 

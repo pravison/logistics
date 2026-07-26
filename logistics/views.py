@@ -118,11 +118,11 @@ def calculate_package_cost(package):
 
     # Fragile
     if package.is_fragile:
-        cost += Decimal("200")
+        cost += Decimal("50")
 
     # Spill prone
     if package.is_spill_prone:
-        cost += Decimal("80")
+        cost += Decimal("50")
 
     # Quantity
     if package.quantity > 1:
@@ -248,7 +248,7 @@ def book_parcel(request):
 
             package_type=request.POST.get("packaging_type"),
 
-            weight=request.POST.get("package_type"),
+            weight=request.POST.get("package_weight"),
 
             contents=request.POST.get("whats_in_the_package"),
 
