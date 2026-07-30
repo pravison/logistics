@@ -278,9 +278,9 @@ def login_user(request):
         
         if user is not None:
             login(request, user)
-
+            print(request.user.is_authenticated)  # Should be True
             messages.success(request, 'Welcome, you have been logged in!')
-            return redirect(next_url or 'all_Wholesale_products')
+            return redirect(next_url or 'index')
      
         messages.error(request, "your password is incorrect")
         messages.success(request, "if you don't remember click forget password to reset")

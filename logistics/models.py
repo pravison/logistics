@@ -71,6 +71,7 @@ class PackageDispatch(models.Model):
     sending_agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="sending_agent")
 
     receiving_customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL, related_name="receiving_customer")
+    receiver_identification_code = models.CharField()
     receiving_agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="receiving_agent")
 
     total_transport_cost = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
@@ -80,7 +81,7 @@ class PackageDispatch(models.Model):
 
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="OPEN")
 
-
+    
     arrived_at_the_sending_agent = models.BooleanField(default=False)
     date_arrived_at_the_sending_agent = models.DateTimeField( blank=True, null=True)
     

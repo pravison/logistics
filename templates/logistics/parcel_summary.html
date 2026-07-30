@@ -401,6 +401,11 @@ Your parcel tracking number has been created successfully.
 Proceed with payment to receive your receipt and allow your parcel to be processed for dispatch.
 
 </div>
+{% if dispatch.fully_paid %}
+<div class="d-flex gap-2 text-right mt-2">
+    <a class="btn btn-success" href="{% url 'parcel_receipt' dispatch.id %}">view receipt</a>
+</div>
+{% else %}
 <div class="d-flex gap-2 text-right mt-2">
     <button
         type="button"
@@ -415,7 +420,7 @@ Proceed with payment to receive your receipt and allow your parcel to be process
         Pay from M-Pesa
     </button>
 </div>
-
+{% endif %}
 
 </div>
 
