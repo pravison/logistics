@@ -23,7 +23,7 @@ from accounts.views import generate_unique_refferal_code
 # pricing.py
 
 
-@login_required
+@login_required(login_url="/accounts/login-user/")
 @transaction.atomic
 def create_agent_dispatch(request):
 
@@ -312,7 +312,7 @@ def parcel_summary_details(request, dispatch_id):
     )
 
 @login_required
-@user_passes_test(lambda u: u.is_staff, login_url='login')  # Restricts access strictly to staff users
+@user_passes_test(lambda u: u.is_staff, login_url='login_user')  # Restricts access strictly to staff users
 def parcel_receipt_view(request, pk):
     # Fetch the dispatch object or return a 404 error if it doesn't exist
     dispatch = get_object_or_404(PackageDispatch, pk=pk)
