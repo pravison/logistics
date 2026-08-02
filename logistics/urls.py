@@ -15,4 +15,7 @@ urlpatterns = [
     path('agent-dispatch-detail/<int:pk>', views.agent_dispatch_detail, name='agent_dispatch_detail'),
     path('package-dispatch-detail/<int:pk>', views.package_dispatch_detail, name='package_dispatch_detail'),
     path('package-dispatch-list', views.package_dispatch_list, name='package_dispatch_list'),
+
+    path('customer-received-packages', views.customer_received_packages, name='customer_received_packages'),
+    path('customer-send-packages', views.customer_send_packages, name='customer_send_packages'),
 ]

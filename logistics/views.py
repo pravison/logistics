@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required,  user_passes_test
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from decimal import Decimal
 from django.db.models import Sum
@@ -19,6 +20,7 @@ from agents.models import County, Location, Agent
 from accounts.views import format_kenyan_phone_number
 
 from django.db import transaction
+
 # pricing.py
 
 
@@ -602,62 +604,78 @@ def order_dispatch_detail(request, dispatch_id):
     return render(request, "logistics/order_dispatch_detail.html", context)
 
 
-
-
+@login_required(login_url="/accounts/login-user/")
 def agent_dispatch_list(request):
-  dispatches = AgentDispatch.objects.select_related(
-      'agent', 'agent__location', 'agent__location__county'
-  ).all()
-
-  # Search filter (searches agent shop name, delivery address, phone, or vehicle)
-  search_query = request.GET.get('search', '')
-  if search_query:
-    dispatches = dispatches.filter(
-        Q(agent__shop_name__icontains=search_query)
-        | Q(delivery_address__icontains=search_query)
-        | Q(delivery_phone__icontains=search_query)
-        | Q(vehicle_used__icontains=search_query)
+    # Base queryset
+    dispatches = AgentDispatch.objects.select_related(
+        "agent",
+        "agent__location",
+        "agent__location__county",
     )
 
-  # County filter
-  county_id = request.GET.get('county', '')
-  if county_id:
-    dispatches = dispatches.filter(agent__location__county_id=county_id)
+    # Permission check
+    if request.user.is_staff:
+        pass  # Staff see all dispatches
+    else:
+        try:
+            agent = request.user.agent
+            dispatches = dispatches.filter(agent=agent)
+        except Agent.DoesNotExist:
+            messages.error(request, "Permission to visit page denied")
+            return redirect("index")
 
-  # Location filter
-  location_id = request.GET.get('location', '')
-  if location_id:
-    dispatches = dispatches.filter(agent__location_id=location_id)
+    # Search filter
+    search_query = request.GET.get("search", "").strip()
+    if search_query:
+        dispatches = dispatches.filter(
+            Q(agent__shop_name__icontains=search_query)
+            | Q(delivery_address__icontains=search_query)
+            | Q(delivery_phone__icontains=search_query)
+            | Q(vehicle_used__icontains=search_query)
+        )
 
-  # Status filter
-  status = request.GET.get('status', '')
-  if status:
-    dispatches = dispatches.filter(status=status)
+    # County filter
+    county_id = request.GET.get("county", "")
+    if county_id:
+        dispatches = dispatches.filter(agent__location__county_id=county_id)
 
-  # Boolean flag filters
-  if request.GET.get('send') == '1':
-    dispatches = dispatches.filter(dispatch_send=True)
-  if request.GET.get('picked') == '1':
-    dispatches = dispatches.filter(all_luggages_picked=True)
-  if request.GET.get('arrived') == '1':
-    dispatches = dispatches.filter(arrived_at_the_receiving_agent=True)
+    # Location filter
+    location_id = request.GET.get("location", "")
+    if location_id:
+        dispatches = dispatches.filter(agent__location_id=location_id)
 
-  counties = County.objects.all()
-  locations = (
-      Location.objects.filter(county_id=county_id) if county_id else []
-  )
+    # Status filter
+    status = request.GET.get("status", "")
+    if status:
+        dispatches = dispatches.filter(status=status)
 
-  context = {
-      'dispatches': dispatches,
-      'counties': counties,
-      'locations': locations,
-      'selected_county': county_id,
-      'selected_location': location_id,
-      'selected_status': status,
-      'search_query': search_query,
-  }
-  return render(request, 'logistics/agent_dispatch_list.html', context)
+    # Boolean filters
+    if request.GET.get("send") == "1":
+        dispatches = dispatches.filter(dispatch_send=True)
 
+    if request.GET.get("picked") == "1":
+        dispatches = dispatches.filter(all_luggages_picked=True)
+
+    if request.GET.get("arrived") == "1":
+        dispatches = dispatches.filter(arrived_at_the_receiving_agent=True)
+
+    # Order by newest first
+    dispatches = dispatches.order_by("-created_at")
+
+    counties = County.objects.all()
+    locations = Location.objects.filter(county_id=county_id) if county_id else Location.objects.none()
+
+    context = {
+        "dispatches": dispatches,
+        "counties": counties,
+        "locations": locations,
+        "selected_county": county_id,
+        "selected_location": location_id,
+        "selected_status": status,
+        "search_query": search_query,
+    }
+
+    return render(request, "logistics/agent_dispatch_list.html", context)
 
 
 def agent_dispatch_detail(request, pk):
@@ -707,10 +725,6 @@ def agent_dispatch_detail(request, pk):
       'packages': packages,
   }
   return render(request, 'logistics/agent_dispatch_detail.html', context)
-
-from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
-from .models import PackageDispatch
 
 
 def package_dispatch_detail(request, pk):
@@ -778,6 +792,23 @@ def package_dispatch_list(request):
       'agent_dispatch',
   ).all()
 
+  # Authorization
+  if request.user.is_staff:
+    # Staff can see everything
+    pass
+  else:
+    try:
+        agent = request.user.agent
+    except Agent.DoesNotExist:
+        messages.error(request, "Permission to visit page denied")
+        return redirect("index")
+
+    # Agent only sees packages they are involved in
+    dispatches = dispatches.filter(
+        Q(sending_agent=agent) |
+        Q(receiving_agent=agent)
+    )
+
   # Search query (by delivery phone, package dispatch id, or customer/agent details)
   search_query = request.GET.get('search', '')
   if search_query:
@@ -823,3 +854,194 @@ def package_dispatch_list(request):
       'selected_payment': payment_filter,
   }
   return render(request, 'logistics/package_dispatch_list.html', context)
+
+
+@login_required(login_url="/accounts/login-user/")
+def customer_received_packages(request):
+    # Base queryset
+    dispatches = (
+        PackageDispatch.objects.select_related(
+            "sending_customer",
+            "receiving_customer",
+            "sending_agent",
+            "receiving_agent",
+            "agent_dispatch",
+        )
+        .order_by("-created_at")
+    )
+
+    # Permissions
+    
+    try:
+        customer = request.user.customer
+    except Exception:
+        messages.error(request, "Permission to visit page denied")
+        return redirect("index")
+        
+
+    dispatches = dispatches.filter(receiving_customer=customer)
+
+    # ----------------------------
+    # Search
+    # ----------------------------
+    search = request.GET.get("search", "").strip()
+
+    if search:
+        dispatches = dispatches.filter(
+            Q(id__icontains=search)
+            | Q(delivery_phone__icontains=search)
+            | Q(receiver_identification_code__icontains=search)
+            | Q(sending_agent__shop_name__icontains=search)
+            | Q(receiving_agent__shop_name__icontains=search)
+        )
+
+    # ----------------------------
+    # Status
+    # ----------------------------
+    status = request.GET.get("status", "")
+
+    if status:
+        dispatches = dispatches.filter(status=status)
+
+    # ----------------------------
+    # Date filtering
+    # ----------------------------
+    date_type = request.GET.get("date_type", "")
+    from_date = request.GET.get("from_date", "")
+    to_date = request.GET.get("to_date", "")
+
+    field_map = {
+        "created": "created_at",
+        "received": "date_arrived_at_the_sending_agent",
+        "packed": "date_packed_by_the_sending_agent",
+        "sent": "sent_at",
+        "picked": "date_picked_picked_by_receiving_customer",
+    }
+
+    field = field_map.get(date_type)
+
+    if field:
+        if from_date:
+            dispatches = dispatches.filter(**{f"{field}__date__gte": from_date})
+
+        if to_date:
+            dispatches = dispatches.filter(**{f"{field}__date__lte": to_date})
+
+    # Filter by payment status
+    payment_filter = request.GET.get('payment', '')
+    if payment_filter == 'paid':
+        dispatches = dispatches.filter(fully_paid=True)
+    elif payment_filter == 'pending':
+        dispatches = dispatches.filter(fully_paid=False)
+
+    context = {
+        "dispatches": dispatches,
+        "search_query": search,
+        "selected_status": status,
+        "selected_date_type": date_type,
+        "from_date": from_date,
+        "to_date": to_date,
+        "status_choices": PackageDispatch.STATUS_CHOICES,
+    }
+
+    return render(
+        request,
+        "logistics/customer_received_packages.html",
+        context,
+    )
+
+
+
+@login_required(login_url="/accounts/login-user/")
+def customer_send_packages(request):
+    # Base queryset
+    dispatches = (
+        PackageDispatch.objects.select_related(
+            "sending_customer",
+            "receiving_customer",
+            "sending_agent",
+            "receiving_agent",
+            "agent_dispatch",
+        )
+        .order_by("-created_at")
+    )
+
+    # Permissions
+    
+    try:
+        customer = request.user.customer
+    except Exception:
+        messages.error(request, "Permission to visit page denied")
+        return redirect("index")
+        
+
+    dispatches = dispatches.filter(sending_customer=customer)
+
+    # ----------------------------
+    # Search
+    # ----------------------------
+    search = request.GET.get("search", "").strip()
+
+    if search:
+        dispatches = dispatches.filter(
+            Q(id__icontains=search)
+            | Q(delivery_phone__icontains=search)
+            | Q(receiver_identification_code__icontains=search)
+            | Q(sending_agent__shop_name__icontains=search)
+            | Q(receiving_agent__shop_name__icontains=search)
+        )
+
+    # ----------------------------
+    # Status
+    # ----------------------------
+    status = request.GET.get("status", "")
+
+    if status:
+        dispatches = dispatches.filter(status=status)
+
+    # ----------------------------
+    # Date filtering
+    # ----------------------------
+    date_type = request.GET.get("date_type", "")
+    from_date = request.GET.get("from_date", "")
+    to_date = request.GET.get("to_date", "")
+
+    field_map = {
+        "created": "created_at",
+        "received": "date_arrived_at_the_sending_agent",
+        "packed": "date_packed_by_the_sending_agent",
+        "sent": "sent_at",
+        "picked": "date_picked_picked_by_receiving_customer",
+    }
+
+    field = field_map.get(date_type)
+
+    if field:
+        if from_date:
+            dispatches = dispatches.filter(**{f"{field}__date__gte": from_date})
+
+        if to_date:
+            dispatches = dispatches.filter(**{f"{field}__date__lte": to_date})
+
+    # Filter by payment status
+    payment_filter = request.GET.get('payment', '')
+    if payment_filter == 'paid':
+        dispatches = dispatches.filter(fully_paid=True)
+    elif payment_filter == 'pending':
+        dispatches = dispatches.filter(fully_paid=False)
+
+    context = {
+        "dispatches": dispatches,
+        "search_query": search,
+        "selected_status": status,
+        "selected_date_type": date_type,
+        "from_date": from_date,
+        "to_date": to_date,
+        "status_choices": PackageDispatch.STATUS_CHOICES,
+    }
+
+    return render(
+        request,
+        "logistics/customer_send_packages.html",
+        context,
+    )

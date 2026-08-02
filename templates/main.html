@@ -284,6 +284,12 @@
                 <a class="nav-link text-white" href="{% url 'agent_dispatch_list' %}">Agent Dispatch List</a>
             </li>
             <li class="nav-item mb-2">
+                <a class="nav-link text-white" href="{% url 'customer_received_packages' %}">Received Packages </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-white" href="{% url 'customer_send_packages' %}">Send Packages </a>
+            </li>
+            <li class="nav-item mb-2">
                 <hr class="border-secondary">
             </li>
             {% if request.user.is_authenticated %}

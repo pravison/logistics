@@ -1,0 +1,263 @@
+{% extends 'main.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %} Received Package Dispatches {% endblock %}
+
+{% block content %}
+<style>
+    section { min-height: 100vh; }
+    .card { border: none; border-radius: 16px; margin-bottom: 20px; }
+    .section-title { font-size: 0.9rem; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 15px; }
+    .form-label { font-weight: 600; color: #333; margin-top: 5px; font-size: 0.85rem; }
+    .form-control, .form-select { border-radius: 8px; padding: 10px; font-size: 0.9rem; }
+    .table-container { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); }
+    .badge-status { padding: 6px 12px; font-weight: 600; border-radius: 6px; font-size: 0.75rem; text-transform: uppercase; }
+</style>
+
+<section class="get_touch_area py-4">
+<div class="container from_area">
+    
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0 fw-bold">Received Package Dispatches</h4>
+        <span class="badge bg-primary px-3 py-2">Management</span>
+    </div>
+
+    <!-- FILTER & SEARCH FORM -->
+    <!-- FILTER & SEARCH FORM -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body p-4">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-funnel me-2"></i>
+                    Filter Received Packages
+                </h5>
+            </div>
+
+            <form method="GET" class="row g-3">
+
+                <!-- Search -->
+                <div class="col-lg-12">
+                    <label class="form-label fw-semibold">Search</label>
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ search_query }}"
+                        class="form-control"
+                        placeholder="Package ID, phone, identification code..."
+                    >
+                </div>
+
+                <!-- Status -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        {% for value,label in status_choices %}
+                        <option value="{{ value }}"
+                            {% if value == selected_status %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Payment -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold">Payment</label>
+                    <select name="payment" class="form-select">
+                        <option value="">All Payments</option>
+                        <option value="paid" {% if selected_payment == "paid" %}selected{% endif %}>
+                            Fully Paid
+                        </option>
+                        <option value="pending" {% if selected_payment == "pending" %}selected{% endif %}>
+                            Pending Balance
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Date Type -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold">Filter Date</label>
+                    <select name="date_type" class="form-select">
+                        <option value="">Choose Date</option>
+                        <option value="created" {% if selected_date_type == "created" %}selected{% endif %}>Created</option>
+                        <option value="received" {% if selected_date_type == "received" %}selected{% endif %}>Received</option>
+                        <option value="packed" {% if selected_date_type == "packed" %}selected{% endif %}>Packed</option>
+                        <option value="sent" {% if selected_date_type == "sent" %}selected{% endif %}>Sent</option>
+                        <option value="picked" {% if selected_date_type == "picked" %}selected{% endif %}>Picked</option>
+                    </select>
+                </div>
+
+                <!-- From -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold">From</label>
+                    <input
+                        type="date"
+                        name="from_date"
+                        value="{{ from_date }}"
+                        class="form-control">
+                </div>
+
+                <!-- To -->
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold">To</label>
+                    <input
+                        type="date"
+                        name="to_date"
+                        value="{{ to_date }}"
+                        class="form-control">
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+
+                    <a href="{% url 'customer_received_packages' %}"
+                    class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                        Reset
+                    </a>
+
+                    <button type="submit" class="btn btn-dark px-4">
+                        <i class="bi bi-search me-1"></i>
+                        Apply Filters
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+    <!-- PACKAGE DISPATCHES LIST: MOBILE-FIRST CARD & DESKTOP TABLE HYBRID -->
+    <div class="dispatches-container shadow-sm p-3 mb-4 bg-white rounded">
+        <div class="section-title fw-bold fs-5 mb-3">Received Package Records</div>
+
+        {% for pkg_dispatch in dispatches %}
+        <!-- MOBILE CARD VIEW (Visible only on small screens) -->
+        <div class="card border-0 shadow-sm mb-3 d-md-none rounded-3 overflow-hidden border-start border-4 
+            {% if pkg_dispatch.status == 'OPEN' %}border-secondary
+            {% elif pkg_dispatch.status == 'SENT' %}border-info
+            {% elif pkg_dispatch.status == 'ON_ROAD' %}border-warning
+            {% elif pkg_dispatch.status == 'ARRIVED' %}border-primary
+            {% elif pkg_dispatch.status == 'PICKED' %}border-success{% endif %}">
+            <div class="card-body p-3">
+                
+                <!-- Top Row: ID, Payment Status & Dispatch Status -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small font-monospace">#{{ pkg_dispatch.id }}</span>
+                    <div class="d-flex align-items-center gap-1">
+                        {% if pkg_dispatch.fully_paid %}
+                            <span class="badge bg-success bg-opacity-15 text-success small">Paid</span>
+                        {% else %}
+                            <span class="badge bg-warning bg-opacity-20 text-dark small">Pending</span>
+                        {% endif %}
+                        <span class="badge 
+                            {% if pkg_dispatch.status == 'OPEN' %}bg-secondary text-white
+                            {% elif pkg_dispatch.status == 'SENT' %}bg-info text-dark
+                            {% elif pkg_dispatch.status == 'ON_ROAD' %}bg-warning text-dark
+                            {% elif pkg_dispatch.status == 'ARRIVED' %}bg-primary text-white
+                            {% elif pkg_dispatch.status == 'PICKED' %}bg-success text-white{% endif %}">
+                            {{ pkg_dispatch.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Route Details: Sending to Receiving Agent -->
+                <div class="bg-light p-2.5 rounded-2 mb-2 small">
+                    <div class="mb-2">
+                        <span class="text-muted text-uppercase fs-xxs d-block fw-bold">From:</span>
+                        <div class="fw-bold text-dark">{{ pkg_dispatch.sending_agent.shop_name|default:"N/A" }}</div>
+                        <div class="text-muted">Cust: {{ pkg_dispatch.sending_customer.username|default:"Walk-in" }}</div>
+                    </div>
+                    <hr class="my-1.5 opacity-15">
+                    <div>
+                        <span class="text-muted text-uppercase fs-xxs d-block fw-bold">To:</span>
+                        <div class="fw-bold text-dark">{{ pkg_dispatch.receiving_agent.shop_name|default:"N/A" }}</div>
+                        <div class="text-muted">Cust: {{ pkg_dispatch.receiving_customer.username|default:"N/A" }}</div>
+                    </div>
+                </div>
+
+                <!-- Delivery Phone -->
+                <div class="small text-secondary mb-3">
+                    <strong>Delivery Phone:</strong> 
+                    {% if pkg_dispatch.delivery_phone %}
+                        <a href="tel:{{ pkg_dispatch.delivery_phone }}" class="text-decoration-none text-dark fw-medium">{{ pkg_dispatch.delivery_phone }}</a>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+
+                <!-- Action Button (Full Width for thumb usability) -->
+                <div>
+                    <a href="{% url 'package_dispatch_detail' pkg_dispatch.id %}" class="btn btn-dark btn-sm w-100 py-2 rounded-2 fw-medium">
+                        View Package Details <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+            No package dispatches found matching your search or filters.
+        </div>
+        {% endfor %}
+
+        <!-- DESKTOP TABLE VIEW (Hidden on mobile, visible on medium screens and up) -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#ID</th>
+                        <th>Sending Agent</th>
+                        <th>Receiving Agent</th>
+                        <th>Delivery Phone</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pkg_dispatch in dispatches %}
+                    <tr>
+                        <td><strong>#{{ pkg_dispatch.id }}</strong></td>
+                        <td>
+                            <div class="fw-bold">{{ pkg_dispatch.sending_agent.shop_name|default:"N/A" }}</div>
+                            <small class="text-muted">Cust: {{ pkg_dispatch.sending_customer.username|default:"Walk-in" }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-bold">{{ pkg_dispatch.receiving_agent.shop_name|default:"N/A" }}</div>
+                            <small class="text-muted">Cust: {{ pkg_dispatch.receiving_customer.username|default:"N/A" }}</small>
+                        </td>
+                        <td>{{ pkg_dispatch.delivery_phone|default:"N/A" }}</td>
+                        <td>
+                            {% if pkg_dispatch.fully_paid %}
+                                <span class="badge bg-success">Paid</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if pkg_dispatch.status == 'OPEN' %}bg-secondary text-white
+                                {% elif pkg_dispatch.status == 'SENT' %}bg-info text-dark
+                                {% elif pkg_dispatch.status == 'ON_ROAD' %}bg-warning text-dark
+                                {% elif pkg_dispatch.status == 'ARRIVED' %}bg-primary text-white
+                                {% elif pkg_dispatch.status == 'PICKED' %}bg-success text-white{% endif %}">
+                                {{ pkg_dispatch.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'package_dispatch_detail' pkg_dispatch.id %}" class="btn btn-sm btn-outline-dark">View More</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</section>
+{% endblock %}

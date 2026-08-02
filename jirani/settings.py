@@ -113,12 +113,12 @@ DATABASES = {
     )
 }
 
-# SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
-# SESSION_COOKIE_SECURE = True  # Send session cookies only over HTTPS
-# CSRF_COOKIE_SECURE = True  # Send CSRF cookies only over HTTPS
-# SECURE_BROWSER_XSS_FILTER = True  # Enable browser XSS protection
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
-# SECURE_HSTS_PRELOAD = True  # Allow site to be included in browser preload lists
+SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
+SESSION_COOKIE_SECURE = True  # Send session cookies only over HTTPS
+CSRF_COOKIE_SECURE = True  # Send CSRF cookies only over HTTPS
+SECURE_BROWSER_XSS_FILTER = True  # Enable browser XSS protection
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
+SECURE_HSTS_PRELOAD = True  # Allow site to be included in browser preload lists
 
 
 # Password validation
