@@ -106,8 +106,8 @@
                     <tr>
                         <td><strong>#{{ pkg.id }}</strong></td>
                         <td>
-                            <div><strong>Sender:</strong> {{ pkg.sending_customer.username|default:"Walk-in / Guest" }}</div>
-                            <small class="text-muted"><strong>Receiver:</strong> {{ pkg.receiving_customer.username|default:pkg.delivery_phone|default:"N/A" }}</small>
+                            <div><strong>Sender:</strong> {{ pkg.sending_customer|default:"Walk-in / Guest" }}</div>
+                            <small class="text-muted"><strong>Receiver:</strong> {{ pkg.receiving_customer|default:pkg.delivery_phone|default:"N/A" }}</small>
                         </td>
                         <td>
                             {% if pkg.fully_paid %}

@@ -129,7 +129,7 @@
                 <div class="mb-2">
                     <div class="fw-bold text-dark fs-6">{{ dispatch.agent.shop_name }}</div>
                     <small class="text-muted d-flex align-items-center gap-1">
-                        <i class="bi bi-geo-alt"></i> {{ dispatch.agent.location.name }}, {{ dispatch.agent.location.county.name }}
+                        <i class="bi bi-geo-alt"></i> {{ dispatch.agent.location}}, {{ dispatch.agent.location.county }}
                     </small>
                 </div>
 
@@ -184,7 +184,7 @@
                         <td><strong>#{{ dispatch.id }}</strong></td>
                         <td>
                             <div class="fw-bold">{{ dispatch.agent.shop_name }}</div>
-                            <small class="text-muted">{{ dispatch.agent.location.name }}, {{ dispatch.agent.location.county.name }}</small>
+                            <small class="text-muted">{{ dispatch.agent.location }}, {{ dispatch.agent.location.county }}</small>
                         </td>
                         <td>{{ dispatch.delivery_address|default:"N/A" }}</td>
                         <td>{{ dispatch.delivery_phone|default:"N/A" }}</td>

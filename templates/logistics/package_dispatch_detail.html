@@ -43,22 +43,22 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <div class="info-label">Sending Customer</div>
-                    <div class="info-value">{{ package_dispatch.sending_customer.username|default:"Walk-in / Guest" }}</div>
+                    <div class="info-value">{{ package_dispatch.sending_customer|default:"Walk-in / Guest" }}</div>
                 </div>
                 <div class="col-md-6">
                     <div class="info-label">Receiving Customer / Phone</div>
-                    <div class="info-value">{{ package_dispatch.receiving_customer.username|default:"N/A" }}</div>
+                    <div class="info-value">{{ package_dispatch.receiving_customer|default:"N/A" }}</div>
                     <small class="text-muted"><i class="fa fa-phone"></i> {{ package_dispatch.delivery_phone|default:"No phone provided" }}</small>
                 </div>
                 <div class="col-md-6 mt-3">
                     <div class="info-label">Sending Agent Shop</div>
                     <div class="info-value">{{ package_dispatch.sending_agent.shop_name|default:"N/A" }}</div>
-                    <small class="text-muted">{{ package_dispatch.sending_agent.location.name|default:"" }}</small>
+                    <small class="text-muted">{{ package_dispatch.sending_agent|default:"" }}</small>
                 </div>
                 <div class="col-md-6 mt-3">
                     <div class="info-label">Receiving Agent Shop</div>
                     <div class="info-value">{{ package_dispatch.receiving_agent.shop_name|default:"N/A" }}</div>
-                    <small class="text-muted">{{ package_dispatch.receiving_agent.location.name|default:"" }}</small>
+                    <small class="text-muted">{% if package_dispatch.receiving_agent %}{{ package_dispatch.receiving_agent}} {% else %} {{package_dispatch.delivery_address}} {% endif %}</small>
                 </div>
             </div>
         </div>
@@ -77,6 +77,7 @@
                     <div class="info-label">Amount Paid</div>
                     <div class="info-value">KES {{ package_dispatch.amount_paid|floatformat:2|intcomma }}</div>
                 </div>
+                
                 <div class="col-md-4">
                     <div class="info-label">Payment Status</div>
                     <div class="info-value">
@@ -86,6 +87,12 @@
                         {% else %}
                             <span class="badge bg-warning text-dark">Pending Balance</span>
                         {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-label">Parcel Summary</div>
+                    <div class="info-value">
+                    <a href="{% url 'parcel_summary_details' package_dispatch.id %}" class="text-decoration-none text-muted fw-bold mb-1 d-block" style="font-size: 0.85rem;"><i class="fa fa-arrow-left"></i> &larr; view parcel summary</a>
                     </div>
                 </div>
             </div>

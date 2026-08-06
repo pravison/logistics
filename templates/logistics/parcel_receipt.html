@@ -335,7 +335,7 @@ Package(s) Details
 
 <div class="row-item">
     <div class="label">Total Paid</div>
-    <div class="value">KES {{ dispatch.total_transport_cost|intcomma }}</div>
+    <div class="value">KES {{ dispatch.amount_paid|intcomma }}/{{ dispatch.total_transport_cost|intcomma }}</div>
 </div>
 
 <div class="footer">

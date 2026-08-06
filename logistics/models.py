@@ -57,6 +57,7 @@ class AgentDispatch(models.Model):
 class PackageDispatch(models.Model):
     STATUS_CHOICES = (
         ("OPEN", "Open"),
+        ("PACKED", "Packed"),
         ("SENT", "Sent"),
         ("ON_ROAD", "On Road"),
         ("ARRIVED", "Arrived"),
@@ -66,6 +67,7 @@ class PackageDispatch(models.Model):
     agent_dispatch = models.ForeignKey(AgentDispatch, on_delete=models.CASCADE, related_name="agent_dispatches", blank=True, null=True)
 
     delivery_phone = models.CharField(max_length=20, blank=True, null=True)
+    delivery_address = models.CharField(max_length=20, blank=True, null=True)
 
     sending_customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL, related_name="sending_customer")
     sending_agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="sending_agent")
@@ -173,6 +175,7 @@ class Package(models.Model):
         on_delete=models.CASCADE,
         related_name="packages",
     )
+    sending_customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL, related_name="package_sending_customer")
 
     package_type = models.CharField(
         max_length=20,

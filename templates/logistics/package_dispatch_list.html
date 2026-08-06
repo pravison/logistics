@@ -129,13 +129,13 @@
                     <div class="mb-2">
                         <span class="text-muted text-uppercase fs-xxs d-block fw-bold">From:</span>
                         <div class="fw-bold text-dark">{{ pkg_dispatch.sending_agent.shop_name|default:"N/A" }}</div>
-                        <div class="text-muted">Cust: {{ pkg_dispatch.sending_customer.username|default:"Walk-in" }}</div>
+                        <div class="text-muted">Cust: {{ pkg_dispatch.sending_customer|default:"Walk-in" }}</div>
                     </div>
                     <hr class="my-1.5 opacity-15">
                     <div>
                         <span class="text-muted text-uppercase fs-xxs d-block fw-bold">To:</span>
                         <div class="fw-bold text-dark">{{ pkg_dispatch.receiving_agent.shop_name|default:"N/A" }}</div>
-                        <div class="text-muted">Cust: {{ pkg_dispatch.receiving_customer.username|default:"N/A" }}</div>
+                        <div class="text-muted">Cust: {{ pkg_dispatch.receiving_customer|default:"N/A" }}</div>
                     </div>
                 </div>
 
@@ -183,12 +183,12 @@
                     <tr>
                         <td><strong>#{{ pkg_dispatch.id }}</strong></td>
                         <td>
-                            <div class="fw-bold">{{ pkg_dispatch.sending_agent.shop_name|default:"N/A" }}</div>
-                            <small class="text-muted">Cust: {{ pkg_dispatch.sending_customer.username|default:"Walk-in" }}</small>
+                            <div class="fw-bold">{{ pkg_dispatch.sending_agent|default:"N/A" }}</div>
+                            <small class="text-muted">Cust: {{ pkg_dispatch.sending_customer|default:"Walk-in" }}</small>
                         </td>
                         <td>
-                            <div class="fw-bold">{{ pkg_dispatch.receiving_agent.shop_name|default:"N/A" }}</div>
-                            <small class="text-muted">Cust: {{ pkg_dispatch.receiving_customer.username|default:"N/A" }}</small>
+                            <div class="fw-bold">{{ pkg_dispatch.receiving_agent|default:"N/A" }}</div>
+                            <small class="text-muted">Cust: {{ pkg_dispatch.receiving_customer|default:"N/A" }}</small>
                         </td>
                         <td>{{ pkg_dispatch.delivery_phone|default:"N/A" }}</td>
                         <td>

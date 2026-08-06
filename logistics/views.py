@@ -103,7 +103,7 @@ def calculate_package_cost(package):
     Replace this logic with your own pricing engine.
     """
 
-    cost = Decimal("100.00")
+    cost = Decimal("0.00")
 
     # Weight surcharge
     weight_prices = {
@@ -136,6 +136,7 @@ def update_dispatch_total(dispatch):
     """
     Recalculate dispatch total.
     """
+    cost = Decimal("250.00")
 
     total = (
         Package.objects.filter(dispatch=dispatch)
@@ -144,7 +145,7 @@ def update_dispatch_total(dispatch):
         or Decimal("0.00")
     )
 
-    dispatch.total_transport_cost = total
+    dispatch.total_transport_cost = total + cost
     dispatch.save(update_fields=["total_transport_cost"])
 
     return total
@@ -188,6 +189,8 @@ def book_parcel(request):
         receiver_name = request.POST.get("receiver_name")
         receiver_phone = request.POST.get("receiver_phone")
         to_agent_id = request.POST.get("to_agent")
+        to_location = request.POST.get("to_location")
+        to_county = request.POST.get("to_county")
 
         receiver_customer, _ = Customer.objects.get_or_create(
             phone_number=receiver_phone,
@@ -214,21 +217,23 @@ def book_parcel(request):
         if to_agent_id:
             receiving_agent = Agent.objects.filter(id=to_agent_id).first()
 
+        
+
         # -----------------------------
         # Dispatch
         # -----------------------------
 
-        dispatch = PackageDispatch.objects.create(
-            sending_customer=sender_customer,
-            sending_agent=sending_agent,
-
-            receiving_customer=receiver_customer,
-            receiving_agent=receiving_agent,
-            receiver_identification_code = generate_unique_id_code(),
-
-            delivery_phone=receiver_phone,
-
+        dispatch, created = PackageDispatch.objects.get_or_create(
             status="OPEN",
+            delivery_phone=receiver_phone,
+            receiving_customer=receiver_customer,
+            sending_agent=sending_agent,
+            receiving_agent = receiving_agent,
+            defaults={
+                "sending_customer": sender_customer,
+                "receiver_identification_code": generate_unique_id_code(),
+                "delivery_address": f'{to_location} in {to_county} county',
+            },
         )
 
         # Automatically receive if staff books it
@@ -253,6 +258,8 @@ def book_parcel(request):
         package = Package.objects.create(
 
             dispatch=dispatch,
+
+            sending_customer=sender_customer,
 
             package_type=request.POST.get("packaging_type"),
 
@@ -308,14 +315,14 @@ def parcel_summary_details(request, dispatch_id):
         id=dispatch_id,
     )
 
-    package = dispatch.packages.first()
+    packages = dispatch.packages.all()
 
     return render(
         request,
         "logistics/parcel_summary.html",
         {
             "dispatch": dispatch,
-            "package": package,
+            "packages": packages,
         },
     )
 

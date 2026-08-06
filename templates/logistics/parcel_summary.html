@@ -326,51 +326,53 @@ Receiver Information
 <!-- Package -->
 
 <div class="section-title">
-Package Details
-</div>
-
-<div class="summary-row">
-<div class="label">Contents</div>
-<div class="value">
-{{ package.contents }}
-</div>
-</div>
-
-<div class="summary-row">
-<div class="label">Package Type</div>
-<div class="value">
-{{ package.get_package_type_display }}
-</div>
-</div>
-
-<div class="summary-row">
-<div class="label">Weight</div>
-<div class="value">
-{{ package.get_weight_display }}
-</div>
-</div>
-
-<div class="summary-row">
-<div class="label">Quantity</div>
-<div class="value">
-{{ package.quantity }}
-</div>
-</div>
-
-<div class="summary-row">
-<div class="label">Declared Value</div>
-<div class="value">
-KES {{ package.value|intcomma }}
-</div>
-</div>
-
-<div class="summary-row">
-<div class="label">Description</div>
-<div class="value">
-{{ package.description|default:"-" }}
-</div>
-</div>
-
+    <div class="table-container shadow-sm">
+        <div class="section-title">Packages in this Dispatch</div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Contents</th>
+                        <th>Type</th>
+                        <th>Weight</th>
+                        <th>Qty & Value</th>
+                        <th>Flags</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pkg in packages %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ pkg.contents }}</div>
+                            {% if pkg.description %}<small class="text-muted">{{ pkg.description }}</small>{% endif %}
+                        </td>
+                        <td>
+                            <div>{{ pkg.get_package_type_display }}</div>
+                            <small class="text-muted">{% if  pkg.get_package_color_display %} {{ pkg.get_package_color_display }} {% endif %} </small>
+                        </td>
+                        <td>
+                            <div>{{ pkg.get_weight_display }}</div>
+                            <small class="text-muted">{{ pkg.get_volume_display|default:"" }}</small>
+                        </td>
+                        <td>
+                            <div>Qty: {{ pkg.quantity }}</div>
+                            <small class="text-muted">KES {{ pkg.value|floatformat:2|intcomma }}</small>
+                        </td>
+                        <td>
+                            {% if pkg.is_fragile %}<span class="badge bg-danger text-white me-1">Fragile</span>{% endif %}
+                            {% if pkg.is_spill_prone %}<span class="badge bg-warning text-dark">Spill-Prone</span>{% endif %}
+                            {% if not pkg.is_fragile and not pkg.is_spill_prone %}<span class="text-muted">Standard</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No individual package items have been registered under this package dispatch.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 <hr class="my-4">
 
 <!-- Delivery Fee -->
@@ -401,11 +403,9 @@ Your parcel tracking number has been created successfully.
 Proceed with payment to receive your receipt and allow your parcel to be processed for dispatch.
 
 </div>
-{% if dispatch.fully_paid %}
 <div class="d-flex gap-2 text-right mt-2">
     <a class="btn btn-success" href="{% url 'parcel_receipt' dispatch.id %}">view receipt</a>
 </div>
-{% else %}
 <div class="d-flex gap-2 text-right mt-2">
     <button
         type="button"
@@ -420,7 +420,6 @@ Proceed with payment to receive your receipt and allow your parcel to be process
         Pay from M-Pesa
     </button>
 </div>
-{% endif %}
 
 </div>
 
