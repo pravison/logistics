@@ -87,7 +87,8 @@ class PackageDispatch(models.Model):
     arrived_at_the_sending_agent = models.BooleanField(default=False)
     date_arrived_at_the_sending_agent = models.DateTimeField( blank=True, null=True)
     
-    packed_by_the_sending_agent = models.BooleanField(default=False)
+    packed_as_individual_by_the_sending_agent = models.BooleanField(default=False)
+    packed_as_combined_package_by_the_sending_agent = models.BooleanField(default=False, help_text='cobined together with other products heading to same agent')
     date_packed_by_the_sending_agent = models.DateTimeField( blank=True, null=True)
 
     picked_picked_by_receiving_customer = models.BooleanField(default=False, help_text="picked at the receiving agent")

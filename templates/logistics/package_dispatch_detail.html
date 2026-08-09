@@ -103,72 +103,534 @@
     <div class="card">
         <div class="card-body">
             <div class="section-title">Workflow Actions & Confirmations</div>
-            <form method="POST" class="d-flex flex-wrap gap-2">
-                {% csrf_token %}
-                <button type="submit" name="action" value="mark_arrived_sending" class="btn btn-secondary fw-bold px-3 {% if package_dispatch.arrived_at_the_sending_agent %}opacity-50{% endif %}">
-                    <i class="fa fa-map-marker-alt"></i> Confirm Arrived at Sending Agent
-                </button>
-                <button type="submit" name="action" value="mark_packed" class="btn btn-info text-dark fw-bold px-3 {% if package_dispatch.packed_by_the_sending_agent %}opacity-50{% endif %}">
-                    <i class="fa fa-box"></i> Confirm Packed by Agent
-                </button>
-                <button type="submit" name="action" value="mark_picked_customer" class="btn btn-success fw-bold px-3 {% if package_dispatch.picked_picked_by_receiving_customer %}opacity-50{% endif %}">
-                    <i class="fa fa-user-check"></i> Confirm Picked by Customer
-                </button>
-            </form>
+            <form method="POST">
+    {% csrf_token %}
+
+    <!-- ========================================================= -->
+    <!-- SENDING AGENT SECTION -->
+    <!-- ========================================================= -->
+    {% if request.user.is_staff or sending_agent %}
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h6 class="fw-bold mb-1">
+                        <i class="fa fa-paper-plane me-1"></i>
+                        Sending Station
+                    </h6>
+                    <small class="text-muted">
+                        Prepare and pack this package
+                    </small>
+                </div>
+
+                {% if package_dispatch.arrived_at_the_sending_agent %}
+                    <span class="badge bg-success">
+                        At station
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">
+                        On the way
+                    </span>
+                {% endif %}
+            </div>
+
+
+            <!-- ARRIVAL -->
+            <div class="border rounded p-3 mb-3">
+
+                <div class="d-flex align-items-start gap-3">
+
+                    <div class="text-success">
+                        <i class="fa fa-map-marker-alt fa-lg"></i>
+                    </div>
+
+                    <div class="flex-grow-1">
+
+                        <div class="fw-bold">
+                            Arrival at Sending Station
+                        </div>
+
+                        {% if package_dispatch.arrived_at_the_sending_agent %}
+
+                            <div class="text-success small mt-1">
+                                <i class="fa fa-check-circle"></i>
+                                Package has arrived at your station.
+                            </div>
+
+                            {% if package_dispatch.date_arrived_at_the_sending_agent %}
+                                <div class="text-muted small mt-1">
+                                    {{ package_dispatch.date_arrived_at_the_sending_agent|date:"M d, Y H:i" }}
+                                </div>
+                            {% endif %}
+
+                        {% else %}
+
+                            <div class="text-muted small mb-2">
+                                Confirm when the package physically arrives.
+                            </div>
+
+                            <button
+                                type="submit"
+                                name="action"
+                                value="mark_arrived_sending"
+                                class="btn btn-secondary w-100 w-md-auto fw-bold"
+                            >
+                                <i class="fa fa-map-marker-alt me-1"></i>
+                                Confirm Arrival
+                            </button>
+
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- PACKING -->
+            {% if package_dispatch.arrived_at_the_sending_agent %}
+
+                <div class="border rounded p-3">
+
+                    <div class="mb-3">
+                        <div class="fw-bold">
+                            <i class="fa fa-box me-1"></i>
+                            Packing
+                        </div>
+
+                        <small class="text-muted">
+                            Choose how this package should be packed.
+                        </small>
+                    </div>
+
+
+                    {% if package_dispatch.packed_as_individual_by_the_sending_agent %}
+
+                        <div class="alert alert-success mb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa fa-check-circle"></i>
+
+                                <div>
+                                    <strong>Packed as individual parcel</strong>
+                                    <div class="small">
+                                        This package is already packed separately.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    {% elif package_dispatch.packed_as_combined_package_by_the_sending_agent %}
+
+                        <div class="alert alert-success mb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa fa-check-circle"></i>
+
+                                <div>
+                                    <strong>Packed with other parcels</strong>
+                                    <div class="small">
+                                        This package has been combined with other parcels.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    {% else %}
+
+                        <div class="row g-2">
+
+                            <!-- INDIVIDUAL -->
+                            <div class="col-12 col-md-6">
+
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="mark_packed_individual"
+                                    class="btn btn-info text-dark fw-bold w-100 py-3"
+                                >
+                                    <i class="fa fa-box me-1"></i>
+
+                                    <span class="d-block">
+                                        Pack Separately
+                                    </span>
+
+                                    <small class="fw-normal">
+                                        Keep this parcel alone
+                                    </small>
+                                </button>
+
+                            </div>
+
+
+                            <!-- COMBINED -->
+                            <div class="col-12 col-md-6">
+
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="mark_packed_combined"
+                                    class="btn btn-primary fw-bold w-100 py-3"
+                                >
+                                    <i class="fa fa-boxes-stacked me-1"></i>
+
+                                    <span class="d-block">
+                                        Combine with Other Parcels
+                                    </span>
+
+                                    <small class="fw-normal">
+                                        Send together with parcels going to the same agent
+                                    </small>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- ========================================================= -->
+    <!-- RECEIVING AGENT SECTION -->
+    <!-- ========================================================= -->
+    {% if request.user.is_staff or receiving_agent %}
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+
+                <div>
+                    <h6 class="fw-bold mb-1">
+                        <i class="fa fa-location-dot me-1"></i>
+                        Receiving Station
+                    </h6>
+
+                    <small class="text-muted">
+                        Receive and hand over the package
+                    </small>
+                </div>
+
+            </div>
+
+
+            <!-- ARRIVAL AT RECEIVING AGENT -->
+            <div class="border rounded p-3 mb-3">
+
+                <div class="d-flex align-items-start gap-3">
+
+                    <div class="text-success">
+                        <i class="fa fa-building fa-lg"></i>
+                    </div>
+
+                    <div class="flex-grow-1">
+
+                        <div class="fw-bold">
+                            Arrival at Receiving Station
+                        </div>
+
+                        {% if package_dispatch.arrived_at_the_receiving_agent %}
+
+                            <div class="text-success small mt-1">
+                                <i class="fa fa-check-circle"></i>
+                                Package has arrived at the receiving station.
+                            </div>
+
+                            {% if package_dispatch.date_arrived_at_the_receiving_agent %}
+                                <div class="text-muted small mt-1">
+                                    {{ package_dispatch.date_arrived_at_the_receiving_agent|date:"M d, Y H:i" }}
+                                </div>
+                            {% endif %}
+
+                        {% else %}
+
+                            <div class="text-muted small mb-2">
+                                Confirm when the package reaches your station.
+                            </div>
+
+                            <button
+                                type="submit"
+                                name="action"
+                                value="mark_arrived_receiving"
+                                class="btn btn-secondary w-100 w-md-auto fw-bold"
+                            >
+                                <i class="fa fa-map-marker-alt me-1"></i>
+                                Confirm Arrival
+                            </button>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- CUSTOMER PICKUP -->
+            {% if package_dispatch.arrived_at_the_receiving_agent %}
+
+                <div class="border rounded p-3">
+
+                    <div class="d-flex align-items-start gap-3">
+
+                        <div class="text-success">
+                            <i class="fa fa-user-check fa-lg"></i>
+                        </div>
+
+                        <div class="flex-grow-1">
+
+                            <div class="fw-bold">
+                                Customer Pickup
+                            </div>
+
+                            {% if package_dispatch.picked_picked_by_receiving_customer %}
+
+                                <div class="alert alert-success mt-2 mb-0">
+
+                                    <div class="d-flex align-items-center gap-2">
+
+                                        <i class="fa fa-check-circle"></i>
+
+                                        <div>
+                                            <strong>Package picked up</strong>
+
+                                            {% if package_dispatch.date_picked_picked_by_receiving_customer %}
+                                                <div class="small">
+                                                    {{ package_dispatch.date_picked_picked_by_receiving_customer|date:"M d, Y H:i" }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="text-muted small mb-2">
+                                    Confirm after the customer has received the package.
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="mark_picked_customer"
+                                    class="btn btn-success w-100 w-md-auto fw-bold py-2"
+                                >
+                                    <i class="fa fa-user-check me-1"></i>
+                                    Confirm Customer Pickup
+                                </button>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+    {% endif %}
+
+</form>
+
+
+<!-- ========================================================= -->
+<!-- ACTIVITY / HISTORY -->
+<!-- ========================================================= -->
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+
+        <h6 class="fw-bold mb-3">
+            <i class="fa fa-clock-rotate-left me-1"></i>
+            Package Activity
+        </h6>
+
+        <div class="small">
+
+            <div class="d-flex justify-content-between border-bottom py-2">
+                <span class="text-muted">
+                    Received by staff
+                </span>
+
+                <span class="text-end">
+                    {% if package_dispatch.received_by %}
+                        <strong>{{ package_dispatch.received_by.username }}</strong>
+
+                        {% if package_dispatch.date_arrived_at_the_sending_agent %}
+                            <br>
+                            <span class="text-muted">
+                                {{ package_dispatch.date_arrived_at_the_sending_agent|date:"M d, Y H:i" }}
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-muted">Not recorded</span>
+                    {% endif %}
+                </span>
+            </div>
+
+
+            <div class="d-flex justify-content-between border-bottom py-2">
+                <span class="text-muted">
+                    Packed by staff
+                </span>
+
+                <span class="text-end">
+                    {% if package_dispatch.packed_by %}
+                        <strong>{{ package_dispatch.packed_by.username }}</strong>
+
+                        {% if package_dispatch.date_packed_by_the_sending_agent %}
+                            <br>
+                            <span class="text-muted">
+                                {{ package_dispatch.date_packed_by_the_sending_agent|date:"M d, Y H:i" }}
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-muted">Not recorded</span>
+                    {% endif %}
+                </span>
+            </div>
+
+
+            <div class="d-flex justify-content-between py-2">
+                <span class="text-muted">
+                    Customer pickup
+                </span>
+
+                <span class="text-end">
+
+                    {% if package_dispatch.date_picked_picked_by_receiving_customer %}
+
+                        <strong class="text-success">
+                            Completed
+                        </strong>
+
+                        <br>
+
+                        <span class="text-muted">
+                            {{ package_dispatch.date_picked_picked_by_receiving_customer|date:"M d, Y H:i" }}
+                        </span>
+
+                    {% else %}
+
+                        <span class="text-warning">
+                            Pending
+                        </span>
+
+                    {% endif %}
+
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+            
             <div class="mt-3 text-muted" style="font-size: 0.8rem;">
-                <div><strong>Received by Staff:</strong> {{ package_dispatch.received_by.username|default:"Not recorded" }} {% if package_dispatch.date_arrived_at_the_sending_agent %}({{ package_dispatch.date_arrived_at_the_sending_agent|date:"M d, Y H:i" }}){% endif %}</div>
-                <div><strong>Packed by Staff:</strong> {{ package_dispatch.packed_by.username|default:"Not recorded" }} {% if package_dispatch.date_packed_by_the_sending_agent %}({{ package_dispatch.date_packed_by_the_sending_agent|date:"M d, Y H:i" }}){% endif %}</div>
+                <div><strong>Received by Staff:</strong> {{ package_dispatch.received_by.first_name|default:"Not recorded" }} {% if package_dispatch.date_arrived_at_the_sending_agent %}({{ package_dispatch.date_arrived_at_the_sending_agent|date:"M d, Y H:i" }}){% endif %}</div>
+                <div><strong>Packed by Staff:</strong> {{ package_dispatch.packed_by.first_name|default:"Not recorded" }} {% if package_dispatch.date_packed_by_the_sending_agent %}({{ package_dispatch.date_packed_by_the_sending_agent|date:"M d, Y H:i" }}){% endif %}</div>
                 <div><strong>Customer Picked At:</strong> {% if package_dispatch.date_picked_picked_by_receiving_customer %}{{ package_dispatch.date_picked_picked_by_receiving_customer|date:"M d, Y H:i" }}{% else %}Pending{% endif %}</div>
             </div>
         </div>
     </div>
 
     <!-- ASSOCIATED INDIVIDUAL PACKAGES LIST -->
-    <div class="table-container shadow-sm">
-        <div class="section-title">Individual Packages in this Dispatch</div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Contents</th>
-                        <th>Type / Color</th>
-                        <th>Weight / Vol</th>
-                        <th>Qty & Value</th>
-                        <th>Flags</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for pkg in packages %}
-                    <tr>
-                        <td>
-                            <div class="fw-bold">{{ pkg.contents }}</div>
-                            {% if pkg.description %}<small class="text-muted">{{ pkg.description }}</small>{% endif %}
-                        </td>
-                        <td>
-                            <div>{{ pkg.get_package_type_display }}</div>
-                            <small class="text-muted">{{ pkg.get_package_color_display|default:"No Color" }}</small>
-                        </td>
-                        <td>
-                            <div>{{ pkg.get_weight_display }}</div>
-                            <small class="text-muted">{{ pkg.get_volume_display|default:"" }}</small>
-                        </td>
-                        <td>
-                            <div>Qty: {{ pkg.quantity }}</div>
-                            <small class="text-muted">KES {{ pkg.value|floatformat:2|intcomma }}</small>
-                        </td>
-                        <td>
-                            {% if pkg.is_fragile %}<span class="badge bg-danger text-white me-1">Fragile</span>{% endif %}
-                            {% if pkg.is_spill_prone %}<span class="badge bg-warning text-dark">Spill-Prone</span>{% endif %}
-                            {% if not pkg.is_fragile and not pkg.is_spill_prone %}<span class="text-muted">Standard</span>{% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">No individual package items have been registered under this package dispatch.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+    <div class="package-container my-3">
+        <div class="section-title h5 fw-bold mb-3">Individual Packages in this Dispatch</div>
+
+        <div class="row g-3">
+            {% for pkg in packages %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0 rounded-3">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3">
+                        <span class="fw-bold text-truncate me-2">({{ pkg.id }}){{ pkg.contents }}</span>
+                        <div>
+                            {% if pkg.is_fragile %}
+                                <span class="badge bg-danger text-white me-1">Fragile</span>
+                            {% endif %}
+                            {% if pkg.is_spill_prone %}
+                                <span class="badge bg-warning text-dark">Spill-Prone</span>
+                            {% endif %}
+                            {% if not pkg.is_fragile and not pkg.is_spill_prone %}
+                                <span class="badge bg-secondary">Standard</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card-body py-3 px-3">
+                        {% if pkg.description %}
+                            <p class="text-muted small mb-2">{{ pkg.description }}</p>
+                        {% endif %}
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <small class="text-uppercase text-muted d-block fs-7">Type / Color</small>
+                                <span class="fw-semibold text-dark">{{ pkg.get_package_type_display }}</span>
+                                <small class="text-muted d-block">{{ pkg.get_package_color_display|default:"No Color" }}</small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-uppercase text-muted d-block fs-7">Weight / Vol</small>
+                                <span class="fw-semibold text-dark">{{ pkg.get_weight_display }}</span>
+                                <small class="text-muted d-block">{{ pkg.get_volume_display|default:"" }}</small>
+                            </div>
+                        </div>
+
+                        <hr class="my-2 text-muted opacity-25">
+
+                        <div class="d-flex justify-content-between align-items-center pt-1">
+                            <div>
+                                <small class="text-uppercase text-muted d-block fs-7">Qty & Value</small>
+                                <span class="fw-bold me-2">Qty: {{ pkg.quantity }}</span>
+                                <small class="text-muted">KES {{ pkg.value|floatformat:2|intcomma }}</small>
+                            </div>
+                            <div>
+                                {% if pkg.packed %}
+                                    <span class="badge bg-success text-white px-2 py-2">Packed</span>
+                                    
+                                {% else %}
+                                    <form method="POST" action="{% url 'pack_package' pkg.id %}" class="d-inline" onsubmit="return confirm('Are you sure you have packed the product? This action cannot be changed. na package ikisahaulika you will be responsible');">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="badge bg-danger text-white px-2 py-2 border-0">
+                                            Pack
+                                        </button>
+                                    </form>
+                                    
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="card shadow-sm border-0 py-4 text-center text-muted">
+                    <div class="card-body">
+                        No individual package items have been registered under this package dispatch.
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
 

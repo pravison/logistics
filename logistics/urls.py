@@ -18,4 +18,6 @@ urlpatterns = [
 
     path('customer-received-packages', views.customer_received_packages, name='customer_received_packages'),
     path('customer-send-packages', views.customer_send_packages, name='customer_send_packages'),
+
+    path("package/<int:pk>/pack/", views.pack_package, name="pack_package"),
 ]

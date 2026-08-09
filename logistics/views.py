@@ -718,7 +718,7 @@ def agent_dispatch_list(request):
 
     return render(request, "logistics/agent_dispatch_list.html", context)
 
-
+@login_required(login_url="/accounts/login-user/")
 def agent_dispatch_detail(request, pk):
   dispatch = get_object_or_404(
       AgentDispatch.objects.select_related(
@@ -767,7 +767,7 @@ def agent_dispatch_detail(request, pk):
   }
   return render(request, 'logistics/agent_dispatch_detail.html', context)
 
-
+@login_required(login_url="/accounts/login-user/")
 def package_dispatch_detail(request, pk):
   package_dispatch = get_object_or_404(
       PackageDispatch.objects.select_related(
@@ -787,43 +787,241 @@ def package_dispatch_detail(request, pk):
   packages = package_dispatch.packages.all()
 
   # Handle action buttons for status confirmation
-  if request.method == 'POST':
-    action = request.POST.get('action')
+  if request.method == "POST":
+    action = request.POST.get("action")
     user = request.user if request.user.is_authenticated else None
 
-    if action == 'mark_arrived_sending':
-      package_dispatch.arrived_at_the_sending_agent = True
-      package_dispatch.date_arrived_at_the_sending_agent = timezone.now()
-      package_dispatch.received_by = user
-      package_dispatch.updated_by = user
-      package_dispatch.save()
+    # ---------------------------------------------------------
+    # ARRIVED AT SENDING AGENT
+    # ---------------------------------------------------------
+    if action == "mark_arrived_sending":
 
-    elif action == 'mark_packed':
-      package_dispatch.packed_by_the_sending_agent = True
-      package_dispatch.date_packed_by_the_sending_agent = timezone.now()
-      package_dispatch.packed_by = user
-      package_dispatch.status = 'SENT'  # Or appropriate workflow status update
-      package_dispatch.updated_by = user
-      package_dispatch.save()
+        package_dispatch.arrived_at_the_sending_agent = True
+        package_dispatch.date_arrived_at_the_sending_agent = timezone.now()
+        package_dispatch.received_by = user
+        package_dispatch.updated_by = user
 
-    elif action == 'mark_picked_customer':
-      package_dispatch.picked_picked_by_receiving_customer = True
-      package_dispatch.date_picked_picked_by_receiving_customer = (
-          timezone.now()
-      )
-      package_dispatch.status = 'PICKED'
-      package_dispatch.updated_by = user
-      package_dispatch.save()
+        package_dispatch.save(
+            update_fields=[
+                "arrived_at_the_sending_agent",
+                "date_arrived_at_the_sending_agent",
+                "received_by",
+                "updated_by",
+            ]
+        )
+
+
+    # ---------------------------------------------------------
+    # PACK AS INDIVIDUAL PARCEL
+    # ---------------------------------------------------------
+    elif action == "mark_packed_individual":
+
+        # Package must first arrive at the sending station
+        if not package_dispatch.arrived_at_the_sending_agent:
+            messages.error(
+                request,
+                "The package must arrive at the sending station before it can be packed."
+            )
+            return redirect(
+                "package_dispatch_detail",
+                package_dispatch.id
+            )
+
+        # Don't allow packing twice
+        if (
+            package_dispatch.packed_as_individual_by_the_sending_agent
+            or package_dispatch.packed_as_combined_package_by_the_sending_agent
+        ):
+            messages.warning(
+                request,
+                "This package has already been packed."
+            )
+            return redirect(
+                "package_dispatch_detail",
+                package_dispatch.id
+            )
+
+        package_dispatch.packed_as_individual_by_the_sending_agent = True
+        package_dispatch.packed_by_the_sending_agent = True
+        package_dispatch.date_packed_by_the_sending_agent = timezone.now()
+        package_dispatch.packed_by = user
+        package_dispatch.updated_by = user
+
+        package_dispatch.save(
+            update_fields=[
+                "packed_as_individual_by_the_sending_agent",
+                "packed_by_the_sending_agent",
+                "date_packed_by_the_sending_agent",
+                "packed_by",
+                "updated_by",
+            ]
+        )
+
+
+    # ---------------------------------------------------------
+    # PACK WITH OTHER PARCELS
+    # ---------------------------------------------------------
+    elif action == "mark_packed_combined":
+
+        # Package must first arrive
+        if not package_dispatch.arrived_at_the_sending_agent:
+            messages.error(
+                request,
+                "The package must arrive at the sending station before it can be packed."
+            )
+            return redirect(
+                "package_dispatch_detail",
+                package_dispatch.id
+            )
+
+        # Don't allow packing twice
+        if (
+            package_dispatch.packed_as_individual_by_the_sending_agent
+            or package_dispatch.packed_as_combined_package_by_the_sending_agent
+        ):
+            messages.warning(
+                request,
+                "This package has already been packed."
+            )
+            return redirect(
+                "package_dispatch_detail",
+                package_dispatch.id
+            )
+
+        package_dispatch.packed_as_combined_package_by_the_sending_agent = True
+        package_dispatch.packed_by_the_sending_agent = True
+        package_dispatch.date_packed_by_the_sending_agent = timezone.now()
+        package_dispatch.packed_by = user
+        package_dispatch.updated_by = user
+
+        package_dispatch.save(
+            update_fields=[
+                "packed_as_combined_package_by_the_sending_agent",
+                "packed_by_the_sending_agent",
+                "date_packed_by_the_sending_agent",
+                "packed_by",
+                "updated_by",
+            ]
+        )
+
+
+    # ---------------------------------------------------------
+    # ARRIVED AT RECEIVING AGENT
+    # ---------------------------------------------------------
+    elif action == "mark_arrived_receiving":
+
+        package_dispatch.arrived_at_the_receiving_agent = True
+        package_dispatch.date_arrived_at_the_receiving_agent = timezone.now()
+        package_dispatch.received_by_receiving_agent = user
+        package_dispatch.updated_by = user
+
+        package_dispatch.save(
+            update_fields=[
+                "arrived_at_the_receiving_agent",
+                "date_arrived_at_the_receiving_agent",
+                "received_by_receiving_agent",
+                "updated_by",
+            ]
+        )
+
+
+    # ---------------------------------------------------------
+    # CUSTOMER PICKED PACKAGE
+    # ---------------------------------------------------------
+    elif action == "mark_picked_customer":
+
+        # Package must have arrived at receiving station
+        if not package_dispatch.arrived_at_the_receiving_agent:
+            messages.error(
+                request,
+                "The package must arrive at the receiving station before it can be picked up."
+            )
+            return redirect(
+                "package_dispatch_detail",
+                package_dispatch.id
+            )
+
+        # Don't allow pickup twice
+        if package_dispatch.picked_picked_by_receiving_customer:
+            messages.warning(
+                request,
+                "This package has already been picked up."
+            )
+            return redirect(
+                "package_dispatch_detail",
+                package_dispatch.id
+            )
+
+        package_dispatch.picked_picked_by_receiving_customer = True
+        package_dispatch.date_picked_picked_by_receiving_customer = timezone.now()
+        package_dispatch.status = "PICKED"
+        package_dispatch.updated_by = user
+
+        package_dispatch.save(
+            update_fields=[
+                "picked_picked_by_receiving_customer",
+                "date_picked_picked_by_receiving_customer",
+                "status",
+                "updated_by",
+            ]
+        )
+
+
+    # ---------------------------------------------------------
+    # UNKNOWN ACTION
+    # ---------------------------------------------------------
+    else:
+
+        messages.error(
+            request,
+            "Invalid package action."
+        )
+
+        return redirect(
+            "package_dispatch_detail",
+            package_dispatch.id
+        )
+
+
+    # ---------------------------------------------------------
+    # SUCCESS
+    # ---------------------------------------------------------
+    messages.success(
+        request,
+        "Package updated successfully."
+    )
 
     return redirect('package_dispatch_detail', pk=package_dispatch.pk)
+  sending_agent = (
+    package_dispatch.sending_agent
+    and package_dispatch.sending_agent.user == request.user
+   )
 
+  receiving_agent = (
+    package_dispatch.receiving_agent
+    and package_dispatch.receiving_agent.user == request.user
+   )
   context = {
       'package_dispatch': package_dispatch,
       'packages': packages,
+      'sending_agent': sending_agent,
+      'receiving_agent': receiving_agent,
   }
   return render(request, 'logistics/package_dispatch_detail.html', context)
 
 
+def pack_package(request, pk):
+    package = get_object_or_404(Package, pk=pk)
+
+    if request.method == "POST":
+        package.packed = True
+        package.save(update_fields=["packed"])
+
+        messages.success(request, "Package has been marked as packed.")
+
+    return redirect("package_dispatch_detail", package.dispatch.id)
+
+@login_required(login_url="/accounts/login-user/")
 def package_dispatch_list(request):
   dispatches = PackageDispatch.objects.select_related(
       'sending_customer',

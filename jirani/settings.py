@@ -96,29 +96,29 @@ WSGI_APPLICATION = 'jirani.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 
-DATABASES = {
-   'default': {
-       'ENGINE': 'django.db.backends.sqlite3',
-       'NAME': BASE_DIR / 'db.sqlite3',
-   }
-}
-
-# import dj_database_url 
-
 # DATABASES = {
-#    'default': dj_database_url.parse(
-#         env('POSTGRESQL_DB'),
-#         conn_max_age=600,
-#         conn_health_checks=True,
-#     )
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
+#    }
 # }
 
-# SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
-# SESSION_COOKIE_SECURE = True  # Send session cookies only over HTTPS
-# CSRF_COOKIE_SECURE = True  # Send CSRF cookies only over HTTPS
-# SECURE_BROWSER_XSS_FILTER = True  # Enable browser XSS protection
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
-# SECURE_HSTS_PRELOAD = True  # Allow site to be included in browser preload lists
+import dj_database_url 
+
+DATABASES = {
+   'default': dj_database_url.parse(
+        env('POSTGRESQL_DB'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
+
+SECURE_SSL_REDIRECT = True  # Redirect all HTTP to HTTPS
+SESSION_COOKIE_SECURE = True  # Send session cookies only over HTTPS
+CSRF_COOKIE_SECURE = True  # Send CSRF cookies only over HTTPS
+SECURE_BROWSER_XSS_FILTER = True  # Enable browser XSS protection
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
+SECURE_HSTS_PRELOAD = True  # Allow site to be included in browser preload lists
 
 
 # Password validation
