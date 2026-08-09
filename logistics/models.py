@@ -14,7 +14,7 @@ class AgentDispatch(models.Model):
         ("SENT", "Sent"),
         ("ON_ROAD", "On Road"),
         ("ARRIVED", "Arrived"),
-        ("PICKED", "Picked"),
+        ("PICKED", "All Picked"),
     )
 
     agent = models.ForeignKey(Agent, on_delete=models.CASCADE, related_name="agent_dispatches")
@@ -220,6 +220,8 @@ class Package(models.Model):
 
     is_spill_prone = models.BooleanField(default=False)
 
+    to_big = models.BooleanField(default=False, help_text='to big to be combined with other packages in one sack')
+
     description = models.TextField(
         blank=True,
         null=True,
@@ -227,6 +229,17 @@ class Package(models.Model):
     )
 
     transport_cost = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    packed = models.BooleanField(default=False)
+    packed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="product_packing_staff",
+        help_text='the person that packed the package at the sending agent'
+    )
+
 
     created_at = models.DateTimeField(auto_now_add=True)
 

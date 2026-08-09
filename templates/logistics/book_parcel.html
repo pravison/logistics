@@ -62,6 +62,30 @@
                     <div class="col-md-6"><label class="form-label">Weight</label><select name="package_weight" class="form-select"><option value="2">0-2 Kg</option><option value="5">2-5 Kg</option><option value="10">5 - 10 Kg</option><option value="20">10 - 20 Kg</option><option value="50">20 - 50 Kg</option><option value="50+">Above 50 Kg</option></select></div>
                     <div class="col-md-6"><label class="form-label">Quantity</label><input type="number" name="quantity" class="form-control" placeholder="1"></div>
                     <div class="col-md-6"><label class="form-label">Declared Value</label><input type="number" name="package_value" class="form-control" placeholder="KES"></div>
+                    <div class="col-12 mt-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="is_fragile" id="is_fragile" class="form-check-input" {% if package.is_fragile %}checked{% endif %} >
+                            <label for="is_fragile" class="form-check-label">
+                                product is fragile handle with care
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="is_spill_prone" id="is_spill_prone" class="form-check-input" {% if package.is_spill_prone %}checked{% endif %} >
+                            <label for="is_spill_prone" class="form-check-label">
+                                Inaweza mwagika, so carry it carefully
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="to_big" id="to_big" class="form-check-input" {% if package.to_big %}checked{% endif %} >
+                            <label for="to_big" class="form-check-label">
+                                Too big to be combined with other packages in one sack
+                            </label>
+                        </div>
+                    </div>
                     <div class="col-12 mt-3"><textarea name="package_details" class="form-control" rows="3" placeholder="Additional details..."></textarea></div>
                 </div>
             </div>

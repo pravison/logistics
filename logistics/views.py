@@ -119,11 +119,11 @@ def calculate_package_cost(package):
 
     # Fragile
     if package.is_fragile:
-        cost += Decimal("50")
+        cost += Decimal("100")
 
     # Spill prone
     if package.is_spill_prone:
-        cost += Decimal("50")
+        cost += Decimal("100")
 
     # Quantity
     if package.quantity > 1:
@@ -222,19 +222,50 @@ def book_parcel(request):
         # -----------------------------
         # Dispatch
         # -----------------------------
+        to_big = request.POST.get("to_big") == "on"
+        is_fragile=request.POST.get("is_fragile") == "on"
+        is_spill_prone=request.POST.get("is_spill_prone") == "on"
 
-        dispatch, created = PackageDispatch.objects.get_or_create(
-            status="OPEN",
-            delivery_phone=receiver_phone,
-            receiving_customer=receiver_customer,
-            sending_agent=sending_agent,
-            receiving_agent = receiving_agent,
-            defaults={
-                "sending_customer": sender_customer,
-                "receiver_identification_code": generate_unique_id_code(),
-                "delivery_address": f'{to_location} in {to_county} county',
-            },
-        )
+        if to_big or is_fragile or is_spill_prone:
+            # Large package: MUST have its own dispatch
+            dispatch = PackageDispatch.objects.create(
+                status="OPEN",
+                delivery_phone=receiver_phone,
+                receiving_customer=receiver_customer,
+                sending_customer=sender_customer,
+                sending_agent=sending_agent,
+                receiving_agent=receiving_agent,
+                receiver_identification_code=generate_unique_id_code(),
+                delivery_address=f"{to_location} in {to_county} county",
+            )
+
+        else:
+            # Normal package: reuse existing OPEN dispatch if possible
+            dispatch, created = PackageDispatch.objects.get_or_create(
+                status="OPEN",
+                delivery_phone=receiver_phone,
+                receiving_customer=receiver_customer,
+                sending_agent=sending_agent,
+                receiving_agent=receiving_agent,
+                defaults={
+                    "sending_customer": sender_customer,
+                    "receiver_identification_code": generate_unique_id_code(),
+                    "delivery_address": f"{to_location} in {to_county} county",
+                },
+            )
+
+        # dispatch, created = PackageDispatch.objects.get_or_create(
+        #     status="OPEN",
+        #     delivery_phone=receiver_phone,
+        #     receiving_customer=receiver_customer,
+        #     sending_agent=sending_agent,
+        #     receiving_agent = receiving_agent,
+        #     defaults={
+        #         "sending_customer": sender_customer,
+        #         "receiver_identification_code": generate_unique_id_code(),
+        #         "delivery_address": f'{to_location} in {to_county} county',
+        #     },
+        # )
 
         # Automatically receive if staff books it
         if request.user.is_authenticated and request.user.is_staff:
@@ -274,6 +305,9 @@ def book_parcel(request):
             ),
 
             description=request.POST.get("package_details"),
+            to_big = to_big,
+            is_fragile=is_fragile,
+            is_spill_prone=is_spill_prone,
         )
 
         # -----------------------------
