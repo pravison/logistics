@@ -10,8 +10,9 @@ urlpatterns = [
     path("cron/sync-accounting/", views.sync_accounting_view, name="sync_accounting_view"),
 
     # points
-    path("ajax/get-customer-points/", views.get_customer_points, name="get_customer_points"),
-    path("ajax/pay-using-points/", views.pay_using_points, name="pay_using_points"),
+    path("ajax/get-customer-points/", views.get_customer_credits, name="get_customer_credits"),
+    path("ajax/pay-using-points/", views.pay_using_credit, name="pay_using_credits"),
+    path("ajax/use-free-reward/", views.use_free_reward, name="use_free_reward"),
 
     #
 ]

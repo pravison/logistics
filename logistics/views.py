@@ -10,7 +10,7 @@ from decimal import Decimal
 from django.db.models import Sum
 
 import uuid
-from customers.models import Customer
+from customers.models import Customer, LoyaltyCard
 from accounts.views import generate_unique_refferal_code
 
 from agents.models import County, Location
@@ -155,7 +155,46 @@ def generate_unique_id_code():
         code = uuid.uuid4().hex[:6]
         if not PackageDispatch.objects.filter(receiver_identification_code=code).exists():
             return code
-  
+
+
+def get_open_loyalty_card(customer):
+    card = LoyaltyCard.objects.filter(
+        customer=customer,
+        is_open=True
+    ).first()
+
+    if not card:
+        card = LoyaltyCard.objects.create(
+            customer=customer
+        )
+
+    return card
+
+from django.utils import timezone
+
+
+def record_successful_parcel(customer):
+
+    card = get_open_loyalty_card(customer)
+
+    # Already has the free reward.
+    # Don't keep adding ticks to this card.
+    if card.reward_earned:
+        return card
+
+    card.completed_parcels += 1
+
+    # 4 successful paid parcels = free transport earned
+    if card.completed_parcels >= 4:
+        card.completed_parcels = 4
+        card.reward_earned = True
+
+    card.save()
+
+    return card
+
+
+
 @transaction.atomic
 def book_parcel(request):
     counties = County.objects.all()
@@ -191,6 +230,8 @@ def book_parcel(request):
         to_agent_id = request.POST.get("to_agent")
         to_location = request.POST.get("to_location")
         to_county = request.POST.get("to_county")
+
+        location = Location.objects.filter(id=to_location).first()
 
         receiver_customer, _ = Customer.objects.get_or_create(
             phone_number=receiver_phone,
@@ -236,7 +277,7 @@ def book_parcel(request):
                 sending_agent=sending_agent,
                 receiving_agent=receiving_agent,
                 receiver_identification_code=generate_unique_id_code(),
-                delivery_address=f"{to_location} in {to_county} county",
+                delivery_address=f"{location}",
             )
 
         else:
@@ -250,7 +291,7 @@ def book_parcel(request):
                 defaults={
                     "sending_customer": sender_customer,
                     "receiver_identification_code": generate_unique_id_code(),
-                    "delivery_address": f"{to_location} in {to_county} county",
+                    "delivery_address": f"{location}",
                 },
             )
 
@@ -348,8 +389,19 @@ def parcel_summary_details(request, dispatch_id):
         ).prefetch_related("packages"),
         id=dispatch_id,
     )
+    remaining_transport_cost=dispatch.total_transport_cost - dispatch.amount_paid
 
     packages = dispatch.packages.all()
+
+    
+    loyalty_card = get_open_loyalty_card(
+        dispatch.sending_customer
+        )
+    
+    loyalty_remaining = max(
+        0,
+        4 - loyalty_card.completed_parcels
+        )
 
     return render(
         request,
@@ -357,8 +409,12 @@ def parcel_summary_details(request, dispatch_id):
         {
             "dispatch": dispatch,
             "packages": packages,
+            "remaining_transport_cost":remaining_transport_cost,
+            "loyalty_card": loyalty_card,
+            "loyalty_remaining": loyalty_remaining,
         },
     )
+
 
 @login_required(login_url="/accounts/login-user/")
 @user_passes_test(lambda u: u.is_staff, login_url='/')  # Restricts access strictly to staff users
@@ -368,10 +424,21 @@ def parcel_receipt_view(request, pk):
     
     # Fetch ALL packages linked to this dispatch using the related_name
     packages = dispatch.packages.all()
+
+    loyalty_card = get_open_loyalty_card(
+        dispatch.sending_customer
+    )
+
+    loyalty_remaining = max(
+        0,
+        4 - loyalty_card.completed_parcels
+    )
     
     context = {
         'dispatch': dispatch,
         'packages': packages,  # Passed as plural to handle multiple items
+        "loyalty_card": loyalty_card,
+        "loyalty_remaining": loyalty_remaining,
     }
     
     return render(request, 'logistics/parcel_receipt.html', context)
@@ -842,7 +909,7 @@ def package_dispatch_detail(request, pk):
             )
 
         package_dispatch.packed_as_individual_by_the_sending_agent = True
-        package_dispatch.packed_by_the_sending_agent = True
+        package_dispatch.packed_as_combined_package_by_the_sending_agent = True
         package_dispatch.date_packed_by_the_sending_agent = timezone.now()
         package_dispatch.packed_by = user
         package_dispatch.updated_by = user
@@ -850,7 +917,7 @@ def package_dispatch_detail(request, pk):
         package_dispatch.save(
             update_fields=[
                 "packed_as_individual_by_the_sending_agent",
-                "packed_by_the_sending_agent",
+                "packed_as_combined_package_by_the_sending_agent",
                 "date_packed_by_the_sending_agent",
                 "packed_by",
                 "updated_by",
@@ -889,7 +956,7 @@ def package_dispatch_detail(request, pk):
             )
 
         package_dispatch.packed_as_combined_package_by_the_sending_agent = True
-        package_dispatch.packed_by_the_sending_agent = True
+        package_dispatch.packed_as_individual_by_the_sending_agent = True
         package_dispatch.date_packed_by_the_sending_agent = timezone.now()
         package_dispatch.packed_by = user
         package_dispatch.updated_by = user
@@ -897,7 +964,7 @@ def package_dispatch_detail(request, pk):
         package_dispatch.save(
             update_fields=[
                 "packed_as_combined_package_by_the_sending_agent",
-                "packed_by_the_sending_agent",
+                "packed_as_individual_by_the_sending_agent",
                 "date_packed_by_the_sending_agent",
                 "packed_by",
                 "updated_by",
@@ -909,10 +976,9 @@ def package_dispatch_detail(request, pk):
     # ARRIVED AT RECEIVING AGENT
     # ---------------------------------------------------------
     elif action == "mark_arrived_receiving":
-
-        package_dispatch.arrived_at_the_receiving_agent = True
-        package_dispatch.date_arrived_at_the_receiving_agent = timezone.now()
-        package_dispatch.received_by_receiving_agent = user
+        package_dispatch.picked_picked_by_receiving_agent = True
+        package_dispatch.date_picked_picked_by_receiving_agent = timezone.now()
+        package_dispatch. picked_picked_by_receiving_agent
         package_dispatch.updated_by = user
 
         package_dispatch.save(
@@ -992,6 +1058,7 @@ def package_dispatch_detail(request, pk):
     )
 
     return redirect('package_dispatch_detail', pk=package_dispatch.pk)
+
   sending_agent = (
     package_dispatch.sending_agent
     and package_dispatch.sending_agent.user == request.user
@@ -1001,11 +1068,22 @@ def package_dispatch_detail(request, pk):
     package_dispatch.receiving_agent
     and package_dispatch.receiving_agent.user == request.user
    )
+
+  loyalty_card = get_open_loyalty_card(
+    package_dispatch.sending_customer
+    )
+  
+  loyalty_remaining = max(
+    0,
+    4 - loyalty_card.completed_parcels
+    )
   context = {
       'package_dispatch': package_dispatch,
       'packages': packages,
       'sending_agent': sending_agent,
       'receiving_agent': receiving_agent,
+      "loyalty_card": loyalty_card,
+      "loyalty_remaining": loyalty_remaining,
   }
   return render(request, 'logistics/package_dispatch_detail.html', context)
 

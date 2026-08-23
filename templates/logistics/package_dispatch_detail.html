@@ -15,6 +15,61 @@
     .badge-status { padding: 6px 12px; font-weight: 600; border-radius: 6px; font-size: 0.75rem; text-transform: uppercase; }
 </style>
 
+<style>
+
+.loyalty-card {
+    margin-top: 15px;
+    padding: 12px 8px;
+    border: 1.5px solid #111827;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.loyalty-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.loyalty-message {
+    font-size: 10px;
+    color: #555;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.loyalty-circles {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.loyalty-circle {
+    width: 42px;
+    height: 42px;
+    border: 2px solid #111827;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.loyalty-circle.free {
+    font-size: 9px;
+    background: #111827;
+    color: white;
+}
+
+.loyalty-note {
+    margin-top: 7px;
+    font-size: 9px;
+    color: #666;
+}
+
+</style>
+
 <section class="get_touch_area py-4">
 <div class="container from_area">
     
@@ -98,6 +153,47 @@
             </div>
         </div>
     </div>
+    <div class="card">
+        <div class="loyalty-card">
+
+        <div class="loyalty-title">
+            🎁 LOYALTY REWARD
+        </div>
+
+        <div class="loyalty-message">
+            Every time you parcel with us, you get a tick.
+            After 4 successful parcels with us, your 5th transport is FREE!
+        </div>
+
+        <div class="loyalty-circles">
+
+            {% for i in "1234" %}
+                <div class="loyalty-circle">
+                    {% if forloop.counter <= loyalty_card.completed_parcels %}
+                        ✓
+                    {% else %}
+                        {{ forloop.counter }}
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="loyalty-circle free">
+                FREE
+            </div>
+
+        </div>
+        {% if loyalty_card.reward_earned %}
+        <div class="loyalty-note">
+            🎉 You've earned your FREE transport!
+        </div>
+        {% else %}
+            <div class="loyalty-note">
+                {{ loyalty_remaining }} more parcel{{ loyalty_remaining|pluralize }} to FREE transport
+            </div>
+        {% endif %}
+        </div>
+    </div>
+
 
     <!-- ACTION BUTTONS CARD -->
     <div class="card">

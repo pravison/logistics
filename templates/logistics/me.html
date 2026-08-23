@@ -1265,3 +1265,1714 @@ document.addEventListener("DOMContentLoaded", function () {
     </div>
 
 </div>
+
+
+
+<script>
+let bluetoothDevice = null;
+let bluetoothServer = null;
+let printerCharacteristic = null;
+
+// Your printer's UUIDs may be different!
+const PRINTER_SERVICE_UUID = '000018f0-0000-1000-8000-00805f9b34fb';
+
+// Common characteristic UUIDs used by thermal printers.
+// Your printer may use another one.
+const PRINTER_CHARACTERISTIC_UUID =
+    '00002af1-0000-1000-8000-00805f9b34fb';
+
+
+// ======================================================
+// CONNECT TO PRINTER
+// ======================================================
+async function connectBluetoothPrinter() {
+
+    // If we already have a connected printer, reuse it
+    if (bluetoothDevice?.gatt?.connected && printerCharacteristic) {
+        console.log('Printer already connected');
+        return true;
+    }
+
+    try {
+
+        // If we have a previously selected device,
+        // try reconnecting without showing the Bluetooth picker.
+        if (bluetoothDevice) {
+
+            console.log('Trying to reconnect to:', bluetoothDevice.name);
+
+            if (bluetoothDevice.gatt.connected) {
+                bluetoothServer = bluetoothDevice.gatt;
+            } else {
+                bluetoothServer = await bluetoothDevice.gatt.connect();
+            }
+
+            await findPrinterCharacteristic();
+
+            console.log('Printer reconnected');
+
+            return true;
+        }
+
+        // First connection only
+        console.log('Requesting Bluetooth printer...');
+
+        bluetoothDevice = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [
+                PRINTER_SERVICE_UUID
+            ]
+        });
+
+        // Listen for unexpected disconnections
+        bluetoothDevice.addEventListener(
+            'gattserverdisconnected',
+            handlePrinterDisconnected
+        );
+
+        bluetoothServer = await bluetoothDevice.gatt.connect();
+
+        await findPrinterCharacteristic();
+
+        console.log(
+            'Connected to printer:',
+            bluetoothDevice.name
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error('Bluetooth connection failed:', error);
+
+        return false;
+    }
+}
+
+
+// ======================================================
+// FIND THE PRINTER WRITE CHARACTERISTIC
+// ======================================================
+async function findPrinterCharacteristic() {
+
+    if (!bluetoothServer) {
+        throw new Error('Bluetooth server not connected');
+    }
+
+    const service =
+        await bluetoothServer.getPrimaryService(
+            PRINTER_SERVICE_UUID
+        );
+
+    // Get the characteristics
+    const characteristics =
+        await service.getCharacteristics();
+
+    console.log('Printer characteristics:', characteristics);
+
+    // Find a characteristic that allows writing
+    printerCharacteristic = characteristics.find(c =>
+        c.properties.write ||
+        c.properties.writeWithoutResponse
+    );
+
+    if (!printerCharacteristic) {
+        throw new Error(
+            'Could not find a writable printer characteristic.'
+        );
+    }
+
+    console.log(
+        'Writable characteristic found:',
+        printerCharacteristic.uuid
+    );
+}
+
+
+// ======================================================
+// HANDLE DISCONNECTION
+// ======================================================
+function handlePrinterDisconnected(event) {
+
+    console.log(
+        'Printer disconnected:',
+        event.target.name
+    );
+
+    bluetoothServer = null;
+    printerCharacteristic = null;
+
+    // IMPORTANT:
+    // We do NOT set bluetoothDevice = null.
+    //
+    // This allows the next Print click to reconnect
+    // without asking the user to select the printer again.
+}
+
+// ======================================================
+// THERMAL RECEIPT SETTINGS
+// ======================================================
+
+// 58mm printer
+const PRINTER_WIDTH = 32;
+
+// If you have an 80mm printer, change to:
+// const PRINTER_WIDTH = 42;
+
+
+// ======================================================
+// BASIC TEXT HELPERS
+// ======================================================
+
+function cleanText(text) {
+
+    if (!text) {
+        return '';
+    }
+
+    return text
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+
+function centerText(text) {
+
+    text = cleanText(text);
+
+    if (text.length >= PRINTER_WIDTH) {
+        return text.substring(0, PRINTER_WIDTH);
+    }
+
+    const spaces =
+        Math.floor(
+            (PRINTER_WIDTH - text.length) / 2
+        );
+
+    return ' '.repeat(spaces) + text;
+}
+
+
+function leftRightText(left, right) {
+
+    left = cleanText(left);
+    right = cleanText(right);
+
+    // If the right side itself is too long,
+    // allow it to occupy the available space.
+    if (right.length >= PRINTER_WIDTH) {
+        right = right.substring(0, PRINTER_WIDTH);
+    }
+
+    const available =
+        PRINTER_WIDTH -
+        left.length -
+        right.length;
+
+    if (available < 1) {
+
+        // Shorten the left side if necessary
+        const maxLeft =
+            PRINTER_WIDTH -
+            right.length -
+            1;
+
+        left =
+            left.substring(
+                0,
+                Math.max(0, maxLeft)
+            );
+
+        return (
+            left +
+            ' '.repeat(
+                Math.max(
+                    1,
+                    PRINTER_WIDTH -
+                    left.length -
+                    right.length
+                )
+            ) +
+            right
+        );
+    }
+
+    return (
+        left +
+        ' '.repeat(available) +
+        right
+    );
+}
+
+
+function wrapText(text, width = PRINTER_WIDTH) {
+
+    text = cleanText(text);
+
+    if (!text) {
+        return [''];
+    }
+
+    const words = text.split(' ');
+    const lines = [];
+
+    let current = '';
+
+    for (const word of words) {
+
+        if (!current) {
+            current = word;
+            continue;
+        }
+
+        if (
+            current.length +
+            1 +
+            word.length <= width
+        ) {
+
+            current += ' ' + word;
+
+        } else {
+
+            lines.push(current);
+            current = word;
+        }
+    }
+
+    if (current) {
+        lines.push(current);
+    }
+
+    return lines;
+}
+
+
+function separator(char = '-') {
+
+    return char.repeat(PRINTER_WIDTH);
+}
+
+
+// ======================================================
+// ESC/POS COMMANDS
+// ======================================================
+
+const ESC = 0x1B;
+const GS  = 0x1D;
+
+
+// Initialize printer
+const ESC_INIT = [
+    ESC, 0x40
+];
+
+
+// Alignment
+const ALIGN_LEFT = [
+    ESC, 0x61, 0x00
+];
+
+const ALIGN_CENTER = [
+    ESC, 0x61, 0x01
+];
+
+const ALIGN_RIGHT = [
+    ESC, 0x61, 0x02
+];
+
+
+// Bold
+const BOLD_ON = [
+    ESC, 0x45, 0x01
+];
+
+const BOLD_OFF = [
+    ESC, 0x45, 0x00
+];
+
+
+// Normal text size
+const NORMAL_SIZE = [
+    GS, 0x21, 0x00
+];
+
+
+// Larger text
+const LARGE_SIZE = [
+    GS, 0x21, 0x11
+];
+
+
+// Double width + height
+const DOUBLE_SIZE = [
+    GS, 0x21, 0x11
+];
+
+
+// Underline
+const UNDERLINE_ON = [
+    ESC, 0x2D, 0x01
+];
+
+const UNDERLINE_OFF = [
+    ESC, 0x2D, 0x00
+];
+
+
+// Feed paper
+const FEED = [
+    0x0A,
+    0x0A,
+    0x0A,
+    0x0A
+];
+
+
+// Cut paper
+const CUT = [
+    GS,
+    0x56,
+    0x00
+];
+
+
+// ======================================================
+// BYTE BUILDER
+// ======================================================
+
+class EscPosBuilder {
+
+    constructor() {
+
+        this.parts = [];
+
+    }
+
+    command(bytes) {
+
+        this.parts.push(
+            new Uint8Array(bytes)
+        );
+
+        return this;
+    }
+
+
+    text(text) {
+
+        const encoder =
+            new TextEncoder();
+
+        this.parts.push(
+            encoder.encode(text)
+        );
+
+        return this;
+    }
+
+
+    line(text = '') {
+
+        return this.text(
+            text + '\n'
+        );
+    }
+
+
+    center() {
+
+        return this.command(
+            ALIGN_CENTER
+        );
+    }
+
+
+    left() {
+
+        return this.command(
+            ALIGN_LEFT
+        );
+    }
+
+
+    right() {
+
+        return this.command(
+            ALIGN_RIGHT
+        );
+    }
+
+
+    bold() {
+
+        return this.command(
+            BOLD_ON
+        );
+    }
+
+
+    normal() {
+
+        return this.command(
+            BOLD_OFF
+        );
+    }
+
+
+    large() {
+
+        return this.command(
+            LARGE_SIZE
+        );
+    }
+
+
+    normalSize() {
+
+        return this.command(
+            NORMAL_SIZE
+        );
+    }
+
+
+    build() {
+
+        let totalLength = 0;
+
+        for (const part of this.parts) {
+            totalLength += part.length;
+        }
+
+        const result =
+            new Uint8Array(totalLength);
+
+        let position = 0;
+
+        for (const part of this.parts) {
+
+            result.set(
+                part,
+                position
+            );
+
+            position += part.length;
+        }
+
+        return result;
+    }
+}
+
+
+// ======================================================
+// GET TEXT FROM A ROW
+// ======================================================
+
+function getRowValues(row) {
+
+    const label =
+        row.querySelector('.label');
+
+    const value =
+        row.querySelector('.value');
+
+    return {
+
+        label: label
+            ? cleanText(label.innerText)
+            : '',
+
+        value: value
+            ? cleanText(value.innerText)
+            : ''
+    };
+}
+
+
+// ======================================================
+// BUILD THE ACTUAL RECEIPT
+// ======================================================
+
+function buildReceiptForPrinter() {
+
+    const receipt =
+        document.getElementById('receipt');
+
+    if (!receipt) {
+        throw new Error(
+            'Receipt element not found.'
+        );
+    }
+
+
+    const printer =
+        new EscPosBuilder();
+
+
+    // --------------------------------------------------
+    // INITIALIZE
+    // --------------------------------------------------
+
+    printer.command(ESC_INIT);
+    printer.command(NORMAL_SIZE);
+
+
+    // ==================================================
+    // COMPANY HEADER
+    // ==================================================
+
+    printer.center();
+
+    printer.bold();
+
+    printer.line(
+        'GARANTII LOGISTICS'
+    );
+
+    printer.normal();
+
+    printer.line(
+        'Travis House, 3rd Floor, Shop B32'
+    );
+
+    printer.line(
+        'Next to Afya Centre'
+    );
+
+    printer.line(
+        'Contact: 0706 420 043'
+    );
+
+    printer.line();
+
+
+    // --------------------------------------------------
+    // PARCEL RECEIPT
+    // --------------------------------------------------
+
+    printer.bold();
+    printer.large();
+
+    printer.line(
+        'PARCEL RECEIPT'
+    );
+
+    printer.normal();
+    printer.normalSize();
+
+
+    // Get issued date from the actual receipt
+    const small =
+        receipt.querySelector(
+            '.company small'
+        );
+
+    if (small) {
+
+        const issued =
+            cleanText(
+                small.innerText
+            );
+
+        printer.line(
+            issued
+        );
+    }
+
+
+    printer.line(
+        separator('-')
+    );
+
+
+    // ==================================================
+    // TRACKING NUMBER
+    // ==================================================
+
+    const directRows =
+        receipt.querySelectorAll(
+            ':scope > .row-item'
+        );
+
+    if (directRows.length > 0) {
+
+        const tracking =
+            getRowValues(
+                directRows[0]
+            );
+
+        printer.left();
+
+        printer.bold();
+
+        printer.line(
+            leftRightText(
+                tracking.label,
+                tracking.value
+            )
+        );
+
+        printer.normal();
+
+        printer.line();
+    }
+
+
+    // ==================================================
+    // SENDER / RECEIVER SECTIONS
+    // ==================================================
+
+    const sectionTitles =
+        receipt.querySelectorAll(
+            ':scope > .section-title'
+        );
+
+
+    // --------------------------------------------------
+    // SENDER
+    // --------------------------------------------------
+
+    if (sectionTitles[0]) {
+
+        printer.bold();
+
+        printer.line(
+            'SENDER'
+        );
+
+        printer.normal();
+
+        const senderRows =
+            getRowsAfterSection(
+                sectionTitles[0],
+                sectionTitles[1]
+            );
+
+        printSenderReceiverRows(
+            printer,
+            senderRows
+        );
+
+        printer.line();
+    }
+
+
+    // --------------------------------------------------
+    // RECEIVER
+    // --------------------------------------------------
+
+    if (sectionTitles[1]) {
+
+        printer.bold();
+
+        printer.line(
+            'RECEIVER'
+        );
+
+        printer.normal();
+
+        const receiverRows =
+            getRowsAfterSection(
+                sectionTitles[1],
+                sectionTitles[2]
+            );
+
+        printSenderReceiverRows(
+            printer,
+            receiverRows
+        );
+
+        printer.line();
+    }
+
+
+    // ==================================================
+    // PACKAGE DETAILS
+    // ==================================================
+
+    if (sectionTitles[2]) {
+
+        printer.bold();
+
+        printer.line(
+            'PACKAGE(S) DETAILS'
+        );
+
+        printer.normal();
+
+        printer.line(
+            separator('-')
+        );
+
+
+        // Package containers
+        const packageBoxes =
+            receipt.querySelectorAll(
+                ':scope > div[style*="border: 1px dashed"]'
+            );
+
+
+        if (packageBoxes.length) {
+
+            packageBoxes.forEach(
+                (box, index) => {
+
+                    printer.bold();
+
+                    printer.line(
+                        `PACKAGE ${index + 1}`
+                    );
+
+                    printer.normal();
+
+
+                    const rows =
+                        box.querySelectorAll(
+                            '.row-item'
+                        );
+
+
+                    rows.forEach(row => {
+
+                        const values =
+                            getRowValues(row);
+
+                        printer.line(
+                            leftRightText(
+                                values.label,
+                                values.value
+                            )
+                        );
+                    });
+
+
+                    printer.line(
+                        separator('-')
+                    );
+                }
+            );
+
+        } else {
+
+            printer.line(
+                'No packages recorded.'
+            );
+
+            printer.line(
+                separator('-')
+            );
+        }
+    }
+
+
+    // ==================================================
+    // TOTAL PAID
+    // ==================================================
+
+    // Find the Total Paid row
+    const allRows =
+        receipt.querySelectorAll(
+            '.row-item'
+        );
+
+
+    let totalRow = null;
+
+    allRows.forEach(row => {
+
+        const values =
+            getRowValues(row);
+
+        if (
+            values.label
+                .toLowerCase() ===
+            'total paid'
+        ) {
+
+            totalRow = values;
+        }
+    });
+
+
+    if (totalRow) {
+
+        printer.bold();
+
+        printer.line(
+            separator('=')
+        );
+
+        printer.line(
+            leftRightText(
+                totalRow.label,
+                totalRow.value
+            )
+        );
+
+        printer.line(
+            separator('=')
+        );
+
+        printer.normal();
+    }
+
+
+    // ==================================================
+    // FOOTER
+    // ==================================================
+
+    printer.center();
+
+    printer.line();
+
+    printer.line(
+        'Thank you for choosing'
+    );
+
+    printer.bold();
+
+    printer.line(
+        'GARANTII LOGISTICS'
+    );
+
+    printer.normal();
+
+    printer.line();
+
+    printer.line(
+        'Please keep this receipt'
+    );
+
+    printer.line(
+        'until your parcel has'
+    );
+
+    printer.line(
+        'been collected.'
+    );
+
+    printer.line();
+
+    printer.line();
+
+    // Feed
+    printer.command(FEED);
+
+
+    // Cut
+    printer.command(CUT);
+
+
+    return printer.build();
+}
+
+
+// ======================================================
+// GET ROWS BETWEEN TWO SECTIONS
+// ======================================================
+
+function getRowsAfterSection(
+    startSection,
+    endSection
+) {
+
+    const rows = [];
+
+    let element =
+        startSection.nextElementSibling;
+
+
+    while (
+        element &&
+        element !== endSection
+    ) {
+
+        if (
+            element.classList &&
+            element.classList.contains(
+                'row-item'
+            )
+        ) {
+
+            rows.push(element);
+        }
+
+        element =
+            element.nextElementSibling;
+    }
+
+    return rows;
+}
+
+
+// ======================================================
+// PRINT SENDER / RECEIVER ROWS
+// ======================================================
+
+function printSenderReceiverRows(
+    printer,
+    rows
+) {
+
+    rows.forEach((row, index) => {
+
+        const values =
+            getRowValues(row);
+
+
+        if (index === 0) {
+
+            // Customer name + phone
+            printer.bold();
+
+            printer.line(
+                values.label
+            );
+
+            printer.normal();
+
+            printer.line(
+                values.value
+            );
+
+        } else {
+
+            // From / To
+            printer.bold();
+
+            printer.line(
+                values.label
+            );
+
+            printer.normal();
+
+
+            const wrapped =
+                wrapText(
+                    values.value
+                );
+
+            wrapped.forEach(
+                line => {
+                    printer.line(line);
+                }
+            );
+        }
+    });
+}
+
+
+// ======================================================
+// SEND FORMATTED RECEIPT TO PRINTER
+// ======================================================
+
+async function sendToPrinter() {
+
+    if (!printerCharacteristic) {
+
+        throw new Error(
+            'Printer characteristic is not available.'
+        );
+    }
+
+
+    // Build formatted ESC/POS receipt
+    const data =
+        buildReceiptForPrinter();
+
+
+    console.log(
+        'Sending formatted receipt:',
+        data
+    );
+
+
+    // --------------------------------------------------
+    // BLE printers have packet-size limits.
+    // --------------------------------------------------
+
+    const CHUNK_SIZE = 180;
+
+
+    for (
+        let i = 0;
+        i < data.length;
+        i += CHUNK_SIZE
+    ) {
+
+        const chunk =
+            data.slice(
+                i,
+                Math.min(
+                    i + CHUNK_SIZE,
+                    data.length
+                )
+            );
+
+
+        if (
+            printerCharacteristic.properties
+                .writeWithoutResponse
+        ) {
+
+            await printerCharacteristic
+                .writeValueWithoutResponse(
+                    chunk
+                );
+
+        } else {
+
+            await printerCharacteristic
+                .writeValue(
+                    chunk
+                );
+        }
+
+
+        // Small delay prevents BLE overflow
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    25
+                )
+        );
+    }
+
+
+    console.log(
+        'Formatted receipt sent to printer.'
+    );
+}
+
+// ======================================================
+// PRINT THE ACTUAL DJANGO RECEIPT
+// ======================================================
+async function printBluetooth() {
+
+    if (!('bluetooth' in navigator)) {
+
+        alert(
+            'Web Bluetooth is not supported by this browser/device.'
+        );
+
+        return;
+    }
+
+    try {
+
+        // ----------------------------------------------
+        // Connect if necessary
+        // ----------------------------------------------
+
+        const connected =
+            await connectBluetoothPrinter();
+
+        if (!connected) {
+
+            alert(
+                'Could not connect to Bluetooth printer.'
+            );
+
+            return;
+        }
+
+
+        // ----------------------------------------------
+        // Build the actual Django receipt directly from
+        // the DOM and convert it to ESC/POS bytes.
+        // ----------------------------------------------
+
+        await sendToPrinter();
+
+
+        console.log(
+            'Receipt printed successfully.'
+        );
+
+
+        alert(
+            'Receipt printed successfully.'
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            'Bluetooth printing failed:',
+            error
+        );
+
+        // Clear connection references,
+        // but KEEP bluetoothDevice.
+        //
+        // This is important because the next click
+        // can reconnect to the same printer.
+
+        bluetoothServer = null;
+        printerCharacteristic = null;
+
+        alert(
+            'Printing failed. The printer may have disconnected.'
+        );
+    }
+}
+
+// ======================================================
+// PRINT BUTTON
+// ======================================================
+const btPrintBtn = document.getElementById('btPrintBtn');
+
+if (btPrintBtn) {
+    btPrintBtn.addEventListener('click', async function () {
+
+        this.disabled = true;
+
+        try {
+            await printBluetooth();
+        } finally {
+            this.disabled = false;
+        }
+    });
+} else {
+    console.warn('Bluetooth print button #btPrintBtn was not found.');
+}
+</script>
+
+<!-- my parcel payment old script -->
+ 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const dispatchId = "{{ dispatch.id }}";
+    const transportCost = parseFloat("{{ remaining_transport_cost }}") || 0;
+    const customerPhone = "{{ dispatch.sending_customer.phone_number }}";
+
+    // Global grant total set to the delivery transport cost for this checkout view
+    const currentGrandTotal = transportCost;
+
+    // Elements
+    const mpesaBtn = document.getElementById("mpesaBtn");
+    const overlay = document.getElementById("mpesaOverlay");
+    const phoneInput = document.getElementById("mpesaPhone");
+    const totalInput = document.getElementById("mpesaTotal");
+    const statusBox = document.getElementById("mpesaStatus");
+    const continueBtn = document.getElementById("mpesaContinueBtn");
+    const closeBtn = document.getElementById("mpesaCloseBtn");
+
+    const walletBtn = document.getElementById("walletBtn");
+    const walletOverlay = document.getElementById("walletOverlay");
+    const walletCancelBtn = document.getElementById("walletCancelBtn");
+    const walletPayBtn = document.getElementById("walletPayBtn");
+    const walletBalance = document.getElementById("walletBalance");
+    const walletAmount = document.getElementById("walletAmount");
+    const walletStatus = document.getElementById("walletStatus");
+
+    const pointsBtn = document.getElementById("pointsBtn");
+    const pointsOverlay = document.getElementById("pointsOverlay");
+    const pointsStatus = document.getElementById("pointsStatus");
+    const availablePoints = document.getElementById("availablePoints");
+    const pointsAmount = document.getElementById("pointsAmount");
+    const pointsValue = document.getElementById("pointsValue");
+    const pointsRequired = document.getElementById("pointsRequired");
+    const pointsCancelBtn = document.getElementById("pointsCancelBtn");
+    const pointsPayBtn = document.getElementById("pointsPayBtn");
+
+    // Utilities
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function showStatus(message, isError = false) {
+        if (!statusBox) return;
+        statusBox.innerHTML = message;
+        statusBox.style.color = isError ? "#dc3545" : "#198754";
+    }
+
+    /* =========================
+       OPEN/CLOSE MPESA
+    ========================= */
+    mpesaBtn.addEventListener("click", function () {
+        phoneInput.value = customerPhone;
+        totalInput.value = transportCost;
+        showStatus("");
+        overlay.classList.remove("hidden");
+    });
+
+    closeBtn.addEventListener("click", function () {
+        overlay.classList.add("hidden");
+    });
+
+    /* =========================
+       STK PUSH
+    ========================= */
+    continueBtn.addEventListener("click", async function () {
+        const paying_phone_number = phoneInput.value.trim();
+        const amount = parseFloat(totalInput.value);
+
+        if (isNaN(amount) || amount < 10) {
+            alert("Minimum payment amount is Ksh 10.");
+            return;
+        }
+
+        if (amount > transportCost) {
+            alert(`Maximum payable amount is Ksh ${transportCost.toFixed(2)}.`);
+            return;
+        }
+
+        continueBtn.disabled = true;
+        continueBtn.innerText = "Processing...";
+        showStatus("⏳ Sending STK Push...");
+
+        try {
+            const response = await fetch("{% url 'mpesa_stk_push' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({
+                    customer_phone: customerPhone,
+                    paying_phone_number: paying_phone_number,
+                    amount: amount,
+                    dispatch_id: dispatchId,
+                })
+            });
+
+            if (!response.ok) throw new Error("Server returned " + response.status);
+
+            const data = await response.json();
+
+            if (!data.success) {
+                showStatus("❌ " + (data.message || "STK Push failed"), true);
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+                return;
+            }
+
+            showStatus("📱 STK Push sent. Enter your M-Pesa PIN.");
+            pollPayment(data.checkout_request_id);
+
+        } catch (error) {
+            console.error(error);
+            showStatus("❌ Network error. Please try again.", true);
+            continueBtn.disabled = false;
+            continueBtn.innerText = "Continue";
+        }
+    });
+
+    /* =========================
+       POLL PAYMENT
+    ========================= */
+    function pollPayment(checkoutId) {
+        let attempts = 0;
+        const maxAttempts = 60;
+
+        const interval = setInterval(async () => {
+            attempts++;
+            try {
+                const response = await fetch(`/payments/mpesa-payment/status/${checkoutId}/`);
+                if (!response.ok) throw new Error("Status request failed");
+
+                const data = await response.json();
+                showStatus(data.message, data.status === "FAILED");
+
+                if (data.status === "PROCESSED" || data.status === "EXTRA_PAID") {
+                    clearInterval(interval);
+                   setTimeout(() => {
+                        window.location.href = "{% url 'parcel_receipt' dispatch.id %}";
+                    }, 3000);
+                    return;
+                }
+
+                if (data.status === "FAILED") {
+                    clearInterval(interval);
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+                    return;
+                }
+
+                if (attempts >= maxAttempts) {
+                    clearInterval(interval);
+                    showStatus("⏳ Taking longer than expected. Please wait while we update your payment.", false);
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+                }
+            } catch (error) {
+                console.error(error);
+                clearInterval(interval);
+                showStatus("❌ Unable to verify payment status.", true);
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+            }
+        }, 3000);
+    }
+
+    /* =========================
+       WALLET PAYMENT MODAL
+    ========================= */
+    function showWalletStatus(message, error = false) {
+        walletStatus.style.display = "block";
+        walletStatus.innerHTML = message;
+        walletStatus.className = error ? "alert alert-danger" : "alert alert-success";
+    }
+
+    walletBtn.addEventListener("click", async function () {
+        walletOverlay.classList.remove("hidden");
+        walletStatus.style.display = "none";
+        walletBalance.innerHTML = "Loading...";
+        walletAmount.innerHTML = currentGrandTotal.toFixed(2);
+
+        try {
+            const formData = new FormData();
+            {% with active_api_keys as key_obj %}
+            formData.append("api_key", "{{ key_obj.key|escapejs }}");
+            {% endwith %}
+            formData.append("phone", customerPhone);
+
+            const response = await fetch("https://accounts.garantiimall.shop/ajax/get-or-create-wallet/", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            if (!data.success) {
+                walletBalance.innerHTML = "0";
+                showWalletStatus(data.error || "Unable to load wallet.", true);
+                return;
+            }
+            walletBalance.innerHTML = data.wallet_balance;
+        } catch (err) {
+            console.log(err);
+            walletBalance.innerHTML = "0";
+            showWalletStatus("Unable to load wallet.", true);
+        }
+    });
+
+    walletCancelBtn.addEventListener("click", function () {
+        walletOverlay.classList.add("hidden");
+    });
+
+    walletPayBtn.addEventListener("click", async function () {
+        walletPayBtn.disabled = true;
+        walletPayBtn.innerHTML = "Processing...";
+
+        try {
+            const response = await fetch("{% url 'wallet_payment' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({
+                    customer_phone: customerPhone,
+                    amount: currentGrandTotal,
+                    dispatch_id: dispatchId
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                showWalletStatus("✅ Payment successful.");
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showWalletStatus(data.message, true);
+            }
+        } catch (err) {
+            console.log(err);
+            showWalletStatus("Network error", true);
+        }
+
+        walletPayBtn.disabled = false;
+        walletPayBtn.innerHTML = "Pay";
+    });
+
+    /* =================================
+     paying with points
+    ===================================*/
+
+    //opening model
+
+    function showPointsStatus(message,error=false){
+
+            pointsStatus.style.display="block";
+
+            pointsStatus.innerHTML=message;
+
+            pointsStatus.className=error
+                ? "alert alert-danger"
+                : "alert alert-success";
+
+        }
+
+        
+        pointsBtn.addEventListener("click",async function(){
+
+        pointsOverlay.classList.remove("hidden");
+
+        pointsStatus.style.display="none";
+
+        availablePoints.innerHTML="Loading...";
+
+        pointsAmount.innerHTML=currentGrandTotal.toFixed(2);
+
+        try{
+
+            const formData=new FormData();
+
+            formData.append(
+                "phone",
+                customerPhone
+            );
+
+            const response=await fetch(
+                "{% url 'get_customer_credits' %}",
+                {
+                    method:"POST",
+                    headers:{
+                        "X-CSRFToken":getCookie("csrftoken")
+                    },
+                    body:formData
+                }
+            );
+
+            const data=await response.json();
+
+            if(!data.success){
+
+                showPointsStatus(
+                    data.error,
+                    true
+                );
+
+                return;
+
+            }
+
+            availablePoints.innerHTML=data.available_points;
+
+            pointsValue.innerHTML=data.value.toFixed(2);
+
+            pointsRequired.innerHTML = (currentGrandTotal).toLocaleString();
+
+        }
+
+        catch(err){
+
+            showPointsStatus(
+                "Unable to fetch points.",
+                true
+            );
+
+        }
+
+    });
+    // cancel
+    pointsCancelBtn.addEventListener("click",function(){
+
+        pointsOverlay.classList.add("hidden");
+
+    });
+
+    // =========================================
+    // PAY USING TRANSPORT CREDITS
+    // =========================================
+
+    const MIN_REDEEMABLE_CREDITS = 300;
+
+    pointsPayBtn.addEventListener("click", async function () {
+
+        const availableCredits = parseFloat(
+            availablePoints.textContent.replace(/,/g, "")
+        ) || 0;
+
+        // Minimum redemption requirement
+        if (availableCredits < MIN_REDEEMABLE_CREDITS) {
+            showPointsStatus(
+                `You need 300 or more credits to pay with credits. ` +
+                `You currently have ${availableCredits} credits.`
+            );
+            return;
+        }
+
+        // IMPORTANT: make this a NUMBER
+        const amount = parseFloat(currentGrandTotal);
+
+        if (isNaN(amount) || amount < 10) {
+            showPointsStatus("Minimum payment amount is Ksh 10.");
+            return;
+        }
+
+        if (amount > transportCost) {
+            showPointsStatus(
+                `Maximum payable amount is Ksh ${Number(transportCost).toFixed(2)}.`
+            );
+            return;
+        }
+
+        pointsPayBtn.disabled = true;
+        pointsPayBtn.innerHTML = "Processing...";
+
+        try {
+
+            const response = await fetch(
+                "{% url 'pay_using_credits' %}",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+
+                    body: JSON.stringify({
+                        customer_phone: customerPhone,
+                        amount: amount,
+                        dispatch_id: dispatchId,
+                    })
+                }
+            );
+
+            // Get raw response first
+            const responseText = await response.text();
+
+            console.log("HTTP STATUS:", response.status);
+            console.log("RAW RESPONSE:", responseText);
+
+            let data;
+
+            try {
+                data = JSON.parse(responseText);
+            } catch (jsonError) {
+
+                console.error("JSON PARSE ERROR:", jsonError);
+                console.error("SERVER RETURNED:", responseText);
+
+                showPointsStatus(
+                    "Payment was processed, but the server response could not be read."
+                );
+
+                return;
+            }
+
+            console.log("PAYMENT RESPONSE:", data);
+
+            if (data.success) {
+
+                const remainingCredits = parseFloat(
+                    data.remaining_credits
+                ) || 0;
+
+                showPointsStatus(
+                    `Payment successful! You have ${remainingCredits.toFixed(2)} credits remaining.`
+                );
+
+                setTimeout(() => {
+                    window.location.href = "{% url 'parcel_receipt' dispatch.id %}";
+                }, 3000);
+
+                return;
+            }
+            // Backend returned success=false
+            showPointsStatus(
+                data.message || "Payment could not be completed."
+            );
+
+        } catch (error) {
+
+            console.error("PAYMENT JAVASCRIPT ERROR:", error);
+
+            showPointsStatus(
+                "Something went wrong. Please try again."
+            );
+
+        } finally {
+
+            pointsPayBtn.disabled = false;
+            pointsPayBtn.innerHTML = "Pay With Credit";
+        }
+    });
+
+    /* =================================
+    USE FREE LOYALTY REWARD MODAL
+    =================================== */
+
+    // Elements
+    const freeRewardBtn = document.getElementById("freeRewardBtn");
+    const freeRewardOverlay = document.getElementById("freeRewardOverlay");
+    const freeRewardCancelBtn = document.getElementById("freeRewardCancelBtn");
+    const freeRewardContinueBtn = document.getElementById("freeRewardContinueBtn");
+
+    // OPEN MODAL
+    if (freeRewardBtn) {
+        freeRewardBtn.addEventListener("click", function () {
+            if (freeRewardOverlay) {
+                freeRewardOverlay.classList.remove("hidden");
+            }
+        });
+    }
+
+    // CLOSE MODAL
+    if (freeRewardCancelBtn) {
+        freeRewardCancelBtn.addEventListener("click", function () {
+            if (freeRewardOverlay) {
+                freeRewardOverlay.classList.add("hidden");
+            }
+        });
+    }
+
+    // SUBMIT FREE REWARD PAYMENT
+    if (freeRewardContinueBtn) {
+        freeRewardContinueBtn.addEventListener("click", async function () {
+            freeRewardContinueBtn.disabled = true;
+            freeRewardContinueBtn.innerHTML = "Processing...";
+
+            try {
+                const response = await fetch("{% url 'use_free_reward' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    body: JSON.stringify({
+                        customer_phone: customerPhone,
+                        dispatch_id: dispatchId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    freeRewardContinueBtn.innerHTML = "Success!";
+                    setTimeout(function () {
+                        window.location.href = "{% url 'parcel_receipt' dispatch.id %}";
+                    }, 1500);
+                    return;
+                }
+
+                alert(data.message || "Unable to use your free reward.");
+
+            } catch (error) {
+                console.error("Free Reward Error:", error);
+                alert("Something went wrong while processing your reward. Please try again.");
+            } finally {
+                freeRewardContinueBtn.disabled = false;
+                freeRewardContinueBtn.innerHTML = "🎁 Continue";
+            }
+        });
+    }
+  
+});
+
+</script>

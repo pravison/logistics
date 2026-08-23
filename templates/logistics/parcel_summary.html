@@ -218,6 +218,62 @@ Checkout
 </style>
 
 
+<style>
+
+.loyalty-card {
+    margin-top: 15px;
+    padding: 12px 8px;
+    border: 1.5px solid #111827;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.loyalty-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.loyalty-message {
+    font-size: 10px;
+    color: #555;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.loyalty-circles {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.loyalty-circle {
+    width: 42px;
+    height: 42px;
+    border: 2px solid #111827;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.loyalty-circle.free {
+    font-size: 9px;
+    background: #111827;
+    color: white;
+}
+
+.loyalty-note {
+    margin-top: 7px;
+    font-size: 9px;
+    color: #666;
+}
+
+</style>
+
+
 
 <div class="container">
 
@@ -403,9 +459,52 @@ Your parcel tracking number has been created successfully.
 Proceed with payment to receive your receipt and allow your parcel to be processed for dispatch.
 
 </div>
-<div class="d-flex gap-2 text-right mt-2">
-    <a class="btn btn-success" href="{% url 'parcel_receipt' dispatch.id %}">view receipt</a>
+
+<div class="loyalty-card">
+
+    <div class="loyalty-title">
+        🎁 LOYALTY REWARD
+    </div>
+
+    <div class="loyalty-message">
+        Every time you parcel with us, you get a tick.
+        After 4 successful parcels with us, your 5th transport is FREE!
+    </div>
+
+    <div class="loyalty-circles">
+
+        {% for i in "1234" %}
+            <div class="loyalty-circle">
+                {% if forloop.counter <= loyalty_card.completed_parcels %}
+                    ✓
+                {% else %}
+                    {{ forloop.counter }}
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div class="loyalty-circle free">
+            FREE
+        </div>
+
+    </div>
+
+    {% if loyalty_card.reward_earned %}
+        <div class="loyalty-note">
+            🎉 You've earned your FREE transport!
+        </div>
+    {% else %}
+        <div class="loyalty-note">
+            {{ loyalty_remaining }} more parcel{{ loyalty_remaining|pluralize }} to FREE transport
+        </div>
+    {% endif %}
+
 </div>
+
+Thank you for choosing <strong>Garantii Logistics</strong>.
+
+
+
 <div class="d-flex gap-2 text-right mt-2">
     <button
         type="button"
@@ -421,6 +520,25 @@ Proceed with payment to receive your receipt and allow your parcel to be process
     </button>
 </div>
 
+<div class="d-flex gap-2 text-right mt-2">
+    <a type="button" class="btn btn-success fw-bold  flex-fill" href="{% url 'parcel_receipt' dispatch.id %}">view receipt</a>
+    {% if loyalty_card.reward_earned %}
+    <button
+        type="button"
+        id="freeRewardBtn"
+        class="btn btn-success fw-bold flex-fill">
+        🎁 Use Your Free Reward
+    </button>
+    {% else %}
+    <button
+        type="button"
+        id="pointsBtn"
+        class="btn btn-success fw-bold flex-fill">
+        Pay with points
+    </button>
+    {% endif %}
+</div>
+
 </div>
 
 </div>
@@ -431,10 +549,8 @@ Proceed with payment to receive your receipt and allow your parcel to be process
 document.addEventListener("DOMContentLoaded", function () {
 
     const dispatchId = "{{ dispatch.id }}";
-    const transportCost = parseFloat("{{ dispatch.total_transport_cost }}") || 0;
+    const transportCost = parseFloat("{{ remaining_transport_cost }}") || 0;
     const customerPhone = "{{ dispatch.sending_customer.phone_number }}";
-
-    // Global grant total set to the delivery transport cost for this checkout view
     const currentGrandTotal = transportCost;
 
     // Elements
@@ -453,6 +569,22 @@ document.addEventListener("DOMContentLoaded", function () {
     const walletBalance = document.getElementById("walletBalance");
     const walletAmount = document.getElementById("walletAmount");
     const walletStatus = document.getElementById("walletStatus");
+
+    const pointsBtn = document.getElementById("pointsBtn");
+    const pointsOverlay = document.getElementById("pointsOverlay");
+    const pointsStatus = document.getElementById("pointsStatus");
+    const availablePoints = document.getElementById("availablePoints");
+    const pointsAmount = document.getElementById("pointsAmount");
+    const pointsValue = document.getElementById("pointsValue");
+    const pointsRequired = document.getElementById("pointsRequired");
+    const pointsCancelBtn = document.getElementById("pointsCancelBtn");
+    const pointsPayBtn = document.getElementById("pointsPayBtn");
+
+    // Free Reward Elements
+    const freeRewardBtn = document.getElementById("freeRewardBtn");
+    const freeRewardOverlay = document.getElementById("freeRewardOverlay");
+    const freeRewardCancelBtn = document.getElementById("freeRewardCancelBtn");
+    const freeRewardContinueBtn = document.getElementById("freeRewardContinueBtn");
 
     // Utilities
     function getCookie(name) {
@@ -479,78 +611,81 @@ document.addEventListener("DOMContentLoaded", function () {
     /* =========================
        OPEN/CLOSE MPESA
     ========================= */
-    mpesaBtn.addEventListener("click", function () {
-        phoneInput.value = customerPhone;
-        totalInput.value = transportCost;
-        showStatus("");
-        overlay.classList.remove("hidden");
-    });
+    if (mpesaBtn) {
+        mpesaBtn.addEventListener("click", function () {
+            phoneInput.value = customerPhone;
+            totalInput.value = transportCost;
+            showStatus("");
+            overlay.classList.remove("hidden");
+        });
+    }
 
-    closeBtn.addEventListener("click", function () {
-        overlay.classList.add("hidden");
-    });
+    if (closeBtn) {
+        closeBtn.addEventListener("click", function () {
+            overlay.classList.add("hidden");
+        });
+    }
 
     /* =========================
        STK PUSH
     ========================= */
-    continueBtn.addEventListener("click", async function () {
-        const paying_phone_number = phoneInput.value.trim();
-        const amount = parseFloat(totalInput.value);
+    if (continueBtn) {
+        continueBtn.addEventListener("click", async function () {
+            const paying_phone_number = phoneInput.value.trim();
+            const amount = parseFloat(totalInput.value);
 
-        if (isNaN(amount) || amount < 10) {
-            alert("Minimum payment amount is Ksh 10.");
-            return;
-        }
-
-        if (amount > transportCost) {
-            alert(`Maximum payable amount is Ksh ${transportCost.toFixed(2)}.`);
-            return;
-        }
-
-        continueBtn.disabled = true;
-        continueBtn.innerText = "Processing...";
-        showStatus("⏳ Sending STK Push...");
-
-        try {
-            const response = await fetch("{% url 'mpesa_stk_push' %}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken")
-                },
-                body: JSON.stringify({
-                    customer_phone: customerPhone,
-                    paying_phone_number: paying_phone_number,
-                    amount: amount,
-                    dispatch_id: dispatchId,
-                })
-            });
-
-            if (!response.ok) throw new Error("Server returned " + response.status);
-
-            const data = await response.json();
-
-            if (!data.success) {
-                showStatus("❌ " + (data.message || "STK Push failed"), true);
-                continueBtn.disabled = false;
-                continueBtn.innerText = "Continue";
+            if (isNaN(amount) || amount < 10) {
+                alert("Minimum payment amount is Ksh 10.");
                 return;
             }
 
-            showStatus("📱 STK Push sent. Enter your M-Pesa PIN.");
-            pollPayment(data.checkout_request_id);
+            if (amount > transportCost) {
+                alert(`Maximum payable amount is Ksh ${transportCost.toFixed(2)}.`);
+                return;
+            }
 
-        } catch (error) {
-            console.error(error);
-            showStatus("❌ Network error. Please try again.", true);
-            continueBtn.disabled = false;
-            continueBtn.innerText = "Continue";
-        }
-    });
+            continueBtn.disabled = true;
+            continueBtn.innerText = "Processing...";
+            showStatus("⏳ Sending STK Push...");
 
-    /* =========================
-       POLL PAYMENT
-    ========================= */
+            try {
+                const response = await fetch("{% url 'mpesa_stk_push' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    body: JSON.stringify({
+                        customer_phone: customerPhone,
+                        paying_phone_number: paying_phone_number,
+                        amount: amount,
+                        dispatch_id: dispatchId,
+                    })
+                });
+
+                if (!response.ok) throw new Error("Server returned " + response.status);
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    showStatus("❌ " + (data.message || "STK Push failed"), true);
+                    continueBtn.disabled = false;
+                    continueBtn.innerText = "Continue";
+                    return;
+                }
+
+                showStatus("📱 STK Push sent. Enter your M-Pesa PIN.");
+                pollPayment(data.checkout_request_id);
+
+            } catch (error) {
+                console.error(error);
+                showStatus("❌ Network error. Please try again.", true);
+                continueBtn.disabled = false;
+                continueBtn.innerText = "Continue";
+            }
+        });
+    }
+
     function pollPayment(checkoutId) {
         let attempts = 0;
         const maxAttempts = 60;
@@ -566,7 +701,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (data.status === "PROCESSED" || data.status === "EXTRA_PAID") {
                     clearInterval(interval);
-                   setTimeout(() => {
+                    setTimeout(() => {
                         window.location.href = "{% url 'parcel_receipt' dispatch.id %}";
                     }, 3000);
                     return;
@@ -599,80 +734,265 @@ document.addEventListener("DOMContentLoaded", function () {
        WALLET PAYMENT MODAL
     ========================= */
     function showWalletStatus(message, error = false) {
+        if (!walletStatus) return;
         walletStatus.style.display = "block";
         walletStatus.innerHTML = message;
         walletStatus.className = error ? "alert alert-danger" : "alert alert-success";
     }
 
-    walletBtn.addEventListener("click", async function () {
-        walletOverlay.classList.remove("hidden");
-        walletStatus.style.display = "none";
-        walletBalance.innerHTML = "Loading...";
-        walletAmount.innerHTML = currentGrandTotal.toFixed(2);
+    if (walletBtn) {
+        walletBtn.addEventListener("click", async function () {
+            walletOverlay.classList.remove("hidden");
+            walletStatus.style.display = "none";
+            walletBalance.innerHTML = "Loading...";
+            walletAmount.innerHTML = currentGrandTotal.toFixed(2);
 
-        try {
-            const formData = new FormData();
-            {% with active_api_keys as key_obj %}
-            formData.append("api_key", "{{ key_obj.key|escapejs }}");
-            {% endwith %}
-            formData.append("phone", customerPhone);
+            try {
+                const formData = new FormData();
+                {% with active_api_keys as key_obj %}
+                formData.append("api_key", "{{ key_obj.key|escapejs }}");
+                {% endwith %}
+                formData.append("phone", customerPhone);
 
-            const response = await fetch("https://accounts.garantiimall.shop/ajax/get-or-create-wallet/", {
-                method: "POST",
-                body: formData
-            });
+                const response = await fetch("https://accounts.garantiimall.shop/ajax/get-or-create-wallet/", {
+                    method: "POST",
+                    body: formData
+                });
 
-            const data = await response.json();
-            if (!data.success) {
+                const data = await response.json();
+                if (!data.success) {
+                    walletBalance.innerHTML = "0";
+                    showWalletStatus(data.error || "Unable to load wallet.", true);
+                    return;
+                }
+                walletBalance.innerHTML = data.wallet_balance;
+            } catch (err) {
+                console.log(err);
                 walletBalance.innerHTML = "0";
-                showWalletStatus(data.error || "Unable to load wallet.", true);
+                showWalletStatus("Unable to load wallet.", true);
+            }
+        });
+    }
+
+    if (walletCancelBtn) {
+        walletCancelBtn.addEventListener("click", function () {
+            walletOverlay.classList.add("hidden");
+        });
+    }
+
+    if (walletPayBtn) {
+        walletPayBtn.addEventListener("click", async function () {
+            walletPayBtn.disabled = true;
+            walletPayBtn.innerHTML = "Processing...";
+
+            try {
+                const response = await fetch("{% url 'wallet_payment' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    body: JSON.stringify({
+                        customer_phone: customerPhone,
+                        amount: currentGrandTotal,
+                        dispatch_id: dispatchId
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showWalletStatus("✅ Payment successful.");
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showWalletStatus(data.message, true);
+                }
+            } catch (err) {
+                console.log(err);
+                showWalletStatus("Network error", true);
+            }
+
+            walletPayBtn.disabled = false;
+            walletPayBtn.innerHTML = "Pay";
+        });
+    }
+
+    /* =================================
+       PAYING WITH POINTS
+    ===================================*/
+    function showPointsStatus(message, error = false) {
+        if (!pointsStatus) return;
+        pointsStatus.style.display = "block";
+        pointsStatus.innerHTML = message;
+        pointsStatus.className = error ? "alert alert-danger" : "alert alert-success";
+    }
+
+    if (pointsBtn) {
+        pointsBtn.addEventListener("click", async function () {
+            pointsOverlay.classList.remove("hidden");
+            pointsStatus.style.display = "none";
+            availablePoints.innerHTML = "Loading...";
+            pointsAmount.innerHTML = currentGrandTotal.toFixed(2);
+
+            try {
+                const formData = new FormData();
+                formData.append("phone", customerPhone);
+
+                const response = await fetch("{% url 'get_customer_credits' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    showPointsStatus(data.error, true);
+                    return;
+                }
+
+                availablePoints.innerHTML = data.available_points;
+                pointsValue.innerHTML = data.value.toFixed(2);
+                pointsRequired.innerHTML = (currentGrandTotal).toLocaleString();
+
+            } catch (err) {
+                showPointsStatus("Unable to fetch points.", true);
+            }
+        });
+    }
+
+    if (pointsCancelBtn) {
+        pointsCancelBtn.addEventListener("click", function () {
+            pointsOverlay.classList.add("hidden");
+        });
+    }
+
+    const MIN_REDEEMABLE_CREDITS = 300;
+
+    if (pointsPayBtn) {
+        pointsPayBtn.addEventListener("click", async function () {
+            const availableCredits = parseFloat(
+                availablePoints.textContent.replace(/,/g, "")
+            ) || 0;
+
+            if (availableCredits < MIN_REDEEMABLE_CREDITS) {
+                showPointsStatus(
+                    `You need 300 or more credits to pay with credits. You currently have ${availableCredits} credits.`
+                );
                 return;
             }
-            walletBalance.innerHTML = data.wallet_balance;
-        } catch (err) {
-            console.log(err);
-            walletBalance.innerHTML = "0";
-            showWalletStatus("Unable to load wallet.", true);
-        }
-    });
 
-    walletCancelBtn.addEventListener("click", function () {
-        walletOverlay.classList.add("hidden");
-    });
+            const amount = parseFloat(currentGrandTotal);
 
-    walletPayBtn.addEventListener("click", async function () {
-        walletPayBtn.disabled = true;
-        walletPayBtn.innerHTML = "Processing...";
-
-        try {
-            const response = await fetch("{% url 'wallet_payment' %}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken")
-                },
-                body: JSON.stringify({
-                    customer_phone: customerPhone,
-                    amount: currentGrandTotal,
-                    dispatch_id: dispatchId
-                })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                showWalletStatus("✅ Payment successful.");
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showWalletStatus(data.message, true);
+            if (isNaN(amount) || amount < 10) {
+                showPointsStatus("Minimum payment amount is Ksh 10.");
+                return;
             }
-        } catch (err) {
-            console.log(err);
-            showWalletStatus("Network error", true);
-        }
 
-        walletPayBtn.disabled = false;
-        walletPayBtn.innerHTML = "Pay";
-    });
+            if (amount > transportCost) {
+                showPointsStatus(`Maximum payable amount is Ksh ${Number(transportCost).toFixed(2)}.`);
+                return;
+            }
+
+            pointsPayBtn.disabled = true;
+            pointsPayBtn.innerHTML = "Processing...";
+
+            try {
+                const response = await fetch("{% url 'pay_using_credits' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    body: JSON.stringify({
+                        customer_phone: customerPhone,
+                        amount: amount,
+                        dispatch_id: dispatchId,
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const remainingCredits = parseFloat(data.remaining_credits) || 0;
+                    showPointsStatus(`Payment successful! You have ${remainingCredits.toFixed(2)} credits remaining.`);
+                    setTimeout(() => {
+                        window.location.href = "{% url 'parcel_receipt' dispatch.id %}";
+                    }, 3000);
+                    return;
+                }
+
+                showPointsStatus(data.message || "Payment could not be completed.");
+
+            } catch (error) {
+                console.error("PAYMENT JAVASCRIPT ERROR:", error);
+                showPointsStatus("Something went wrong. Please try again.");
+            } finally {
+                pointsPayBtn.disabled = false;
+                pointsPayBtn.innerHTML = "Pay With Credit";
+            }
+        });
+    }
+
+    /* =================================
+       USE FREE LOYALTY REWARD
+    =================================== */
+    if (freeRewardBtn) {
+        freeRewardBtn.addEventListener("click", function () {
+            if (freeRewardOverlay) {
+                freeRewardOverlay.classList.remove("hidden");
+            }
+        });
+    }
+
+    if (freeRewardCancelBtn) {
+        freeRewardCancelBtn.addEventListener("click", function () {
+            if (freeRewardOverlay) {
+                freeRewardOverlay.classList.add("hidden");
+            }
+        });
+    }
+
+    if (freeRewardContinueBtn) {
+        freeRewardContinueBtn.addEventListener("click", async function () {
+            freeRewardContinueBtn.disabled = true;
+            freeRewardContinueBtn.innerHTML = "Processing...";
+
+            try {
+                const response = await fetch("{% url 'use_free_reward' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    body: JSON.stringify({
+                        customer_phone: customerPhone,
+                        dispatch_id: dispatchId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    freeRewardContinueBtn.innerHTML = "Success!";
+                    setTimeout(() => {
+                        window.location.href = "{% url 'parcel_receipt' dispatch.id %}";
+                    }, 1500);
+                    return;
+                }
+
+                alert(data.message || "Unable to use your free reward.");
+
+            } catch (error) {
+                console.error("Free Reward Error:", error);
+                alert("Something went wrong while processing your reward. Please try again.");
+            } finally {
+                freeRewardContinueBtn.disabled = false;
+                freeRewardContinueBtn.innerHTML = "🎁 Continue";
+            }
+        });
+    }
 
 });
 </script>
@@ -760,17 +1080,19 @@ document.addEventListener("DOMContentLoaded", function () {
     </div>
 
 </div>
+
+<!-- points/credit pay modal -->
 <div id="pointsOverlay" class="mpesa-overlay hidden">
 
     <div class="mpesa-modal">
 
-        <h4>Pay With Points</h4>
+        <h4>Pay With Credit</h4>
 
         <hr>
 
         <div class="mb-3">
 
-            <strong>Available Points</strong>
+            <strong>Available Credits</strong>
 
             <h3 class="text-success">
                 <span id="availablePoints">...</span>
@@ -793,17 +1115,17 @@ document.addEventListener("DOMContentLoaded", function () {
             <strong>Amount To Pay</strong>
 
             <h3 class="text-primary">
-                KSh <span id="pointsAmount"></span>
+                KSh <span id="pointsAmount">...</span>
             </h3>
 
         </div>
 
         <div class="mb-3">
 
-            <strong>Points Required</strong>
+            <strong>Credits Required</strong>
 
             <h3 class="text-warning">
-                <span id="pointsRequired"></span>
+                <span id="pointsRequired">...</span>
             </h3>
 
         </div>
@@ -817,6 +1139,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="d-flex justify-content-between">
 
             <button
+                type="button"
                 id="pointsCancelBtn"
                 class="btn btn-secondary">
 
@@ -825,10 +1148,11 @@ document.addEventListener("DOMContentLoaded", function () {
             </button>
 
             <button
+                type="button"
                 id="pointsPayBtn"
                 class="btn btn-success">
 
-                Redeem Points
+                Pay With Credit
 
             </button>
 
@@ -838,4 +1162,60 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </div>
 
+<!-- free reward pay model -->
+<div id="freeRewardOverlay" class="mpesa-overlay hidden">
+
+    <div class="mpesa-modal text-center">
+
+        <div style="font-size: 55px;">
+            🎉
+        </div>
+
+        <h3 class="fw-bold text-success">
+            Congratulations!
+        </h3>
+
+        <hr>
+
+        <h5 class="fw-bold">
+            You've earned a FREE parcel!
+        </h5>
+
+        <p class="text-muted mt-3">
+            Thank you for continuing to parcel with us.
+            Your loyalty has paid off!
+        </p>
+
+        <div class="alert alert-success mt-3">
+
+            🎁 <strong>Your 5th parcel is FREE!</strong>
+
+        </div>
+
+        <p class="mt-3">
+            Keep parceling with us and earn more rewards.
+            <strong>Your next free reward could be just a few parcels away!</strong>
+        </p>
+
+        <div class="d-flex justify-content-center gap-2 mt-4">
+
+            <button
+                type="button"
+                id="freeRewardCancelBtn"
+                class="btn btn-secondary">
+                Close
+            </button>
+
+            <button
+                type="button"
+                id="freeRewardContinueBtn"
+                class="btn btn-success fw-bold">
+                🎁 Continue
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 {% endblock %}

@@ -91,6 +91,9 @@ class PackageDispatch(models.Model):
     packed_as_combined_package_by_the_sending_agent = models.BooleanField(default=False, help_text='cobined together with other products heading to same agent')
     date_packed_by_the_sending_agent = models.DateTimeField( blank=True, null=True)
 
+    picked_picked_by_receiving_agent = models.BooleanField(default=False, help_text="picked by the receiving agent")
+    date_picked_picked_by_receiving_agent = models.DateTimeField( blank=True, null=True)
+    
     picked_picked_by_receiving_customer = models.BooleanField(default=False, help_text="picked at the receiving agent")
     date_picked_picked_by_receiving_customer = models.DateTimeField( blank=True, null=True)
 
@@ -123,6 +126,7 @@ class PackageDispatch(models.Model):
     )
 
     sent_at = models.DateTimeField(null=True, blank=True)
+    loyalty_counted = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Dispatch #{self.id} - {self.receiving_customer} ({self.status})"

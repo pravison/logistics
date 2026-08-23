@@ -16,16 +16,64 @@ from django.contrib import messages
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, ROUND_DOWN
 
 
-from customers.models import Customer
+from customers.models import Customer, LoyaltyCard
 from .models import MpesaTransaction, PendingAccountingTransaction
 from logistics.models import PackageDispatch
+from logistics.views import record_successful_parcel
 from accounts.models import APIKey
 from accounts.views import format_kenyan_phone_number
+
+from transport_credit.models import TransportCredit, TransportCreditTransaction
 
 
 
 # Create your views here.
 
+from django.db import transaction
+
+@transaction.atomic
+def update_transport_credits(sender, receiver, amount_paid, transaction_type="credit"):
+    """
+    Give transport credit to both sender and receiver.
+
+    sender: User/customer receiving sender credit
+    receiver: User/customer receiving receiver credit
+    amount_paid: Amount of transport paid
+    transaction_type: "credit" or "debit"
+    """
+
+    credit = int((amount_paid * 0.05) / 2)
+    sender_wallet, _ = TransportCredit.objects.get_or_create(
+        customer=sender
+    )
+
+    receiver_wallet, _ = TransportCredit.objects.get_or_create(
+        customer=receiver
+    )
+
+    # Update sender
+    sender_wallet.balance += credit
+    sender_wallet.save(update_fields=["balance"])
+
+    TransportCreditTransaction.objects.create(
+        wallet=sender_wallet,
+        amount=credit,
+        transaction_type=transaction_type,
+        description="Sender transport credit"
+    )
+
+    # Update receiver
+    receiver_wallet.balance += credit
+    receiver_wallet.save(update_fields=["balance"])
+
+    TransportCreditTransaction.objects.create(
+        wallet=receiver_wallet,
+        amount=credit,
+        transaction_type=transaction_type,
+        description="Receiver transport credit"
+    )
+
+    return sender_wallet, receiver_wallet
 
 def process_dispatch_payment(
     *,
@@ -245,124 +293,28 @@ def process_dispatch_payment(
             orderdisp.fully_paid_at = timezone.now()
 
         # ---------------------------------------
-        # PAYMENT DETAILS
+        # update loyalty card
         # ---------------------------------------
+        if not orderdisp.loyalty_counted:
 
+            record_successful_parcel(
+                orderdisp.sending_customer
+            )
+
+            orderdisp.loyalty_counted = True
+    
         orderdisp.save()
 
         # ---------------------------------------
-        # LOYALTY POINTS
+        # transport credits
         # ONLY FIRST FULL PAYMENT
         # ---------------------------------------
-        # if (
-        #     order.fully_paid
-        #     and not order.points_awarded
-        # ):
-
-        #     purchase_value = total_price
-
-        #     earned_points = int(
-
-        #         Decimal('0.04')
-
-        #         * purchase_value
-
-        #         * 10
-        #     )
-
-        #     if product.promotion_multiple:
-
-        #         earned_points *= int(
-        #             product.promotion_multiple
-        #         )
-
-        #     loyalty_category, _ = (
-        #         LoyaltyPointsCategory.objects.get_or_create(
-        #             category='points on purchases made'
-        #         )
-        #     )
-
-        #     added_by = (
-        #         f'{recorded_by.first_name} '
-        #         f'{recorded_by.last_name}'
-        #         if (
-        #             recorded_by
-        #             and recorded_by.first_name
-        #         )
-        #         else (
-        #             recorded_by.username
-        #             if recorded_by
-        #             else "system"
-        #         )
-        #     )
-
-        #     LoyaltyPoint.objects.create(
-
-        #         customer=order.member,
-
-        #         business=product.business,
-
-        #         category=loyalty_category,
-
-        #         purchase_value=purchase_value,
-
-        #         points_earned=earned_points,
-
-        #         added_by=added_by,
-
-        #         points_were='earned'
-        #     )
-
-            # ---------------------------------------
-            # REFERRAL POINTS
-            # ---------------------------------------
-            # if (
-
-            #     order.member.reffered_by
-
-            #     and hasattr(
-            #         order.member.reffered_by,
-            #         'customer'
-            #     )
-            # ):
-
-            #     referrer = (
-            #         order.member.reffered_by.customer
-            #     )
-
-            #     ref_points = int(
-
-            #         Decimal('0.01')
-
-            #         * purchase_value
-
-            #         * 10
-            #     )
-
-            #     ref_category, _ = (
-            #         LoyaltyPointsCategory.objects.get_or_create(
-            #             category='points from refferal sales'
-            #         )
-            #     )
-
-            #     LoyaltyPoint.objects.create(
-
-            #         customer=referrer,
-
-            #         business=product.business,
-
-            #         category=ref_category,
-
-            #         points_earned=ref_points,
-
-            #         added_by=added_by,
-
-            #         points_were='earned'
-            #     )
-
-            # order.points_awarded = True
-
-            # order.save(update_fields=['points_awarded'])
+        update_transport_credits(
+            sender=orderdisp.sending_customer,
+            receiver=orderdisp.receiving_customer,
+            amount_paid=100,
+            transaction_type="credit"
+        )
 
         return orderdisp
  
@@ -382,7 +334,7 @@ def process_bulk_payment(payment, payment_method='', send_to_accounting=True):
         total_paid = Decimal(str(payment.amount_paid))
        
         amount_due= 0
-        transport_balance = payment.dispatch.total_transport_cost
+        transport_balance = payment.dispatch.total_transport_cost - payment.dispatch.amount_paid
         amount_due += transport_balance
 
         amount_to_apply = min(amount_due, total_paid)
@@ -716,8 +668,116 @@ def mpesa_payment_status(request, checkout_id):
         })
 
 
+#using free transport,
+
+@transaction.atomic
+def use_free_transport(customer, dispatch):
+
+    card = LoyaltyCard.objects.filter(
+        customer=customer,
+        is_open=True,
+        reward_earned=True,
+        reward_used=False
+    ).first()
+
+    if not card:
+        return False
+
+    # Create payment record
+    remaining_transport_cost=dispatch.total_transport_cost - dispatch.amount_paid
+    payment = MpesaTransaction.objects.create(
+        amount= dispatch.total_transport_cost,
+        amount_paid = remaining_transport_cost,
+        customer=customer,
+        phone_number=dispatch.sending_customer.phone_number,
+        status="SUCCESS",
+        result_code=0,
+        result_desc="Transport paid by the company",
+        dispatch=dispatch,
+    )
+
+    # Process accounting/payment
+    process_bulk_payment(
+        payment,
+        send_to_accounting=False
+    )
+
+    card.reward_used = True
+    card.is_open = False
+    card.completed_at = timezone.now()
+    card.save()
+
+    # New card automatically becomes available
+    LoyaltyCard.objects.create(
+        customer=customer
+    )
+
+    return True
 
 
+@require_POST
+def use_free_reward(request):
+
+    try:
+        data = json.loads(request.body)
+
+        customer_phone = data.get("customer_phone")
+        dispatch_id = data.get("dispatch_id")
+
+        if not customer_phone:
+            return JsonResponse({
+                "success": False,
+                "message": "Customer phone number is required."
+            })
+
+        if not dispatch_id:
+            return JsonResponse({
+                "success": False,
+                "message": "Dispatch is required."
+            })
+
+        customer = Customer.objects.filter(
+            phone_number=customer_phone
+        ).first()
+
+        if not customer:
+            return JsonResponse({
+                "success": False,
+                "message": "Customer not found."
+            })
+
+        dispatch = PackageDispatch.objects.filter(
+            id=dispatch_id
+        ).first()
+
+        if not dispatch:
+            return JsonResponse({
+                "success": False,
+                "message": "Parcel not found."
+            })
+
+        success = use_free_transport(
+            customer=customer,
+            dispatch=dispatch
+        )
+
+        if not success:
+            return JsonResponse({
+                "success": False,
+                "message": "You do not have an available free transport reward."
+            })
+
+        return JsonResponse({
+            "success": True,
+            "message": "Congratulations! Your transport has been paid using your free reward."
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "success": False,
+            "message": "Something went wrong while using your reward."
+        }, status=500)
 
 
 @require_POST
@@ -926,11 +986,19 @@ def sync_accounting_view(request):
             "success": False,
             "error": str(e)
         }, status=500)
-    
+
+
 @csrf_exempt
-def get_customer_points(request):
+@require_POST
+def get_customer_credits(request):
 
     phone = request.POST.get("phone")
+
+    if not phone:
+        return JsonResponse({
+            "success": False,
+            "error": "Customer phone number is required."
+        })
 
     customer = Customer.objects.filter(
         phone_number=phone
@@ -938,112 +1006,181 @@ def get_customer_points(request):
 
     if not customer:
         return JsonResponse({
-            "success":False,
-            "error":"Customer not found."
+            "success": False,
+            "error": "Customer not found."
         })
 
-    # earned = (
-    #     LoyaltyPoint.objects.filter(
-    #         customer=customer,
-    #         status="approved"
-    #     ).aggregate(
-    #         total=Sum("points_earned")
-    #     )["total"] or 0
-    # )
+    credit_wallet = TransportCredit.objects.filter(
+        customer=customer
+    ).first()
 
-    # redeemed = (
-    #     LoyaltyPoint.objects.filter(
-    #         customer=customer,
-    #         status="approved"
-    #     ).aggregate(
-    #         total=Sum("points_redeemed")
-    #     )["total"] or 0
-    # )
+    # Customer has no credit wallet yet
+    if not credit_wallet:
+        balance = Decimal("0")
+    else:
+        balance = credit_wallet.balance or Decimal("0")
 
-    # balance = earned - redeemed
-    balance = 0
-    value = balance/100
+    # 1  credits = KSh 1
+    credit_value = balance / Decimal("1")
 
     return JsonResponse({
+        "success": True,
 
-        "success":True,
+        # Number of credits
+        "available_points": float(balance),
 
-        "available_points":balance,
-
-        "value":value,   # 100 point = 1 shilling
-
+        # KSh value of credits
+        "value": float(credit_value),
     })
 
+
 @require_POST
-def pay_using_points(request):
+def pay_using_credit(request):
 
-    body=json.loads(request.body)
+    try:
+        body = json.loads(request.body)
 
-    customer=Customer.objects.get(
-        phone_number=body["customer_phone"]
-    )
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid request."
+        }, status=400)
 
-    amount=Decimal(str(body["amount"]))
+    customer_phone = body.get("customer_phone")
+    amount_raw = body.get("amount")
+    dispatch_id = body.get("dispatch_id")
 
-    # earned=(
-    #     LoyaltyPoint.objects.filter(
-    #         customer=customer,
-    #         status="approved"
-    #     ).aggregate(
-    #         total=Sum("points_earned")
-    #     )["total"] or 0
-    # )
+    if not customer_phone:
+        return JsonResponse({
+            "success": False,
+            "message": "Customer phone number is required."
+        }, status=400)
 
-    # redeemed=(
-    #     LoyaltyPoint.objects.filter(
-    #         customer=customer,
-    #         status="approved"
-    #     ).aggregate(
-    #         total=Sum("points_redeemed")
-    #     )["total"] or 0
-    # )
+    if not amount_raw:
+        return JsonResponse({
+            "success": False,
+            "message": "Payment amount is required."
+        }, status=400)
 
-    balance= 0 #earned-redeemed
+    if not dispatch_id:
+        return JsonResponse({
+            "success": False,
+            "message": "No dispatch selected."
+        }, status=400)
 
-    value = balance/100
-  
+    dispatch = PackageDispatch.objects.filter(id=dispatch_id).first()
 
-    amount_to_apply = min(balance, value)
+    try:
+        amount = Decimal(str(amount_raw))
+
+    except (InvalidOperation, TypeError, ValueError):
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid payment amount."
+        }, status=400)
+
+    if amount <= 0:
+        return JsonResponse({
+            "success": False,
+            "message": "Payment amount must be greater than zero."
+        }, status=400)
+
+    customer = Customer.objects.filter(
+        phone_number=customer_phone
+    ).first()
+
+    if not customer:
+        return JsonResponse({
+            "success": False,
+            "message": "Customer not found."
+        }, status=404)
 
     with transaction.atomic():
 
-        # LoyaltyPoint.objects.create(
+        credit_wallet = TransportCredit.objects.select_for_update().filter(
+            customer=customer
+        ).first()
 
-        #     customer=customer,
+        if not credit_wallet:
+            return JsonResponse({
+                "success": False,
+                "message": "Customer has no transport credit."
+            })
 
-        #     points_redeemed=int(amount_to_apply*100),
+        balance = credit_wallet.balance or Decimal("0")
 
-        #     added_by="Customer",
+        if balance <= 0:
+            return JsonResponse({
+                "success": False,
+                "message": "Customer has no available credit."
+            })
 
-        #     points_were="redeemed",
+        remaining_transport_cost=dispatch.total_transport_cost - dispatch.amount_paid
 
-        #     status="approved"
+        if remaining_transport_cost <= 0:
+            return JsonResponse({
+                "success": False,
+                "message": "Not enough credit available."
+            })
 
-        # )
-        payment = MpesaTransaction.objects.create(
+        # Convert KSh back to credits
+        credits_to_use = balance * Decimal("1")
 
-            amount=amount_to_apply,
-            customer=customer,
-            phone_number=body["customer_phone"],
-            status="SUCCESS",
-            result_code=0,
-            result_desc="points Payment",
-            selected_orders=body["orders"]
-
+        # Make sure we never subtract more credits than available
+        credits_to_use = min(
+            credits_to_use,
+            remaining_transport_cost
         )
 
+        # Update wallet
+        credit_wallet.balance -= credits_to_use
+
+        credit_wallet.save(
+            update_fields=["balance"]
+        )
+
+        # Create credit transaction
+        TransportCreditTransaction.objects.create(
+            wallet=credit_wallet,
+            amount=credits_to_use,
+            transaction_type="debit",
+            description="Transport credit payment"
+        )
+
+        # Create payment record
+        payment = MpesaTransaction.objects.create(
+             amount= amount,
+            amount_paid = credits_to_use,
+            customer=customer,
+            phone_number=customer_phone,
+            status="SUCCESS",
+            result_code=0,
+            result_desc="Transport credit payment",
+            dispatch=dispatch,
+        )
+
+        # Process accounting/payment
         process_bulk_payment(
             payment,
             send_to_accounting=False
         )
 
     return JsonResponse({
+        "success": True,
 
-        "success":True
+        # Amount actually paid using credit
+        "amount_paid": float(credits_to_use),
 
+        # Credits actually used
+        "credits_used": float(credits_to_use),
+
+        # Remaining credits
+        "remaining_credits": float(
+            credit_wallet.balance
+        ),
+
+        # Remaining KSh value
+        "remaining_value": float(
+            credit_wallet.balance / Decimal("1")
+        ),
     })

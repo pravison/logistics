@@ -222,6 +222,61 @@ body{
 }
 
 </style>
+
+<style>
+
+.loyalty-card {
+    margin-top: 15px;
+    padding: 12px 8px;
+    border: 1.5px solid #111827;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.loyalty-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.loyalty-message {
+    font-size: 10px;
+    color: #555;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.loyalty-circles {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.loyalty-circle {
+    width: 42px;
+    height: 42px;
+    border: 2px solid #111827;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.loyalty-circle.free {
+    font-size: 9px;
+    background: #111827;
+    color: white;
+}
+
+.loyalty-note {
+    margin-top: 7px;
+    font-size: 9px;
+    color: #666;
+}
+
+</style>
 <div class="receipt" id="receipt">
 
 <div class="company">
@@ -250,7 +305,7 @@ Issued on {{ dispatch.created_at|date:"d M Y H:i" }}
 <div class="row-item">
 <div class="label">Tracking Number</div>
 <div class="value">
-PK{{ dispatch.id|stringformat:"08d" }}
+GL - {{ dispatch.id|stringformat:"08d" }}
 </div>
 </div>
 
@@ -271,9 +326,7 @@ Sender
 
 <div class="value">
 
-{{ dispatch.sending_agent.shop_name }}<br>
-
-{{ dispatch.sending_agent.location.name }}
+{{ dispatch.sending_agent.location }}
 
 </div>
 
@@ -297,9 +350,7 @@ Receiver
 
 <div class="value">
 
-{{ dispatch.receiving_agent.shop_name }}<br>
-
-{{ dispatch.receiving_agent.location.name }}
+{{ dispatch.delivery_address }}
 
 </div>
 
@@ -337,6 +388,46 @@ Package(s) Details
     <div class="label">Total Paid</div>
     <div class="value">KES {{ dispatch.amount_paid|intcomma }}/{{ dispatch.total_transport_cost|intcomma }}</div>
 </div>
+<div class="loyalty-card">
+
+    <div class="loyalty-title">
+        🎁 LOYALTY REWARD
+    </div>
+
+    <div class="loyalty-message">
+        Every time you parcel with us, you get a tick.
+        After 4 successful parcels with us, your 5th transport is FREE!
+    </div>
+
+    <div class="loyalty-circles">
+
+        {% for i in "1234" %}
+            <div class="loyalty-circle">
+                {% if forloop.counter <= loyalty_card.completed_parcels %}
+                    ✓
+                {% else %}
+                    {{ forloop.counter }}
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div class="loyalty-circle free">
+            FREE
+        </div>
+
+    </div>
+
+    {% if loyalty_card.reward_earned %}
+        <div class="loyalty-note">
+            🎉 You've earned your FREE transport!
+        </div>
+    {% else %}
+        <div class="loyalty-note">
+            {{ loyalty_remaining }} more parcel{{ loyalty_remaining|pluralize }} to FREE transport
+        </div>
+    {% endif %}
+
+</div>
 
 <div class="footer">
 
@@ -354,6 +445,7 @@ Please keep this receipt until your parcel has been collected.
         🖨 Standard Print
     </button>
 
+    
     <button class="btn btn-primary w-100" id="btPrintBtn">
         🦷 Print via Bluetooth
     </button>
@@ -362,33 +454,1066 @@ Please keep this receipt until your parcel has been collected.
 
 </div>
 
+
 <script>
-document.getElementById('btPrintBtn').addEventListener('click', async () => {
+let bluetoothDevice = null;
+let bluetoothServer = null;
+let printerCharacteristic = null;
+
+// Your printer's UUIDs may be different!
+const PRINTER_SERVICE_UUID = '000018f0-0000-1000-8000-00805f9b34fb';
+
+// Common characteristic UUIDs used by thermal printers.
+// Your printer may use another one.
+const PRINTER_CHARACTERISTIC_UUID =
+    '00002af1-0000-1000-8000-00805f9b34fb';
+
+
+// ======================================================
+// CONNECT TO PRINTER
+// ======================================================
+async function connectBluetoothPrinter() {
+
+    // If we already have a connected printer, reuse it
+    if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+        console.log('Printer already connected');
+        return true;
+    }
+
     try {
-        // Check if Web Bluetooth is supported
-        if (!navigator.bluetooth) {
-            alert('Web Bluetooth is not supported by your browser or device.');
+
+        // If we have a previously selected device,
+        // try reconnecting without showing the Bluetooth picker.
+        if (bluetoothDevice) {
+
+            console.log('Trying to reconnect to:', bluetoothDevice.name);
+
+            bluetoothServer = await bluetoothDevice.gatt.connect();
+
+            await findPrinterCharacteristic();
+
+            console.log('Printer reconnected');
+
+            return true;
+        }
+
+        // First connection only
+        console.log('Requesting Bluetooth printer...');
+
+        bluetoothDevice = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [
+                PRINTER_SERVICE_UUID
+            ]
+        });
+
+        // Listen for unexpected disconnections
+        bluetoothDevice.addEventListener(
+            'gattserverdisconnected',
+            handlePrinterDisconnected
+        );
+
+        bluetoothServer = await bluetoothDevice.gatt.connect();
+
+        await findPrinterCharacteristic();
+
+        console.log(
+            'Connected to printer:',
+            bluetoothDevice.name
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error('Bluetooth connection failed:', error);
+
+        return false;
+    }
+}
+
+
+// ======================================================
+// FIND THE PRINTER WRITE CHARACTERISTIC
+// ======================================================
+async function findPrinterCharacteristic() {
+
+    if (!bluetoothServer) {
+        throw new Error('Bluetooth server not connected');
+    }
+
+    const service =
+        await bluetoothServer.getPrimaryService(
+            PRINTER_SERVICE_UUID
+        );
+
+    // Get the characteristics
+    const characteristics =
+        await service.getCharacteristics();
+
+    console.log('Printer characteristics:', characteristics);
+
+    // Find a characteristic that allows writing
+    printerCharacteristic = characteristics.find(c =>
+        c.properties.write ||
+        c.properties.writeWithoutResponse
+    );
+
+    if (!printerCharacteristic) {
+        throw new Error(
+            'Could not find a writable printer characteristic.'
+        );
+    }
+
+    console.log(
+        'Writable characteristic found:',
+        printerCharacteristic.uuid
+    );
+}
+
+
+// ======================================================
+// HANDLE DISCONNECTION
+// ======================================================
+function handlePrinterDisconnected(event) {
+
+    console.log(
+        'Printer disconnected:',
+        event.target.name
+    );
+
+    bluetoothServer = null;
+    printerCharacteristic = null;
+
+    // IMPORTANT:
+    // We do NOT set bluetoothDevice = null.
+    //
+    // This allows the next Print click to reconnect
+    // without asking the user to select the printer again.
+}
+
+// ======================================================
+// THERMAL RECEIPT SETTINGS
+// ======================================================
+
+// 58mm printer
+const PRINTER_WIDTH = 32;
+
+// If you have an 80mm printer, change to:
+// const PRINTER_WIDTH = 42;
+
+
+// ======================================================
+// BASIC TEXT HELPERS
+// ======================================================
+
+function cleanText(text) {
+
+    if (!text) {
+        return '';
+    }
+
+    return text
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+
+function centerText(text) {
+
+    text = cleanText(text);
+
+    if (text.length >= PRINTER_WIDTH) {
+        return text.substring(0, PRINTER_WIDTH);
+    }
+
+    const spaces =
+        Math.floor(
+            (PRINTER_WIDTH - text.length) / 2
+        );
+
+    return ' '.repeat(spaces) + text;
+}
+
+
+function leftRightText(left, right) {
+
+    left = cleanText(left);
+    right = cleanText(right);
+
+    // If the right side itself is too long,
+    // allow it to occupy the available space.
+    if (right.length >= PRINTER_WIDTH) {
+        right = right.substring(0, PRINTER_WIDTH);
+    }
+
+    const available =
+        PRINTER_WIDTH -
+        left.length -
+        right.length;
+
+    if (available < 1) {
+
+        // Shorten the left side if necessary
+        const maxLeft =
+            PRINTER_WIDTH -
+            right.length -
+            1;
+
+        left =
+            left.substring(
+                0,
+                Math.max(0, maxLeft)
+            );
+
+        return (
+            left +
+            ' '.repeat(
+                Math.max(
+                    1,
+                    PRINTER_WIDTH -
+                    left.length -
+                    right.length
+                )
+            ) +
+            right
+        );
+    }
+
+    return (
+        left +
+        ' '.repeat(available) +
+        right
+    );
+}
+
+
+function wrapText(text, width = PRINTER_WIDTH) {
+
+    text = cleanText(text);
+
+    if (!text) {
+        return [''];
+    }
+
+    const words = text.split(' ');
+    const lines = [];
+
+    let current = '';
+
+    for (const word of words) {
+
+        if (!current) {
+            current = word;
+            continue;
+        }
+
+        if (
+            current.length +
+            1 +
+            word.length <= width
+        ) {
+
+            current += ' ' + word;
+
+        } else {
+
+            lines.push(current);
+            current = word;
+        }
+    }
+
+    if (current) {
+        lines.push(current);
+    }
+
+    return lines;
+}
+
+
+function separator(char = '-') {
+
+    return char.repeat(PRINTER_WIDTH);
+}
+
+
+// ======================================================
+// ESC/POS COMMANDS
+// ======================================================
+
+const ESC = 0x1B;
+const GS  = 0x1D;
+
+
+// Initialize printer
+const ESC_INIT = [
+    ESC, 0x40
+];
+
+
+// Alignment
+const ALIGN_LEFT = [
+    ESC, 0x61, 0x00
+];
+
+const ALIGN_CENTER = [
+    ESC, 0x61, 0x01
+];
+
+const ALIGN_RIGHT = [
+    ESC, 0x61, 0x02
+];
+
+
+// Bold
+const BOLD_ON = [
+    ESC, 0x45, 0x01
+];
+
+const BOLD_OFF = [
+    ESC, 0x45, 0x00
+];
+
+
+// Normal text size
+const NORMAL_SIZE = [
+    GS, 0x21, 0x00
+];
+
+
+// Larger text
+const LARGE_SIZE = [
+    GS, 0x21, 0x11
+];
+
+
+// Double width + height
+const DOUBLE_SIZE = [
+    GS, 0x21, 0x11
+];
+
+
+// Underline
+const UNDERLINE_ON = [
+    ESC, 0x2D, 0x01
+];
+
+const UNDERLINE_OFF = [
+    ESC, 0x2D, 0x00
+];
+
+
+// Feed paper
+const FEED = [
+    0x0A,
+    0x0A,
+    0x0A,
+    0x0A
+];
+
+
+// Cut paper
+const CUT = [
+    GS,
+    0x56,
+    0x00
+];
+
+
+// ======================================================
+// BYTE BUILDER
+// ======================================================
+
+class EscPosBuilder {
+
+    constructor() {
+
+        this.parts = [];
+
+    }
+
+    command(bytes) {
+
+        this.parts.push(
+            new Uint8Array(bytes)
+        );
+
+        return this;
+    }
+
+
+    text(text) {
+
+        const encoder =
+            new TextEncoder();
+
+        this.parts.push(
+            encoder.encode(text)
+        );
+
+        return this;
+    }
+
+
+    line(text = '') {
+
+        return this.text(
+            text + '\n'
+        );
+    }
+
+
+    center() {
+
+        return this.command(
+            ALIGN_CENTER
+        );
+    }
+
+
+    left() {
+
+        return this.command(
+            ALIGN_LEFT
+        );
+    }
+
+
+    right() {
+
+        return this.command(
+            ALIGN_RIGHT
+        );
+    }
+
+
+    bold() {
+
+        return this.command(
+            BOLD_ON
+        );
+    }
+
+
+    normal() {
+
+        return this.command(
+            BOLD_OFF
+        );
+    }
+
+
+    large() {
+
+        return this.command(
+            LARGE_SIZE
+        );
+    }
+
+
+    normalSize() {
+
+        return this.command(
+            NORMAL_SIZE
+        );
+    }
+
+
+    build() {
+
+        let totalLength = 0;
+
+        for (const part of this.parts) {
+            totalLength += part.length;
+        }
+
+        const result =
+            new Uint8Array(totalLength);
+
+        let position = 0;
+
+        for (const part of this.parts) {
+
+            result.set(
+                part,
+                position
+            );
+
+            position += part.length;
+        }
+
+        return result;
+    }
+}
+
+
+// ======================================================
+// GET TEXT FROM A ROW
+// ======================================================
+
+function getRowValues(row) {
+
+    const label =
+        row.querySelector('.label');
+
+    const value =
+        row.querySelector('.value');
+
+    return {
+
+        label: label
+            ? cleanText(label.innerText)
+            : '',
+
+        value: value
+            ? cleanText(value.innerText)
+            : ''
+    };
+}
+
+
+// ======================================================
+// BUILD THE ACTUAL RECEIPT
+// ======================================================
+
+function buildReceiptForPrinter() {
+
+    const receipt = document.getElementById('receipt');
+
+    if (!receipt) {
+        throw new Error('Receipt element not found.');
+    }
+
+    const printer = new EscPosBuilder();
+
+    // --------------------------------------------------
+    // INITIALIZE - compact receipt
+    // --------------------------------------------------
+    printer.command(ESC_INIT);
+    printer.command(NORMAL_SIZE);
+    printer.left();
+
+    // --------------------------------------------------
+    // COMPANY HEADER
+    // --------------------------------------------------
+    printer.center();
+    printer.bold();
+    printer.line('GARANTII LOGISTICS');
+    printer.normalSize();
+    printer.line('Travis House, 3rd Floor, Shop B32, Next to Afya Centre ');
+    printer.normalSize();
+    printer.line('0706 420 043');
+
+    // Issued date from the actual Django receipt
+    const small = receipt.querySelector('.company small');
+    if (small) {
+        printer.line(cleanText(small.innerText));
+    }
+
+    printer.bold();
+    printer.line('PARCEL RECEIPT');
+    printer.normal();
+    printer.line(separator('-'));
+
+    // --------------------------------------------------
+    // TRACKING NUMBER
+    // --------------------------------------------------
+    const directRows = receipt.querySelectorAll(
+        ':scope > .row-item'
+    );
+
+    if (directRows.length > 0) {
+
+        const dispatch = getRowValues(directRows[0]);
+
+        // Dispatch ID → GL tracking number
+        const trackingNumber = `${dispatch.value}`;
+
+        printer.bold();
+
+        printer.line(
+            leftRightText(
+                'TRACKING NO.',
+                trackingNumber
+            )
+        );
+
+        printer.normal();
+    }
+
+    // --------------------------------------------------
+    // SENDER / RECEIVER
+    // --------------------------------------------------
+    const sectionTitles = receipt.querySelectorAll(':scope > .section-title');
+
+    if (sectionTitles[0]) {
+        printer.bold();
+        printer.line('SENDER');
+        printer.normal();
+
+        const senderRows = getRowsAfterSection(
+            sectionTitles[0],
+            sectionTitles[1]
+        );
+
+        printSenderReceiverRowsCompact(printer, senderRows);
+    }
+
+    if (sectionTitles[1]) {
+        printer.bold();
+        printer.line('RECEIVER');
+        printer.normal();
+
+        const receiverRows = getRowsAfterSection(
+            sectionTitles[1],
+            sectionTitles[2]
+        );
+
+        printSenderReceiverRowsCompact(printer, receiverRows);
+    }
+
+    // --------------------------------------------------
+    // PACKAGE DETAILS
+    // --------------------------------------------------
+    if (sectionTitles[2]) {
+        printer.bold();
+        printer.line('PACKAGE DETAILS');
+        printer.normal();
+        printer.line(separator('-'));
+
+        const packageBoxes = receipt.querySelectorAll(
+            ':scope > div[style*="border: 1px dashed"]'
+        );
+
+        if (packageBoxes.length) {
+            packageBoxes.forEach((box, index) => {
+                printer.bold();
+                printer.line(`PACKAGE ${index + 1}`);
+                printer.normal();
+
+                const rows = box.querySelectorAll('.row-item');
+
+                rows.forEach(row => {
+                    const values = getRowValues(row);
+                    printer.line(
+                        leftRightText(values.label, values.value)
+                    );
+                });
+            });
+        } else {
+            printer.line('No packages recorded.');
+        }
+    }
+
+    // --------------------------------------------------
+    // TOTAL PAID
+    // --------------------------------------------------
+    const allRows = receipt.querySelectorAll('.row-item');
+    let totalRow = null;
+
+    allRows.forEach(row => {
+        const values = getRowValues(row);
+
+        if (values.label.toLowerCase() === 'total paid') {
+            totalRow = values;
+        }
+    });
+
+    if (totalRow) {
+        printer.line(separator('='));
+        printer.bold();
+        printer.line(leftRightText(totalRow.label, totalRow.value));
+        printer.normal();
+        printer.line(separator('='));
+    }
+
+    // ======================================================
+    // PRINT LOYALTY CARD
+    // ======================================================
+
+    function printLoyaltyCard(printer, receipt) {
+
+        const loyaltyCard = receipt.querySelector('.loyalty-card');
+
+        // If loyalty card does not exist, don't print anything.
+        if (!loyaltyCard) {
             return;
         }
 
-        // Request a Bluetooth Low Energy or Classic printer device
-        const device = await navigator.bluetooth.requestDevice({
-            acceptAllDevices: true,
-            optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'] // Common thermal printer service UUID
+        const circles = loyaltyCard.querySelectorAll(
+            '.loyalty-circle'
+        );
+
+        const message = loyaltyCard.querySelector(
+            '.loyalty-message'
+        );
+
+        const note = loyaltyCard.querySelector(
+            '.loyalty-note'
+        );
+
+        printer.line('');
+        printer.line(separator('-'));
+
+        // Title
+        printer.center();
+        printer.bold();
+        printer.line('LOYALTY REWARD');
+        printer.normal();
+
+        // Message
+        if (message) {
+            wrapText(
+                cleanText(message.innerText)
+            ).forEach(line => {
+                printer.line(line);
+            });
+        }
+
+        printer.line('');
+
+        // ----------------------------------------------
+        // LOYALTY CIRCLES
+        // ----------------------------------------------
+
+        printer.center();
+
+        let circleText = '';
+
+        circles.forEach((circle, index) => {
+
+            const text = cleanText(
+                circle.innerText
+            );
+
+            if (index < 4) {
+
+                // Tick or number
+                if (text === '✓') {
+                    circleText += '[✓] ';
+                } else {
+                    circleText += `[${text}] `;
+                }
+
+            } else {
+
+                // FREE circle
+                circleText += '[FREE]';
+            }
         });
 
-        const server = await device.gatt.connect();
-        alert('Connected to printer: ' + device.name + '\n(Send ESC/POS commands or route data stream here)');
-        
-        // Note: Actual raw thermal printing via Bluetooth requires writing ESC/POS byte arrays 
-        // to the printer's specific characteristic UUID write channel.
+        printer.bold();
+        printer.line(circleText);
+        printer.normal();
+
+        // ----------------------------------------------
+        // LOYALTY STATUS
+        // ----------------------------------------------
+
+        if (note) {
+
+            printer.line('');
+
+            wrapText(
+                cleanText(note.innerText)
+            ).forEach(line => {
+                printer.line(line);
+            });
+        }
+
+        printer.line(separator('-'));
+    }
+
+    // --------------------------------------------------
+    // COMPACT FOOTER
+    // --------------------------------------------------
+    printer.center();
+    printer.line('Thank you for choosing');
+    printer.normal();
+    printer.line('GARANTII LOGISTICS');
+    printer.normalSize();
+    printer.line('Keep this receipt until collection.');
+
+    // Only 2 feed lines instead of the original large feed.
+    printer.command([0x0A, 0x0A]);
+
+    // Cut paper.
+    printer.command(CUT);
+
+    return printer.build();
+}
+
+
+// ======================================================
+// GET ROWS BETWEEN TWO SECTIONS
+// ======================================================
+
+function getRowsAfterSection(
+    startSection,
+    endSection
+) {
+
+    const rows = [];
+
+    let element =
+        startSection.nextElementSibling;
+
+
+    while (
+        element &&
+        element !== endSection
+    ) {
+
+        if (
+            element.classList &&
+            element.classList.contains(
+                'row-item'
+            )
+        ) {
+
+            rows.push(element);
+        }
+
+        element =
+            element.nextElementSibling;
+    }
+
+    return rows;
+}
+
+
+// ======================================================
+// PRINT COMPACT SENDER / RECEIVER ROWS
+// ======================================================
+function printSenderReceiverRowsCompact(printer, rows) {
+
+    rows.forEach((row, index) => {
+        const values = getRowValues(row);
+
+        if (index === 0) {
+            // Keep customer name and phone/value together where possible.
+            printer.bold();
+            printer.line(values.label);
+            printer.normal();
+            printer.line(values.value);
+        } else {
+            printer.bold();
+            printer.line(values.label);
+            printer.normal();
+
+            wrapText(values.value).forEach(line => {
+                printer.line(line);
+            });
+        }
+    });
+}
+
+
+// ======================================================
+// PRINT SENDER / RECEIVER ROWS
+// ======================================================
+
+function printSenderReceiverRows(
+    printer,
+    rows
+) {
+
+    rows.forEach((row, index) => {
+
+        const values =
+            getRowValues(row);
+
+
+        if (index === 0) {
+
+            // Customer name + phone
+            printer.bold();
+
+            printer.line(
+                values.label
+            );
+
+            printer.normal();
+
+            printer.line(
+                values.value
+            );
+
+        } else {
+
+            // From / To
+            printer.bold();
+
+            printer.line(
+                values.label
+            );
+
+            printer.normal();
+
+
+            const wrapped =
+                wrapText(
+                    values.value
+                );
+
+            wrapped.forEach(
+                line => {
+                    printer.line(line);
+                }
+            );
+        }
+    });
+}
+
+
+// ======================================================
+// SEND FORMATTED RECEIPT TO PRINTER
+// ======================================================
+
+async function sendToPrinter() {
+
+    if (!printerCharacteristic) {
+
+        throw new Error(
+            'Printer characteristic is not available.'
+        );
+    }
+
+
+    // Build formatted ESC/POS receipt
+    const data =
+        buildReceiptForPrinter();
+
+
+    console.log(
+        'Sending formatted receipt:',
+        data
+    );
+
+
+    // --------------------------------------------------
+    // BLE printers have packet-size limits.
+    // --------------------------------------------------
+
+    const CHUNK_SIZE = 180;
+
+
+    for (
+        let i = 0;
+        i < data.length;
+        i += CHUNK_SIZE
+    ) {
+
+        const chunk =
+            data.slice(
+                i,
+                Math.min(
+                    i + CHUNK_SIZE,
+                    data.length
+                )
+            );
+
+
+        if (
+            printerCharacteristic.properties
+                .writeWithoutResponse
+        ) {
+
+            await printerCharacteristic
+                .writeValueWithoutResponse(
+                    chunk
+                );
+
+        } else {
+
+            await printerCharacteristic
+                .writeValue(
+                    chunk
+                );
+        }
+
+
+        // Small delay prevents BLE overflow
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    25
+                )
+        );
+    }
+
+
+    console.log(
+        'Formatted receipt sent to printer.'
+    );
+}
+
+// ======================================================
+// PRINT THE ACTUAL DJANGO RECEIPT
+// ======================================================
+async function printBluetooth() {
+
+    if (!navigator.bluetooth) {
+        alert('Web Bluetooth is not supported by this browser/device.');
+        return;
+    }
+
+    try {
+        // Connect if necessary.
+        const connected = await connectBluetoothPrinter();
+
+        if (!connected) {
+            alert('Could not connect to Bluetooth printer.');
+            return;
+        }
+
+        // Build the compact ESC/POS receipt directly from the Django receipt.
+        const data = buildReceiptForPrinter();
+
+        console.log('Compact receipt bytes:', data.length);
+
+        // Send the ESC/POS bytes to the printer.
+        await sendToPrinter(data);
+
+        console.log('Compact receipt printed successfully.');
+        alert('Receipt printed successfully.');
+
     } catch (error) {
         console.error('Bluetooth printing failed:', error);
-        alert('Could not connect to Bluetooth printer.');
+
+        // Clear active connection references but keep the selected device
+        // so the next print can attempt to reconnect automatically.
+        bluetoothServer = null;
+        printerCharacteristic = null;
+
+        alert(
+            'Printing failed. The printer may have disconnected.\n\n' +
+            (error && error.message ? error.message : 'Unknown error.')
+        );
     }
-});
+}
+
+
+// ======================================================
+// PRINT BUTTON
+// ======================================================
+const btPrintBtn = document.getElementById('btPrintBtn');
+
+if (btPrintBtn) {
+    btPrintBtn.addEventListener('click', async function () {
+
+        this.disabled = true;
+
+        try {
+            await printBluetooth();
+        } finally {
+            this.disabled = false;
+        }
+    });
+}
 </script>
 
 
-
 {% endblock %}
+

@@ -26,6 +26,33 @@ class Customer(models.Model):
             url = ''
         return url
 
+class LoyaltyCard(models.Model):
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="loyalty_cards"
+    )
+
+    completed_parcels = models.PositiveIntegerField(default=0)
+
+    reward_earned = models.BooleanField(default=False)
+    reward_used = models.BooleanField(default=False)
+
+    is_open = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.customer.name} - {self.completed_parcels}/4"
+
+    @property
+    def ticks(self):
+        return min(self.completed_parcels, 4)
+
+    @property
+    def free_transport(self):
+        return self.reward_earned and not self.reward_used
     
 class ScanCount(models.Model):
     customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL)

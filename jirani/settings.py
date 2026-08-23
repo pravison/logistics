@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'logistics',
     'payments',
     'agents',
+    'transport_credit',
 
     # third party apps
     'tinymce',
