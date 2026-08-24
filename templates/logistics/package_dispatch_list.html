@@ -201,6 +201,7 @@
                         <td>
                             <span class="badge 
                                 {% if pkg_dispatch.status == 'OPEN' %}bg-secondary text-white
+                                {% elif pkg_dispatch.status == 'PACKED' %}bg-dark text-white
                                 {% elif pkg_dispatch.status == 'SENT' %}bg-info text-dark
                                 {% elif pkg_dispatch.status == 'ON_ROAD' %}bg-warning text-dark
                                 {% elif pkg_dispatch.status == 'ARRIVED' %}bg-primary text-white

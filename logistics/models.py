@@ -17,7 +17,7 @@ class AgentDispatch(models.Model):
         ("PICKED", "All Picked"),
     )
 
-    agent = models.ForeignKey(Agent, on_delete=models.CASCADE, related_name="agent_dispatches")
+    agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="agent_dispatches")
 
     delivery_address = models.TextField(blank=True, null=True)
     delivery_phone = models.CharField(max_length=20, blank=True, null=True)
@@ -64,7 +64,7 @@ class PackageDispatch(models.Model):
         ("PICKED", "Picked"),
     )
 
-    agent_dispatch = models.ForeignKey(AgentDispatch, on_delete=models.CASCADE, related_name="agent_dispatches", blank=True, null=True)
+    agent_dispatch = models.ForeignKey(AgentDispatch, blank=True, null=True, on_delete=models.SET_NULL, related_name="agent_dispatches")
 
     delivery_phone = models.CharField(max_length=20, blank=True, null=True)
     delivery_address = models.CharField(max_length=20, blank=True, null=True)

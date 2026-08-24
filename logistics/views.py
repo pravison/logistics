@@ -883,7 +883,7 @@ def package_dispatch_detail(request, pk):
     # ---------------------------------------------------------
     elif action == "mark_packed_individual":
 
-        # Package must first arrive at the sending station
+        # Dispatch must first arrive at the sending station
         if not package_dispatch.arrived_at_the_sending_agent:
             messages.error(
                 request,
@@ -901,27 +901,87 @@ def package_dispatch_detail(request, pk):
         ):
             messages.warning(
                 request,
-                "This package has already been packed."
+                "This dispatch has already been packed."
             )
             return redirect(
                 "package_dispatch_detail",
                 package_dispatch.id
             )
 
+        # ---------------------------------------------------------
+        # ALL PACKAGES MUST BE PACKED FIRST
+        # ---------------------------------------------------------
+        packages = package_dispatch.packages.all()
+
+        if not packages.exists():
+            messages.error(
+                request,
+                "This dispatch has no packages to pack."
+            )
+            return redirect(
+                "package_dispatch_detail",
+                package_dispatch.id
+            )
+
+        unpacked_packages = packages.filter(packed=False)
+
+        if unpacked_packages.exists():
+            messages.error(
+                request,
+                f"All packages must be packed first. "
+                f"{unpacked_packages.count()} package(s) are still not packed."
+            )
+            return redirect(
+                "package_dispatch_detail",
+                package_dispatch.id
+            )
+
+        
+        # ---------------------------------------------------------
+        # CREATE A NEW AGENT DISPATCH
+        # INDIVIDUAL PARCEL = NEVER COMBINE WITH EXISTING DISPATCH
+        # ---------------------------------------------------------
+        agent = None
+
+        if package_dispatch.receiving_agent:
+            agent=package_dispatch.receiving_agent,
+        
+        agent_dispatch = AgentDispatch.objects.create(
+            agent=agent,
+            delivery_address=package_dispatch.delivery_address,
+            delivery_phone=package_dispatch.delivery_phone,
+            status="OPEN",
+            updated_by=user,
+        )
+        # ---------------------------------------------------------
+        # ATTACH PACKAGE DISPATCH TO THE NEW AGENT DISPATCH
+        # ---------------------------------------------------------
+        package_dispatch.agent_dispatch = agent_dispatch
         package_dispatch.packed_as_individual_by_the_sending_agent = True
-        package_dispatch.packed_as_combined_package_by_the_sending_agent = True
         package_dispatch.date_packed_by_the_sending_agent = timezone.now()
         package_dispatch.packed_by = user
         package_dispatch.updated_by = user
+        package_dispatch.status = "PACKED"
 
         package_dispatch.save(
             update_fields=[
+                "agent_dispatch",
                 "packed_as_individual_by_the_sending_agent",
-                "packed_as_combined_package_by_the_sending_agent",
                 "date_packed_by_the_sending_agent",
                 "packed_by",
                 "updated_by",
+                "status",
             ]
+        )
+
+        messages.success(
+            request,
+            "All packages are packed. Dispatch has been packed as an individual parcel."
+        )
+
+        return redirect(
+            "package_dispatch_detail",
+            package_dispatch.id
         )
 
 
@@ -930,7 +990,7 @@ def package_dispatch_detail(request, pk):
     # ---------------------------------------------------------
     elif action == "mark_packed_combined":
 
-        # Package must first arrive
+        # Dispatch must first arrive
         if not package_dispatch.arrived_at_the_sending_agent:
             messages.error(
                 request,
@@ -948,46 +1008,127 @@ def package_dispatch_detail(request, pk):
         ):
             messages.warning(
                 request,
-                "This package has already been packed."
+                "This dispatch has already been packed."
             )
             return redirect(
                 "package_dispatch_detail",
                 package_dispatch.id
             )
 
+        # ---------------------------------------------------------
+        # ALL PACKAGES MUST BE PACKED FIRST
+        # ---------------------------------------------------------
+        packages = package_dispatch.packages.all()
+
+        if not packages.exists():
+            messages.error(
+                request,
+                "This dispatch has no packages to pack."
+            )
+            return redirect(
+                "package_dispatch_detail",
+                package_dispatch.id
+            )
+
+        unpacked_packages = packages.filter(packed=False)
+
+        if unpacked_packages.exists():
+            messages.error(
+                request,
+                f"All packages must be packed first. "
+                f"{unpacked_packages.count()} package(s) are still not packed."
+            )
+            return redirect(
+                "package_dispatch_detail",
+                package_dispatch.id
+            )
+
+        # ---------------------------------------------------------
+        # FIND EXISTING OPEN AGENT DISPATCH
+        # FOR THIS RECEIVING AGENT
+        # ---------------------------------------------------------
+        receiving_agent = package_dispatch.receiving_agent
+
+        # ---------------------------------------------------------
+        # NO RECEIVING AGENT
+        # ---------------------------------------------------------
+        if receiving_agent is None:
+            agent_dispatch = AgentDispatch.objects.create(
+                agent=None,
+                delivery_address=package_dispatch.delivery_address,
+                delivery_phone=package_dispatch.delivery_phone,
+                status="OPEN",
+                updated_by=user,)
+
+        # ---------------------------------------------------------
+        # RECEIVING AGENT EXISTS
+        # ---------------------------------------------------------
+        else:
+            agent_dispatch = AgentDispatch.objects.filter(
+                agent=receiving_agent,
+                status="OPEN"
+            ).first()
+
+            # ---------------------------------------------------------
+            # NO OPEN DISPATCH → CREATE ONE
+            # ---------------------------------------------------------
+            if agent_dispatch is None:
+                agent_dispatch = AgentDispatch.objects.create(
+                    agent=receiving_agent,
+                    delivery_address=package_dispatch.delivery_address,
+                    delivery_phone=package_dispatch.delivery_phone,
+                    status="OPEN",
+                    updated_by=user,
+                )
+
+        # ---------------------------------------------------------
+        # ATTACH PACKAGE DISPATCH
+        # ---------------------------------------------------------
+        package_dispatch.agent_dispatch = agent_dispatch
         package_dispatch.packed_as_combined_package_by_the_sending_agent = True
-        package_dispatch.packed_as_individual_by_the_sending_agent = True
         package_dispatch.date_packed_by_the_sending_agent = timezone.now()
         package_dispatch.packed_by = user
         package_dispatch.updated_by = user
+        package_dispatch.status = "PACKED"
 
         package_dispatch.save(
             update_fields=[
+                "agent_dispatch",
                 "packed_as_combined_package_by_the_sending_agent",
-                "packed_as_individual_by_the_sending_agent",
                 "date_packed_by_the_sending_agent",
                 "packed_by",
                 "updated_by",
+                "status",
             ]
         )
 
+        messages.success(
+            request,
+            "All packages are packed. Dispatch has been packed together with other parcels."
+        )
 
+        return redirect(
+            "package_dispatch_detail",
+            package_dispatch.id
+        )
     # ---------------------------------------------------------
     # ARRIVED AT RECEIVING AGENT
     # ---------------------------------------------------------
     elif action == "mark_arrived_receiving":
         package_dispatch.picked_picked_by_receiving_agent = True
         package_dispatch.date_picked_picked_by_receiving_agent = timezone.now()
-        package_dispatch. picked_picked_by_receiving_agent
         package_dispatch.updated_by = user
 
         package_dispatch.save(
             update_fields=[
-                "arrived_at_the_receiving_agent",
-                "date_arrived_at_the_receiving_agent",
-                "received_by_receiving_agent",
+                "picked_picked_by_receiving_agent",
+                "date_picked_picked_by_receiving_agent",
                 "updated_by",
             ]
+        )
+        messages.success(
+            request,
+            "dispatch has been received by agent"
         )
 
 
@@ -997,7 +1138,7 @@ def package_dispatch_detail(request, pk):
     elif action == "mark_picked_customer":
 
         # Package must have arrived at receiving station
-        if not package_dispatch.arrived_at_the_receiving_agent:
+        if not package_dispatch.picked_picked_by_receiving_agent:
             messages.error(
                 request,
                 "The package must arrive at the receiving station before it can be picked up."
@@ -1031,6 +1172,10 @@ def package_dispatch_detail(request, pk):
                 "updated_by",
             ]
         )
+        messages.success(
+            request,
+            "dispatch picked by customer"
+        )
 
 
     # ---------------------------------------------------------
@@ -1049,13 +1194,13 @@ def package_dispatch_detail(request, pk):
         )
 
 
-    # ---------------------------------------------------------
-    # SUCCESS
-    # ---------------------------------------------------------
-    messages.success(
-        request,
-        "Package updated successfully."
-    )
+    # # ---------------------------------------------------------
+    # # SUCCESS
+    # # ---------------------------------------------------------
+    # messages.success(
+    #     request,
+    #     "Package updated successfully."
+    # )
 
     return redirect('package_dispatch_detail', pk=package_dispatch.pk)
 
