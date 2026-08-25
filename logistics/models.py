@@ -17,7 +17,8 @@ class AgentDispatch(models.Model):
         ("PICKED", "All Picked"),
     )
 
-    agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="agent_dispatches")
+    agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="agent_dispatches", help_text='receiving agent')
+    sending_agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="sending_agent_dispatches", help_text='sending agent')
 
     delivery_address = models.TextField(blank=True, null=True)
     delivery_phone = models.CharField(max_length=20, blank=True, null=True)
@@ -96,7 +97,10 @@ class PackageDispatch(models.Model):
     
     picked_picked_by_receiving_customer = models.BooleanField(default=False, help_text="picked at the receiving agent")
     date_picked_picked_by_receiving_customer = models.DateTimeField( blank=True, null=True)
-
+    is_special_dispatch = models.BooleanField(
+        default=False,
+        help_text="This dispatch is reserved for a large, fragile, or spill-prone package."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     received_by = models.ForeignKey(

@@ -38,6 +38,14 @@
     <div class="card">
         <div class="card-body">
             <div class="section-title">Agent & Logistic Specifications</div>
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
             <div class="row g-3">
                 <div class="col-md-4">
                     <div class="info-label">Assigned Agent</div>
@@ -72,18 +80,383 @@
     <div class="card">
         <div class="card-body">
             <div class="section-title">Update Dispatch Status</div>
-            <form method="POST" class="d-flex flex-wrap gap-2">
-                {% csrf_token %}
-                <button type="submit" name="action" value="mark_sent" class="btn btn-info text-dark fw-bold px-4 {% if dispatch.dispatch_send %}opacity-50{% endif %}">
-                    <i class="fa fa-paper-plane"></i> Confirm Sent
-                </button>
-                <button type="submit" name="action" value="mark_arrived" class="btn btn-primary fw-bold px-4 {% if dispatch.arrived_at_the_receiving_agent %}opacity-50{% endif %}">
-                    <i class="fa fa-check-circle"></i> Confirm Arrived
-                </button>
-                <button type="submit" name="action" value="mark_picked" class="btn btn-success fw-bold px-4 {% if dispatch.all_luggages_picked %}opacity-50{% endif %}">
-                    <i class="fa fa-box-open"></i> Confirm you've picked the parcel
-                </button>
-            </form>
+                <form method="POST" class="d-flex flex-wrap gap-2" id="dispatchForm">
+                    {% csrf_token %}
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body">
+
+                            <!-- HEADER -->
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div>
+                                    <h6 class="fw-bold mb-1">
+                                        <i class="fa fa-truck me-1"></i>
+                                        Agent Dispatch
+                                    </h6>
+                                </div>
+
+                                {% if dispatch.all_luggages_picked %}
+
+                                    <span class="badge bg-success">
+                                        Picked
+                                    </span>
+
+                                {% elif dispatch.arrived_at_the_receiving_agent %}
+
+                                    <span class="badge bg-primary">
+                                        Arrived
+                                    </span>
+
+                                {% elif dispatch.dispatch_send %}
+
+                                    <span class="badge bg-info text-dark">
+                                        On the way
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-warning text-dark">
+                                        Ready to Send
+                                    </span>
+
+                                {% endif %}
+                            </div>
+
+
+                            <!-- =========================
+                                SEND
+                            ========================== -->
+
+                            {% if request.user.is_staff or sending_agent or receiving_agent %}
+
+                                <div class="border rounded p-3 mb-3">
+
+                                    <div class="d-flex align-items-start gap-3">
+
+                                        <div class="text-info">
+                                            <i class="fa fa-paper-plane fa-lg"></i>
+                                        </div>
+
+                                        <div class="flex-grow-1">
+
+                                            <div class="fw-bold">
+                                                Send Parcel
+                                            </div>
+
+
+                                            {% if dispatch.dispatch_send %}
+
+                                                <!-- ALREADY SENT -->
+
+                                                <div class="text-success small mt-1">
+                                                    <i class="fa fa-check-circle"></i>
+                                                    Parcel has been sent.
+                                                </div>
+
+                                                {% if dispatch.vehicle_used %}
+
+                                                    <div class="text-muted small mt-1">
+
+                                                        Vehicle:
+                                                        <strong>{{ dispatch.vehicle_used }}</strong>
+
+                                                        {% if dispatch.vehicle_used_phone_number %}
+                                                            -
+                                                            <a href="tel:{{ vehicle_used_phone_number }}">
+                                                                {{ dispatch.vehicle_used_phone_number }}
+                                                            </a>
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                {% endif %}
+
+
+                                            {% else %}
+
+                                                <div class="text-muted small mb-2">
+                                                    Confirm when the parcel has physically left the sending station.
+                                                </div>
+
+
+                                                {% if request.user.is_staff or sending_agent %}
+
+                                                    <!-- VEHICLE DETAILS -->
+
+                                                    <div
+                                                        id="vehicleDetails"
+                                                        class="border rounded p-3 bg-light mb-3 d-none"
+                                                    >
+
+                                                        <!-- VEHICLE -->
+
+                                                        <div class="mb-3">
+
+                                                            <label
+                                                                for="vehicle_used"
+                                                                class="form-label fw-bold"
+                                                            >
+                                                                Vehicle Used
+                                                                <span class="text-danger">*</span>
+                                                            </label>
+
+                                                            <input
+                                                                type="text"
+                                                                name="vehicle_used"
+                                                                id="vehicle_used"
+                                                                class="form-control"
+                                                                placeholder="Enter vehicle number / registration"
+                                                                autocomplete="off"
+                                                            >
+
+                                                            <div class="form-text">
+                                                                Example: KDA 123A
+                                                            </div>
+
+                                                        </div>
+
+
+                                                        <!-- PHONE -->
+
+                                                        <div class="mb-0">
+
+                                                            <label
+                                                                for="vehicle_used_phone_number"
+                                                                class="form-label fw-bold"
+                                                            >
+                                                                Driver Phone Number
+                                                                <span class="text-muted fw-normal">
+                                                                    (Optional)
+                                                                </span>
+                                                            </label>
+
+                                                            <input
+                                                                type="tel"
+                                                                name="vehicle_used_phone_number"
+                                                                id="vehicle_used_phone_number"
+                                                                class="form-control"
+                                                                placeholder="Enter driver's phone number"
+                                                                autocomplete="off"
+                                                            >
+
+                                                        </div>
+                                                        <div class="mb-0">
+                                                            <label for="transport_cost" class="form-label fw-bold">
+                                                                Transport Cost
+                                                                <span class="text-danger">*</span>
+                                                            </label>
+
+                                                            <div class="input-group">
+                                                                <span class="input-group-text">KSh</span>
+
+                                                                <input
+                                                                    type="number"
+                                                                    name="transport_cost"
+                                                                    id="transport_cost"
+                                                                    class="form-control"
+                                                                    placeholder="Enter transport cost"
+                                                                    min="0"
+                                                                    step="0.01"
+                                                                >
+                                                            </div>
+
+                                                            <div class="form-text">
+                                                                Enter the total transport cost for this dispatch.
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <!-- SEND BUTTON -->
+
+                                                    <button
+                                                        type="submit"
+                                                        name="action"
+                                                        value="mark_sent"
+                                                        id="confirmSentBtn"
+                                                        class="btn btn-info text-dark fw-bold w-100 w-md-auto"
+                                                    >
+
+                                                        <i class="fa fa-paper-plane me-1"></i>
+                                                        Confirm Sent
+
+                                                    </button>
+
+                                                {% endif %}
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            {% endif %}
+
+
+
+                            <!-- =========================
+                                ARRIVAL
+                            ========================== -->
+
+                            {% if request.user.is_staff or sending_agent or receiving_agent %}
+
+                                <div class="border rounded p-3 mb-3">
+
+                                    <div class="d-flex align-items-start gap-3">
+
+                                        <div class="text-primary">
+                                            <i class="fa fa-map-marker-alt fa-lg"></i>
+                                        </div>
+
+                                        <div class="flex-grow-1">
+
+                                            <div class="fw-bold">
+                                                Arrival at Receiving Station
+                                            </div>
+
+
+                                            {% if dispatch.arrived_at_the_receiving_agent %}
+
+                                                <div class="text-success small mt-1">
+
+                                                    <i class="fa fa-check-circle"></i>
+                                                    Parcel has arrived at the receiving station.
+
+                                                </div>
+
+
+                                            {% elif dispatch.dispatch_send %}
+
+                                                {% if request.user.is_staff or receiving_agent %}
+
+                                                    <div class="text-muted small mb-2">
+                                                        Confirm when the parcel physically arrives
+                                                        at the receiving station.
+                                                    </div>
+
+                                                    <button
+                                                        type="submit"
+                                                        name="action"
+                                                        value="mark_arrived"
+                                                        class="btn btn-primary fw-bold w-100 w-md-auto"
+                                                    >
+
+                                                        <i class="fa fa-map-marker-alt me-1"></i>
+                                                        Confirm Arrival
+
+                                                    </button>
+
+                                                {% endif %}
+
+
+                                            {% else %}
+
+                                                <div class="text-muted small mt-1">
+
+                                                    Parcel must be sent before arrival
+                                                    can be confirmed.
+
+                                                </div>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+
+                                <!-- =========================
+                                    PICKUP
+                                ========================== -->
+
+                                <div class="border rounded p-3">
+
+                                    <div class="d-flex align-items-start gap-3">
+
+                                        <div class="text-success">
+                                            <i class="fa fa-box-open fa-lg"></i>
+                                        </div>
+
+                                        <div class="flex-grow-1">
+
+                                            <div class="fw-bold">
+                                                Parcel Pickup
+                                            </div>
+
+
+                                            {% if dispatch.all_luggages_picked %}
+
+                                                <div class="text-success small mt-1">
+
+                                                    <i class="fa fa-check-circle"></i>
+                                                    Parcel has been picked.
+
+                                                </div>
+
+
+                                            {% elif dispatch.arrived_at_the_receiving_agent %}
+
+                                                {% if request.user.is_staff or sending_agent %}
+
+                                                    <div class="text-muted small mb-2">
+                                                        Confirm once the parcel has been physically
+                                                        picked up.
+                                                    </div>
+
+                                                    <button
+                                                        type="submit"
+                                                        name="action"
+                                                        value="mark_picked"
+                                                        class="btn btn-success fw-bold w-100 w-md-auto"
+                                                    >
+
+                                                        <i class="fa fa-box-open me-1"></i>
+                                                        Confirm Pickup
+
+                                                    </button>
+
+                                                {% endif %}
+
+
+                                            {% else %}
+
+                                                <div class="text-muted small mt-1">
+
+                                                    Parcel must arrive before pickup
+                                                    can be confirmed.
+
+                                                </div>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+                    </div>
+
+                </form>
+
+
         </div>
     </div>
 
@@ -143,4 +516,138 @@
 
 </div>
 </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("dispatchForm");
+
+    const confirmSentBtn = document.getElementById("confirmSentBtn");
+
+    const vehicleDetails = document.getElementById("vehicleDetails");
+
+    const vehicleUsed = document.getElementById("vehicle_used");
+
+    
+    const transportCost = document.getElementById("transport_cost");
+
+    if (!form || !confirmSentBtn || !vehicleDetails || !vehicleUsed) {
+        return;
+    }
+
+
+    let vehicleDetailsShown = false;
+
+
+    form.addEventListener("submit", function (event) {
+
+        /*
+        =====================================================
+        CHECK WHICH BUTTON WAS CLICKED
+        =====================================================
+        */
+
+        const clickedButton = event.submitter;
+
+
+        /*
+        Only apply this JavaScript to the SEND button.
+        Arrival and Pickup should submit normally.
+        */
+
+        if (
+            !clickedButton ||
+            clickedButton.name !== "action" ||
+            clickedButton.value !== "mark_sent"
+        ) {
+            return;
+        }
+
+
+        /*
+        =====================================================
+        FIRST CLICK
+        =====================================================
+        Show vehicle details and STOP submission.
+        */
+
+        if (!vehicleDetailsShown) {
+
+            event.preventDefault();
+
+            vehicleDetailsShown = true;
+
+            vehicleDetails.classList.remove("d-none");
+
+            vehicleUsed.required = true;
+            transportCost.required = true;
+
+            confirmSentBtn.innerHTML = `
+                <i class="fa fa-paper-plane me-1"></i>
+                Confirm & Send
+            `;
+
+            vehicleUsed.focus();
+
+            return;
+        }
+
+
+        /*
+        =====================================================
+        SECOND CLICK
+        =====================================================
+        Validate vehicle number.
+        */
+
+        const vehicleNumber = vehicleUsed.value.trim();
+
+
+        if (!vehicleNumber) {
+
+            event.preventDefault();
+
+            vehicleUsed.focus();
+
+            alert("Please enter the vehicle registration number.");
+
+            return;
+        }
+
+
+        /*
+        =====================================================
+        VEHICLE EXISTS
+        =====================================================
+        Phone number is optional.
+
+        We DO NOT call preventDefault() here.
+
+        Therefore the form will continue to Django.
+        */
+        /*
+        ==========================================
+        VALIDATE TRANSPORT COST
+        ==========================================
+        */
+
+        const cost = transportCost.value.trim();
+
+        if (!cost || parseFloat(cost) < 0) {
+
+            event.preventDefault();
+
+            transportCost.focus();
+
+            alert(
+                "Please enter the transport cost."
+            );
+
+            return;
+        }
+
+    });
+
+});
+</script>
 {% endblock %}

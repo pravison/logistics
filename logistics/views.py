@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required,  user_passes_test
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from django.db.models import Sum
 
 import uuid
@@ -228,10 +228,20 @@ def book_parcel(request):
         receiver_name = request.POST.get("receiver_name")
         receiver_phone = request.POST.get("receiver_phone")
         to_agent_id = request.POST.get("to_agent")
-        to_location = request.POST.get("to_location")
         to_county = request.POST.get("to_county")
+        to_location = request.POST.get("to_location")
+        to_place = request.POST.get("to_place")
 
-        location = Location.objects.filter(id=to_location).first()
+        location = None
+        if to_location:
+            location = Location.objects.filter(id=to_location).first()
+        elif to_place:
+            county = County.objects.filter(id=to_county).first()
+            location = Location.objects.create(
+                county=county,
+                name = to_place
+            )
+
 
         receiver_customer, _ = Customer.objects.get_or_create(
             phone_number=receiver_phone,
@@ -268,7 +278,7 @@ def book_parcel(request):
         is_spill_prone=request.POST.get("is_spill_prone") == "on"
 
         if to_big or is_fragile or is_spill_prone:
-            # Large package: MUST have its own dispatch
+            # Large, fragile and spill prone  package are special : and MUST have their own dispatch
             dispatch = PackageDispatch.objects.create(
                 status="OPEN",
                 delivery_phone=receiver_phone,
@@ -278,36 +288,35 @@ def book_parcel(request):
                 receiving_agent=receiving_agent,
                 receiver_identification_code=generate_unique_id_code(),
                 delivery_address=f"{location}",
+                is_special_dispatch=True,
             )
 
         else:
-            # Normal package: reuse existing OPEN dispatch if possible
-            dispatch, created = PackageDispatch.objects.get_or_create(
+
+            # Normal package: ONLY use a normal OPEN dispatch
+            dispatch = PackageDispatch.objects.filter(
                 status="OPEN",
                 delivery_phone=receiver_phone,
                 receiving_customer=receiver_customer,
                 sending_agent=sending_agent,
                 receiving_agent=receiving_agent,
-                defaults={
-                    "sending_customer": sender_customer,
-                    "receiver_identification_code": generate_unique_id_code(),
-                    "delivery_address": f"{location}",
-                },
-            )
+                is_special_dispatch=False,
+            ).order_by("-id").first()
 
-        # dispatch, created = PackageDispatch.objects.get_or_create(
-        #     status="OPEN",
-        #     delivery_phone=receiver_phone,
-        #     receiving_customer=receiver_customer,
-        #     sending_agent=sending_agent,
-        #     receiving_agent = receiving_agent,
-        #     defaults={
-        #         "sending_customer": sender_customer,
-        #         "receiver_identification_code": generate_unique_id_code(),
-        #         "delivery_address": f'{to_location} in {to_county} county',
-        #     },
-        # )
+            if not dispatch:
+                dispatch = PackageDispatch.objects.create(
+                    status="OPEN",
+                    delivery_phone=receiver_phone,
+                    receiving_customer=receiver_customer,
+                    sending_customer=sender_customer,
+                    sending_agent=sending_agent,
+                    receiving_agent=receiving_agent,
+                    receiver_identification_code=generate_unique_id_code(),
+                    delivery_address=f"{location}",
+                    is_special_dispatch=False,
+                )
 
+        
         # Automatically receive if staff books it
         if request.user.is_authenticated and request.user.is_staff:
 
@@ -787,52 +796,140 @@ def agent_dispatch_list(request):
 
 @login_required(login_url="/accounts/login-user/")
 def agent_dispatch_detail(request, pk):
-  dispatch = get_object_or_404(
-      AgentDispatch.objects.select_related(
-          'agent', 'agent__location', 'agent__location__county', 'updated_by'
-      ),
-      pk=pk,
-  )
+    dispatch = get_object_or_404(
+        AgentDispatch.objects.select_related(
+            'agent', 'agent__location', 'agent__location__county', 'updated_by'
+        ),
+        pk=pk,
+    )
 
-  # Fetch package dispatches linked to this agent dispatch
-  packages = PackageDispatch.objects.select_related(
-      'sending_customer', 'receiving_customer', 'sending_agent', 'receiving_agent'
-  ).filter(agent_dispatch=dispatch)
+    # Fetch package dispatches linked to this agent dispatch
+    packages = PackageDispatch.objects.select_related(
+        'sending_customer', 'receiving_customer', 'sending_agent', 'receiving_agent'
+    ).filter(agent_dispatch=dispatch)
 
-  # Handle status update button actions
-  if request.method == 'POST':
-    action = request.POST.get('action')
-    user = request.user if request.user.is_authenticated else None
+    # Handle status update button actions
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        user = request.user if request.user.is_authenticated else None
 
-    if action == 'mark_sent':
-      dispatch.dispatch_send = True
-      dispatch.date_send = timezone.now()
-      dispatch.sent_at = timezone.now()
-      dispatch.status = 'SENT'
-      dispatch.updated_by = user
-      dispatch.save()
+        if action == 'mark_sent':
+            # Get vehicle details from the form
+            vehicle_used = request.POST.get('vehicle_used', '').strip()
+            vehicle_used_phone_number = request.POST.get(
+                'vehicle_used_phone_number',
+                ''
+            ).strip()
+            transport_cost_raw = request.POST.get(
+                'transport_cost',
+                ''
+            ).strip()
 
-    elif action == 'mark_arrived':
-      dispatch.arrived_at_the_receiving_agent = True
-      dispatch.date_arrived_at_the_receiving_agent = timezone.now()
-      dispatch.status = 'ARRIVED'
-      dispatch.updated_by = user
-      dispatch.save()
+            # Vehicle is required
+            if not vehicle_used:
+                messages.error(
+                    request,
+                    "Please enter the vehicle registration number before sending the parcel."
+                )
+                return redirect(
+                    'agent_dispatch_detail',
+                    pk=dispatch.pk
+                )
+            # Transport cost required
+            if not transport_cost_raw:
 
-    elif action == 'mark_picked':
-      dispatch.all_luggages_picked = True
-      dispatch.date_picked_by_the_receiving_agent = timezone.now()
-      dispatch.status = 'PICKED'
-      dispatch.updated_by = user
-      dispatch.save()
+                messages.error(
+                    request,
+                    "Please enter the transport cost."
+                )
 
-    return redirect('agent_dispatch_detail', pk=dispatch.pk)
+                return redirect(
+                    'agent_dispatch_detail',
+                    pk=dispatch.pk
+                )
 
-  context = {
-      'dispatch': dispatch,
-      'packages': packages,
-  }
-  return render(request, 'logistics/agent_dispatch_detail.html', context)
+            # Convert transport cost to Decimal
+            try:
+
+                transport_cost = Decimal(transport_cost_raw)
+
+            except (InvalidOperation, ValueError):
+
+                messages.error(
+                    request,
+                    "Please enter a valid transport cost."
+                )
+
+                return redirect(
+                    'agent_dispatch_detail',
+                    pk=dispatch.pk
+                )
+
+
+            # Cost cannot be negative
+            if transport_cost < 0:
+
+                messages.error(
+                    request,
+                    "Transport cost cannot be negative."
+                )
+
+                return redirect(
+                    'agent_dispatch_detail',
+                    pk=dispatch.pk
+                )
+
+            # Save vehicle details
+            dispatch.vehicle_used = vehicle_used
+
+            # Phone is optional
+            dispatch.vehicle_used_phone_number = (
+                vehicle_used_phone_number or None
+            )
+
+            dispatch.transport_cost = transport_cost
+
+            dispatch.dispatch_send = True
+            dispatch.date_send = timezone.now()
+            dispatch.sent_at = timezone.now()
+            dispatch.status = 'SENT'
+            dispatch.updated_by = user
+            dispatch.save()
+
+        elif action == 'mark_arrived':
+            dispatch.arrived_at_the_receiving_agent = True
+            dispatch.date_arrived_at_the_receiving_agent = timezone.now()
+            dispatch.status = 'ARRIVED'
+            dispatch.updated_by = user
+            dispatch.save()
+
+        elif action == 'mark_picked':
+            dispatch.all_luggages_picked = True
+            dispatch.date_picked_by_the_receiving_agent = timezone.now()
+            dispatch.status = 'PICKED'
+            dispatch.updated_by = user
+            dispatch.save()
+
+        return redirect('agent_dispatch_detail', pk=dispatch.pk)
+  
+    sending_agent = (
+        dispatch.sending_agent
+        and dispatch.sending_agent.user == request.user
+        )
+    
+    receiving_agent = (
+        dispatch.agent
+        and dispatch.agent.user == request.user
+        )
+  
+
+    context = {
+        'dispatch': dispatch,
+        'packages': packages,
+        'sending_agent': sending_agent,
+        'receiving_agent': receiving_agent
+    }
+    return render(request, 'logistics/agent_dispatch_detail.html', context)
 
 @login_required(login_url="/accounts/login-user/")
 def package_dispatch_detail(request, pk):
@@ -948,6 +1045,7 @@ def package_dispatch_detail(request, pk):
         
         agent_dispatch = AgentDispatch.objects.create(
             agent=agent,
+            sending_agent = package_dispatch.sending_agent,
             delivery_address=package_dispatch.delivery_address,
             delivery_phone=package_dispatch.delivery_phone,
             status="OPEN",
@@ -1055,6 +1153,7 @@ def package_dispatch_detail(request, pk):
         if receiving_agent is None:
             agent_dispatch = AgentDispatch.objects.create(
                 agent=None,
+                sending_agent = package_dispatch.sending_agent,
                 delivery_address=package_dispatch.delivery_address,
                 delivery_phone=package_dispatch.delivery_phone,
                 status="OPEN",
