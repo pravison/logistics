@@ -1,28 +1,1907 @@
-{% extends 'main.html' %}
-{% load static %}
-{% block title %} -Get More customer for you gas refil business!{% endblock %}
 
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Garantii helps traders buy stock from multiple Nairobi suppliers, consolidates everything into one shipment, and keeps you updated from collection to delivery.">
+    <meta name="theme-color" content="#0b0b0b">
+    <title>Garantii — Buy Anywhere in Nairobi. We Bring It Together.</title>
 
-<!-- Banner Area -->
-<section class="banner_area banner_a2">
-    <div class="container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- Optional: remove if your base template already loads these fonts/icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f6f6f6;
+            --surface-2: #ededed;
+            --ink: #0b0b0b;
+            --muted: #666666;
+            --line: #dedede;
+            --red: #e31b23;
+            --red-dark: #bd1219;
+            --white: #ffffff;
+            --radius-lg: 28px;
+            --radius-md: 20px;
+            --radius-sm: 14px;
+            --shadow: 0 20px 55px rgba(0, 0, 0, .08);
+            --max: 1180px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: "DM Sans", sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.55;
+            overflow-x: hidden;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        img,
+        svg {
+            max-width: 100%;
+        }
+
+        .container {
+            width: min(var(--max), calc(100% - 32px));
+            margin-inline: auto;
+        }
+
+        .section {
+            padding: 86px 0;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--red);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: var(--red);
+            border-radius: 50%;
+            flex: 0 0 auto;
+        }
+
+        .section-title {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2rem, 5vw, 3.7rem);
+            line-height: 1.02;
+            letter-spacing: -0.045em;
+            max-width: 820px;
+        }
+
+        .section-copy {
+            max-width: 650px;
+            color: var(--muted);
+            margin-top: 18px;
+            font-size: 1.04rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 50px;
+            padding: 0 20px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-weight: 800;
+            font-size: .95rem;
+            transition: transform .18s ease, background .18s ease, border-color .18s ease;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--red);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--red-dark);
+        }
+
+        .btn-dark {
+            background: var(--ink);
+            color: var(--white);
+        }
+
+        .btn-dark:hover {
+            background: #222;
+        }
+
+        .btn-light {
+            background: var(--white);
+            color: var(--ink);
+            border-color: #d8d8d8;
+        }
+
+        /* ---------------- HEADER ---------------- */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255,255,255,.9);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(0,0,0,.07);
+        }
+
+        .nav {
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: "Space Grotesk", sans-serif;
+            font-weight: 700;
+            font-size: 1.35rem;
+            letter-spacing: -.03em;
+        }
+
+        .brand-mark {
+            width: 33px;
+            height: 33px;
+            display: grid;
+            place-items: center;
+            color: var(--white);
+            background: var(--ink);
+            border-radius: 10px;
+            font-size: .82rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-mark::after {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 32px;
+            background: var(--red);
+            transform: skewX(-24deg) translateX(10px);
+        }
+
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 28px;
+            color: #444;
+            font-weight: 700;
+            font-size: .92rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--red);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .nav-actions .btn {
+            min-height: 42px;
+            padding-inline: 16px;
+            font-size: .84rem;
+        }
+
+        .mobile-only {
+            display: inline-flex;
+        }
+
+        /* ---------------- HERO ---------------- */
+        .hero {
+            background:
+                radial-gradient(circle at 88% 15%, rgba(227, 27, 35, .1), transparent 28%),
+                radial-gradient(circle at 10% 95%, rgba(0,0,0,.05), transparent 30%),
+                var(--bg);
+            padding: 64px 0 40px;
+        }
+
+        .hero-grid {
+            display: grid;
+            gap: 42px;
+            align-items: center;
+        }
+
+        .hero-copy h1 {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2.9rem, 11vw, 5.8rem);
+            line-height: .94;
+            letter-spacing: -.06em;
+            max-width: 860px;
+        }
+
+        .hero-copy h1 span {
+            color: var(--red);
+        }
+
+        .hero-copy p {
+            max-width: 620px;
+            color: var(--muted);
+            font-size: 1.08rem;
+            margin-top: 22px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 26px;
+        }
+
+        .hero-note {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            color: #4d4d4d;
+            font-size: .85rem;
+            margin-top: 14px;
+        }
+
+        .hero-note strong {
+            color: var(--ink);
+        }
+
+        /* Consolidation visual */
+        .flow-card {
+            background: var(--ink);
+            color: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flow-card::before {
+            content: "";
+            position: absolute;
+            inset: auto -40px -80px auto;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(227,27,35,.2);
+            filter: blur(2px);
+        }
+
+        .flow-topline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .flow-label {
+            font-size: .73rem;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: #bdbdbd;
+            font-weight: 800;
+        }
+
+        .status-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #fff;
+            font-size: .76rem;
+            font-weight: 700;
+        }
+
+        .status-dot::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: #32d583;
+            border-radius: 50%;
+            box-shadow: 0 0 0 5px rgba(50,213,131,.1);
+        }
+
+        .supplier-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .parcel {
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 16px;
+            padding: 13px;
+        }
+
+        .parcel-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            background: rgba(255,255,255,.1);
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .parcel strong {
+            display: block;
+            font-size: .88rem;
+        }
+
+        .parcel small {
+            display: block;
+            margin-top: 2px;
+            color: #a9a9a9;
+            font-size: .72rem;
+        }
+
+        .flow-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            margin: 17px 0;
+            color: #bcbcbc;
+            font-size: .73rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .09em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .flow-line span {
+            height: 1px;
+            flex: 1;
+            background: rgba(255,255,255,.17);
+        }
+
+        .hub {
+            position: relative;
+            z-index: 1;
+            border-radius: 20px;
+            padding: 17px;
+            background: var(--red);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .hub strong {
+            display: block;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.25rem;
+            letter-spacing: -.02em;
+        }
+
+        .hub small {
+            display: block;
+            margin-top: 2px;
+            color: rgba(255,255,255,.84);
+        }
+
+        .hub-badge {
+            width: 45px;
+            height: 45px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: rgba(255,255,255,.16);
+            font-weight: 900;
+        }
+
+        .one-shipment {
+            position: relative;
+            z-index: 1;
+            margin-top: 14px;
+            background: #fff;
+            color: var(--ink);
+            border-radius: 18px;
+            padding: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .shipment-art {
+            width: 62px;
+            height: 52px;
+            position: relative;
+            flex: 0 0 auto;
+        }
+
+        .box-large {
+            position: absolute;
+            left: 5px;
+            top: 11px;
+            width: 42px;
+            height: 32px;
+            background: #111;
+            border-radius: 5px;
+            transform: skewY(1deg);
+        }
+
+        .box-large::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 5px;
+            width: 32px;
+            height: 12px;
+            background: #2a2a2a;
+            clip-path: polygon(0 100%, 50% 0, 100% 100%);
+        }
+
+        .box-tape {
+            position: absolute;
+            left: 23px;
+            top: 8px;
+            width: 8px;
+            height: 36px;
+            background: var(--red);
+            opacity: .95;
+        }
+
+        .one-shipment strong {
+            display: block;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.02rem;
+        }
+
+        .one-shipment small {
+            color: #666;
+        }
+
+        /* ---------------- PROBLEM ---------------- */
+        .problem {
+            background: var(--surface);
+        }
+
+        .problem-grid {
+            display: grid;
+            gap: 22px;
+            margin-top: 36px;
+        }
+
+        .problem-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            padding: 23px;
+        }
+
+        .problem-card .num {
+            display: inline-flex;
+            width: 34px;
+            height: 34px;
+            align-items: center;
+            justify-content: center;
+            background: var(--ink);
+            color: #fff;
+            border-radius: 10px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .problem-card h3 {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.15rem;
+            letter-spacing: -.02em;
+        }
+
+        .problem-card p {
+            color: var(--muted);
+            margin-top: 7px;
+            font-size: .94rem;
+        }
+
+        .pain-quote {
+            margin-top: 22px;
+            padding: 20px;
+            border-left: 4px solid var(--red);
+            background: #fff;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            font-weight: 800;
+        }
+
+        .pain-quote span {
+            display: block;
+            color: var(--red);
+            margin-top: 6px;
+            font-size: .88rem;
+        }
+
+        /* ---------------- SOLUTION / FLOW ---------------- */
+        .flow-section {
+            background: var(--ink);
+            color: #fff;
+        }
+
+        .flow-section .section-copy {
+            color: #bcbcbc;
+        }
+
+        .journey {
+            margin-top: 40px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .journey-step {
+            position: relative;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.055);
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .journey-step:first-child {
+            border-color: rgba(227,27,35,.5);
+        }
+
+        .journey-num {
+            display: inline-flex;
+            width: 35px;
+            height: 35px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #fff;
+            color: var(--ink);
+            font-weight: 900;
+            font-size: .84rem;
+        }
+
+        .journey-step h3 {
+            font-family: "Space Grotesk", sans-serif;
+            margin-top: 13px;
+            font-size: 1.22rem;
+        }
+
+        .journey-step p {
+            color: #adadad;
+            margin-top: 5px;
+            font-size: .92rem;
+        }
+
+        .journey-arrow {
+            display: none;
+        }
+
+        /* ---------------- PROMISES ---------------- */
+        .promises-header {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .promises-list {
+            margin-top: 42px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .promise {
+            display: grid;
+            grid-template-columns: 58px 1fr;
+            gap: 16px;
+            padding: 22px;
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            background: #fff;
+        }
+
+        .promise.featured {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+            padding: 25px;
+        }
+
+        .promise-number {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: var(--surface);
+            font-family: "Space Grotesk", sans-serif;
+            font-size: .92rem;
+            font-weight: 900;
+        }
+
+        .promise.featured .promise-number {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .promise h3 {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.24rem;
+            line-height: 1.1;
+        }
+
+        .promise p {
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: .93rem;
+        }
+
+        .promise.featured p {
+            color: #c5c5c5;
+        }
+
+        .mini-comparison {
+            margin-top: 17px;
+            display: grid;
+            gap: 9px;
+        }
+
+        .mini-side {
+            padding: 13px 14px;
+            border-radius: 14px;
+            background: rgba(255,255,255,.08);
+        }
+
+        .mini-side span {
+            display: block;
+            color: #969696;
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            font-weight: 800;
+        }
+
+        .mini-side strong {
+            display: block;
+            margin-top: 4px;
+            font-size: .95rem;
+        }
+
+        /* ---------------- VISIBILITY ---------------- */
+        .visibility {
+            background: var(--surface);
+        }
+
+        .visibility-grid {
+            display: grid;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .phone {
+            width: min(100%, 330px);
+            margin: 0 auto;
+            background: #0f0f0f;
+            border: 7px solid #161616;
+            border-radius: 35px;
+            padding: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .phone-screen {
+            background: #fff;
+            min-height: 555px;
+            border-radius: 25px;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        .phone-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 5px 16px;
+            color: #666;
+            font-size: .76rem;
+        }
+
+        .wa-head {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 13px 12px;
+            border-radius: 14px;
+            background: #f2f2f2;
+        }
+
+        .wa-avatar {
+            width: 33px;
+            height: 33px;
+            border-radius: 50%;
+            background: var(--red);
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 900;
+            font-size: .76rem;
+        }
+
+        .wa-head strong {
+            display: block;
+            font-size: .83rem;
+        }
+
+        .wa-head small {
+            color: #777;
+            font-size: .69rem;
+        }
+
+        .chat {
+            margin-top: 14px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .chat-bubble {
+            width: 88%;
+            padding: 10px 12px;
+            border-radius: 13px;
+            background: #f0f0f0;
+            font-size: .78rem;
+            color: #222;
+        }
+
+        .chat-bubble.me {
+            margin-left: auto;
+            background: #111;
+            color: #fff;
+        }
+
+        .chat-bubble .tick {
+            display: block;
+            margin-top: 4px;
+            color: #8b8b8b;
+            font-size: .62rem;
+        }
+
+        .visibility-list {
+            display: grid;
+            gap: 11px;
+            margin-top: 26px;
+        }
+
+        .visibility-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 15px;
+        }
+
+        .check {
+            width: 28px;
+            height: 28px;
+            border-radius: 9px;
+            display: grid;
+            place-items: center;
+            background: rgba(227,27,35,.09);
+            color: var(--red);
+            flex: 0 0 auto;
+            font-weight: 900;
+        }
+
+        .visibility-item strong {
+            display: block;
+            font-size: .93rem;
+        }
+
+        .visibility-item span {
+            display: block;
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: .82rem;
+        }
+
+        /* ---------------- ACCOUNTABILITY ---------------- */
+        .accountability-grid {
+            display: grid;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .count-card {
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            background: #fff;
+        }
+
+        .count-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .count-row:last-child {
+            border-bottom: 0;
+        }
+
+        .count-icon {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: var(--surface);
+            font-weight: 900;
+        }
+
+        .count-row strong {
+            display: block;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.05rem;
+        }
+
+        .count-row span {
+            color: var(--muted);
+            font-size: .83rem;
+        }
+
+        .count-final {
+            margin-top: 14px;
+            border-radius: 18px;
+            padding: 18px;
+            background: var(--ink);
+            color: #fff;
+        }
+
+        .count-final .big {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 2.45rem;
+            line-height: .95;
+            letter-spacing: -.04em;
+        }
+
+        .count-final small {
+            display: block;
+            margin-top: 5px;
+            color: #b7b7b7;
+        }
+
+        /* ---------------- PRICE ---------------- */
+        .pricing {
+            background: var(--surface);
+        }
+
+        .pricing-card {
+            margin-top: 32px;
+            background: var(--ink);
+            color: #fff;
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .pricing-card::after {
+            content: "";
+            position: absolute;
+            right: -50px;
+            top: -50px;
+            width: 190px;
+            height: 190px;
+            border-radius: 50%;
+            background: rgba(227,27,35,.28);
+        }
+
+        .price-label {
+            color: #bdbdbd;
+            font-size: .78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .price {
+            position: relative;
+            z-index: 1;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(3.8rem, 15vw, 6.5rem);
+            line-height: .9;
+            letter-spacing: -.07em;
+            margin-top: 8px;
+        }
+
+        .price span {
+            color: var(--red);
+        }
+
+        .pricing-text {
+            position: relative;
+            z-index: 1;
+            color: #c3c3c3;
+            max-width: 580px;
+            margin-top: 11px;
+        }
+
+        .price-pills {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 22px;
+        }
+
+        .pill {
+            padding: 9px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.12);
+            color: #d7d7d7;
+            font-size: .79rem;
+            font-weight: 700;
+        }
+
+        .pricing-cta {
+            position: relative;
+            z-index: 1;
+            margin-top: 24px;
+        }
+
+        /* ---------------- FINAL CTA ---------------- */
+        .final-cta {
+            padding: 90px 0 110px;
+        }
+
+        .final-card {
+            background: var(--red);
+            color: #fff;
+            border-radius: 32px;
+            padding: 34px 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .final-card::after {
+            content: "";
+            position: absolute;
+            right: -110px;
+            bottom: -130px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 35px solid rgba(255,255,255,.1);
+        }
+
+        .final-card h2 {
+            position: relative;
+            z-index: 1;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2.4rem, 9vw, 5.2rem);
+            line-height: .93;
+            letter-spacing: -.06em;
+            max-width: 850px;
+        }
+
+        .final-card p {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            margin-top: 17px;
+            color: rgba(255,255,255,.88);
+        }
+
+        .final-actions {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .final-actions .btn-light {
+            background: #fff;
+            color: #111;
+            border-color: #fff;
+        }
+
+        .final-actions .btn {
+            min-height: 54px;
+        }
+
+        /* ---------------- FOOTER ---------------- */
+        .site-footer {
+            background: var(--ink);
+            color: #fff;
+            padding: 38px 0 95px;
+        }
+
+        .footer-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .footer-copy {
+            color: #999;
+            max-width: 470px;
+            margin-top: 10px;
+            font-size: .88rem;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px 22px;
+            color: #ccc;
+            font-size: .86rem;
+            font-weight: 700;
+        }
+
+        .footer-links a:hover {
+            color: #fff;
+        }
+
+        .footer-bottom {
+            margin-top: 28px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(255,255,255,.1);
+            color: #757575;
+            font-size: .78rem;
+        }
+
+        /* Sticky mobile CTA */
+        .mobile-sticky-cta {
+            position: fixed;
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            z-index: 1100;
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,.9);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 18px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 15px 40px rgba(0,0,0,.2);
+        }
+
+        .mobile-sticky-cta .btn {
+            flex: 1;
+            min-height: 48px;
+        }
+
+        /* ---------------- DESKTOP ---------------- */
+        @media (min-width: 720px) {
+            .container {
+                width: min(var(--max), calc(100% - 54px));
+            }
+
+            .section {
+                padding: 110px 0;
+            }
+
+            .mobile-only {
+                display: none;
+            }
+
+            .nav-links {
+                display: flex;
+            }
+
+            .hero {
+                padding: 90px 0 70px;
+            }
+
+            .hero-grid {
+                grid-template-columns: minmax(0, 1.02fr) minmax(420px, .98fr);
+                gap: 60px;
+            }
+
+            .hero-actions,
+            .final-actions {
+                flex-direction: row;
+                align-items: center;
+            }
+
+            .problem-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .problem-card:last-child {
+                grid-column: span 1;
+            }
+
+            .journey {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
+            }
+
+            .journey-step {
+                min-height: 225px;
+            }
+
+            .journey-arrow {
+                display: block;
+                position: absolute;
+                top: 92px;
+                right: -13px;
+                width: 24px;
+                height: 24px;
+                border-top: 2px solid var(--red);
+                border-right: 2px solid var(--red);
+                transform: rotate(45deg);
+                z-index: 2;
+            }
+
+            .journey-step:last-child .journey-arrow {
+                display: none;
+            }
+
+            .promises-header {
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 45px;
+            }
+
+            .promises-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .promise.featured {
+                grid-column: span 2;
+            }
+
+            .mini-comparison {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .visibility-grid,
+            .accountability-grid {
+                grid-template-columns: .85fr 1.15fr;
+                gap: 75px;
+            }
+
+            .pricing-card {
+                padding: 45px;
+            }
+
+            .final-card {
+                padding: 56px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1.2fr .8fr;
+                justify-content: space-between;
+                align-items: end;
+            }
+
+            .mobile-sticky-cta {
+                display: none;
+            }
+        }
+
+        @media (min-width: 1050px) {
+            .hero-copy p {
+                font-size: 1.17rem;
+            }
+
+            .problem-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            .problem-card {
+                padding: 20px;
+            }
+
+            .problem-card h3 {
+                font-size: 1.03rem;
+            }
+
+            .problem-card p {
+                font-size: .86rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .container {
+                width: min(var(--max), calc(100% - 24px));
+            }
+
+            .nav-actions .btn {
+                padding-inline: 12px;
+            }
+
+            .hero-copy h1 {
+                font-size: 2.65rem;
+            }
+
+            .section {
+                padding: 72px 0;
+            }
+
+            .promise {
+                grid-template-columns: 48px 1fr;
+                padding: 17px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            *,
+            *::before,
+            *::after {
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Replace the WhatsApp number below with your actual business number, digits only. -->
+    {% with whatsapp_number="254706420043" %}
+    <header class="site-header">
+        <div class="container nav">
+            <a href="#" class="brand" aria-label="Garantii home">
+                <span class="brand-mark">G</span>
+                <span>Garantii</span>
+            </a>
+
+            <nav class="nav-links" aria-label="Primary navigation">
+                <a href="#how-it-works">How it works</a>
+                <a href="#promises">Our promises</a>
+                <a href="#pricing">Pricing</a>
+                <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">WhatsApp</a>
+            </nav>
+
+            <div class="nav-actions">
+                
+                <a
+                    class="btn btn-primary"
+                    href="{% url 'book_parcel' %}"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    book parcel
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="container hero-grid">
+                <div class="hero-copy">
+                    <div class="eyebrow">Stock consolidation for traders</div>
+
+                    <h1>
+                        Buy anywhere in Nairobi.<br>
+                        <span>We bring it together.</span>
+                    </h1>
+
+                    <p>
+                        Buy from the suppliers who give you the best price.
+                        Send your parcels to Garantii. We collect, consolidate
+                        and send your stock to you as one shipment.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a
+                            class="btn btn-primary"
+                            href="{% url 'book_parcel' %}"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            Send us your stock →
+                        </a>
+
+                        <a class="btn btn-light" href="#how-it-works">
+                            See how it works
+                        </a>
+                    </div>
+
+                    <div class="hero-note">
+                        <strong>One place.</strong>
+                        Multiple suppliers. One shipment.
+                    </div>
                 </div>
 
+                <div class="flow-card" aria-label="Garantii stock consolidation illustration">
+                    <div class="flow-topline">
+                        <span class="flow-label">Your suppliers</span>
+                        <span class="status-dot">Coordinated by Garantii</span>
+                    </div>
 
-            {% endfor %}
-        {% endif %}
-        <h1 class="wow fadeIn" style="color: white; font-size: xxx-large;">Bring More Customers to Your Store and Keep Them Coming Back! </h1>
-        <p class="wow fadeIn" data-wow-delay="0.2s">At Challenge, we specialize in helping retail businesses attract foot traffic and turn every vistor into aloyal cutomer. From innovative marketing to gamefied loyalty programs, we make sure your store stays busy and your customers keep coming back.</p>
-        <a href="{% url 'index' %}#pricing" class="theme_btn wow fadeIn" data-wow-delay="0.4s">Start Driving Traffic Today  </a>
+                    <div class="supplier-grid">
+                        <div class="parcel">
+                            <div class="parcel-icon">
+                                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                                    <path d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Z"/>
+                                    <path d="M3 7.5V17l9 4 9-4V7.5M12 12v9"/>
+                                </svg>
+                            </div>
+                            <strong>Supplier A</strong>
+                            <small>Footwear</small>
+                        </div>
+
+                        <div class="parcel">
+                            <div class="parcel-icon">
+                                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                                    <path d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Z"/>
+                                    <path d="M3 7.5V17l9 4 9-4V7.5M12 12v9"/>
+                                </svg>
+                            </div>
+                            <strong>Supplier B</strong>
+                            <small>Clothing</small>
+                        </div>
+
+                        <div class="parcel">
+                            <div class="parcel-icon">
+                                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                                    <path d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Z"/>
+                                    <path d="M3 7.5V17l9 4 9-4V7.5M12 12v9"/>
+                                </svg>
+                            </div>
+                            <strong>Supplier C</strong>
+                            <small>Bags</small>
+                        </div>
+
+                        <div class="parcel">
+                            <div class="parcel-icon">
+                                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                                    <path d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Z"/>
+                                    <path d="M3 7.5V17l9 4 9-4V7.5M12 12v9"/>
+                                </svg>
+                            </div>
+                            <strong>Supplier D</strong>
+                            <small>Accessories</small>
+                        </div>
+                    </div>
+
+                    <div class="flow-line">
+                        <span></span>
+                        collect + check + consolidate
+                        <span></span>
+                    </div>
+
+                    <div class="hub">
+                        <div>
+                            <strong>Garantii</strong>
+                            <small>One collection point for your stock</small>
+                        </div>
+                        <div class="hub-badge">G</div>
+                    </div>
+
+                    <div class="one-shipment">
+                        <div>
+                            <strong>ONE SHIPMENT</strong>
+                            <small>Everything together, sent to you.</small>
+                        </div>
+                        <div class="shipment-art" aria-hidden="true">
+                            <div class="box-large"></div>
+                            <div class="box-tape"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROBLEM -->
+        <section class="section problem">
+            <div class="container">
+                <div class="eyebrow">The problem</div>
+                <h2 class="section-title">
+                    Buying from several Nairobi suppliers shouldn't mean managing several deliveries.
+                </h2>
+                <p class="section-copy">
+                    Traders should spend their time finding good stock and good prices —
+                    not chasing parcels around Nairobi.
+                </p>
+
+                <div class="problem-grid">
+                    <article class="problem-card">
+                        <div class="num">01</div>
+                        <h3>Has the supplier sent my goods?</h3>
+                        <p>You're left waiting and following up with each supplier.</p>
+                    </article>
+
+                    <article class="problem-card">
+                        <div class="num">02</div>
+                        <h3>Who is collecting everything?</h3>
+                        <p>Every supplier can become another transport arrangement.</p>
+                    </article>
+
+                    <article class="problem-card">
+                        <div class="num">03</div>
+                        <h3>Did one carton get forgotten?</h3>
+                        <p>When parcels move separately, missing goods become harder to trace.</p>
+                    </article>
+
+                    <article class="problem-card">
+                        <div class="num">04</div>
+                        <h3>Why hasn't my parcel arrived?</h3>
+                        <p>No single view means more calls, more WhatsApp messages and more stress.</p>
+                    </article>
+
+                    <article class="problem-card">
+                        <div class="num">05</div>
+                        <h3>Why am I paying transport separately?</h3>
+                        <p>Multiple suppliers can mean multiple collection and shipping costs.</p>
+                    </article>
+                </div>
+
+                <div class="pain-quote">
+                    “Mizigo yangu iko wapi?”
+                    <span>We think you shouldn't have to ask that every day.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- HOW IT WORKS -->
+        <section class="section flow-section" id="how-it-works">
+            <div class="container">
+                <div class="eyebrow">How Garantii works</div>
+                <h2 class="section-title">From many suppliers to one shipment.</h2>
+                <p class="section-copy">
+                    You focus on buying. We coordinate the movement of your stock.
+                </p>
+
+                <div class="journey">
+                    <article class="journey-step">
+                        <span class="journey-num">01</span>
+                        <h3>Buy anywhere</h3>
+                        <p>
+                            Buy from whichever Nairobi supplier gives you the best stock and price.
+                        </p>
+                        <span class="journey-arrow" aria-hidden="true"></span>
+                    </article>
+
+                    <article class="journey-step">
+                        <span class="journey-num">02</span>
+                        <h3>Send to us</h3>
+                        <p>
+                            Suppliers bring your parcels to us, or our errand team can collect them.
+                        </p>
+                        <span class="journey-arrow" aria-hidden="true"></span>
+                    </article>
+
+                    <article class="journey-step">
+                        <span class="journey-num">03</span>
+                        <h3>We record</h3>
+                        <p>
+                            Every parcel received is counted and recorded before dispatch.
+                        </p>
+                        <span class="journey-arrow" aria-hidden="true"></span>
+                    </article>
+
+                    <article class="journey-step">
+                        <span class="journey-num">04</span>
+                        <h3>We consolidate</h3>
+                        <p>
+                            Multiple supplier parcels become one organised shipment.
+                        </p>
+                        <span class="journey-arrow" aria-hidden="true"></span>
+                    </article>
+
+                    <article class="journey-step">
+                        <span class="journey-num">05</span>
+                        <h3>We send it</h3>
+                        <p>
+                            One shipment, one tracking experience and updates along the way.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5 PROMISES -->
+        <section class="section" id="promises">
+            <div class="container">
+                <div class="promises-header">
+                    <div>
+                        <div class="eyebrow">Our 5 promises</div>
+                        <h2 class="section-title">Less hassle. More control over your stock.</h2>
+                    </div>
+
+                    <p class="section-copy">
+                        We built Garantii around the things traders worry about most:
+                        collections, visibility, missing goods and unpredictable costs.
+                    </p>
+                </div>
+
+                <div class="promises-list">
+                    <article class="promise">
+                        <div class="promise-number">01</div>
+                        <div>
+                            <h3>Buy from any supplier</h3>
+                            <p>
+                                Buy where you get the best price. You don't need to change
+                                your suppliers just to make logistics easier.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article class="promise featured">
+                        <div class="promise-number">02</div>
+                        <div>
+                            <h3>One collection instead of many</h3>
+                            <p>
+                                Let suppliers bring your parcels to us, or let our errand
+                                team collect them. We coordinate the collections and
+                                consolidate everything into one shipment.
+                            </p>
+
+                            <div class="mini-comparison">
+                                <div class="mini-side">
+                                    <span>Without consolidation</span>
+                                    <strong>4 suppliers → 4 collections → 4 transport arrangements</strong>
+                                </div>
+
+                                <div class="mini-side">
+                                    <span>With Garantii</span>
+                                    <strong>4 suppliers → Garantii → 1 shipment</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="promise">
+                        <div class="promise-number">03</div>
+                        <div>
+                            <h3>One shipment. One tracking experience.</h3>
+                            <p>
+                                We notify you when we receive your parcel, finish consolidation,
+                                dispatch your shipment, and when it arrives. If there's a delay,
+                                we'll let you know.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article class="promise">
+                        <div class="promise-number">04</div>
+                        <div>
+                            <h3>Protect traders from missing goods</h3>
+                            <p>
+                                With your permission, we can check incoming parcels at our
+                                collection point. If a supplier says 10 pieces, we can verify
+                                and record 10 pieces before consolidation.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article class="promise">
+                        <div class="promise-number">05</div>
+                        <div>
+                            <h3>Predictable prices</h3>
+                            <p>
+                                Delivery starts from <strong>KSh 200</strong> for parcels
+                                under 2kg outside Nairobi. Simple pricing, with fewer surprises.
+                            </p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISIBILITY -->
+        <section class="section visibility">
+            <div class="container visibility-grid">
+                <div>
+                    <div class="eyebrow">Visibility you can trust</div>
+                    <h2 class="section-title">No more guessing where your stock is.</h2>
+                    <p class="section-copy">
+                        We keep you informed at the moments that matter — from the first parcel
+                        arriving at Garantii to the final shipment reaching you.
+                    </p>
+
+                    <div class="visibility-list">
+                        <div class="visibility-item">
+                            <div class="check">✓</div>
+                            <div>
+                                <strong>Parcel received</strong>
+                                <span>We confirm that your supplier's parcel has reached us.</span>
+                            </div>
+                        </div>
+
+                        <div class="visibility-item">
+                            <div class="check">✓</div>
+                            <div>
+                                <strong>Consolidation finished</strong>
+                                <span>Your different supplier parcels have been combined.</span>
+                            </div>
+                        </div>
+
+                        <div class="visibility-item">
+                            <div class="check">✓</div>
+                            <div>
+                                <strong>Shipment dispatched</strong>
+                                <span>Your consolidated shipment is on its way.</span>
+                            </div>
+                        </div>
+
+                        <div class="visibility-item">
+                            <div class="check">✓</div>
+                            <div>
+                                <strong>Shipment arrived</strong>
+                                <span>We let you know when it reaches its destination.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phone" aria-label="Illustration of Garantii WhatsApp updates">
+                    <div class="phone-screen">
+                        <div class="phone-top">
+                            <span>9:41</span>
+                            <span>Garantii updates</span>
+                        </div>
+
+                        <div class="wa-head">
+                            <div class="wa-avatar">G</div>
+                            <div>
+                                <strong>Garantii</strong>
+                                <small>Business account</small>
+                            </div>
+                        </div>
+
+                        <div class="chat">
+                            <div class="chat-bubble">
+                                ✅ Parcel received
+                                <span class="tick">10:02 AM</span>
+                            </div>
+
+                            <div class="chat-bubble">
+                                We have received your parcel from Supplier A.
+                                <span class="tick">10:02 AM</span>
+                            </div>
+
+                            <div class="chat-bubble me">
+                                Nimekupata. Asante.
+                                <span class="tick">10:05 AM</span>
+                            </div>
+
+                            <div class="chat-bubble">
+                                📦 Consolidation complete
+                                <span class="tick">1:38 PM</span>
+                            </div>
+
+                            <div class="chat-bubble">
+                                🚚 Your shipment has been dispatched.
+                                <span class="tick">2:04 PM</span>
+                            </div>
+
+                            <div class="chat-bubble">
+                                ✅ Your shipment has arrived.
+                                <span class="tick">10:14 AM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ACCOUNTABILITY -->
+        <section class="section">
+            <div class="container accountability-grid">
+                <div>
+                    <div class="eyebrow">Accountability</div>
+                    <h2 class="section-title">Your stock is your business. We treat every parcel like it matters.</h2>
+                    <p class="section-copy">
+                        With your permission, parcels can be checked and recorded at our pickup
+                        point before they are consolidated and dispatched.
+                    </p>
+                </div>
+
+                <div class="count-card">
+                    <div class="count-row">
+                        <div class="count-icon">10</div>
+                        <div>
+                            <strong>Supplier says 10 pcs</strong>
+                            <span>Expected quantity</span>
+                        </div>
+                    </div>
+
+                    <div class="count-row">
+                        <div class="count-icon">✓</div>
+                        <div>
+                            <strong>Garantii verifies 10 pcs</strong>
+                            <span>Received quantity recorded</span>
+                        </div>
+                    </div>
+
+                    <div class="count-row">
+                        <div class="count-icon">→</div>
+                        <div>
+                            <strong>We consolidate and dispatch</strong>
+                            <span>Your shipment leaves with a record</span>
+                        </div>
+                    </div>
+
+                    <div class="count-final">
+                        <div class="big">10 → 8?</div>
+                        <small>You have a receiving record to help trace what happened.</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRICING -->
+        <section class="section pricing" id="pricing">
+            <div class="container">
+                <div class="eyebrow">Predictable pricing</div>
+                <h2 class="section-title">Know what delivery costs before the stress starts.</h2>
+                <p class="section-copy">
+                    A simple starting point for traders sending stock outside Nairobi.
+                </p>
+
+                <div class="pricing-card">
+                    <div class="price-label">Starting from</div>
+                    <div class="price"><span>KSh</span> 200</div>
+                    <p class="pricing-text">
+                        For parcels under 2kg outside Nairobi. Final price can vary by destination,
+                        weight and shipment details.
+                    </p>
+
+                    <div class="price-pills">
+                        <span class="pill">Consolidated stock</span>
+                        <span class="pill">One shipment</span>
+                        <span class="pill">Shipment updates</span>
+                        <span class="pill">No chasing suppliers</span>
+                    </div>
+
+                    <div class="pricing-cta">
+                        <a
+                            class="btn btn-primary"
+                            href="{% url 'book_parcel' %}"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            Send us your stock →
+                        </a>
+                        
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FINAL CTA -->
+        <section class="final-cta">
+            <div class="container">
+                <div class="final-card">
+                    <div class="eyebrow" style="color:#fff;">Ready to make stock buying easier?</div>
+
+                    <h2>
+                        Buy anywhere in Nairobi.<br>
+                        Receive everything together.
+                    </h2>
+
+                    <p>
+                        One place to send your parcels. One shipment. One update.
+                        Less hassle for you.
+                    </p>
+
+                    <div class="final-actions">
+                        <a
+                            class="btn btn-light"
+                            href="https://wa.me/{{ whatsapp_number }}?text=Hi%20Garantii%2C%20I%20want%20to%20start%20consolidating%20my%20stock."
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            Start on WhatsApp →
+                        </a>
+
+                        <a class="btn" href="#how-it-works" style="background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.22);">
+                            See how it works
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <a href="#" class="brand">
+                    <span class="brand-mark">G</span>
+                    <span style="color:#fff;">Garantii</span>
+                </a>
+                <p class="footer-copy">
+                    Stock consolidation and logistics for traders buying from Nairobi suppliers.
+                </p>
+            </div>
+
+            <div>
+                <div class="footer-links">
+                    <a href="#how-it-works">How it works</a>
+                    <a href="#promises">Promises</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">WhatsApp</a>
+                </div>
+
+                <div class="footer-bottom">
+                    © {% now "Y" %} Garantii. Built for traders.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="mobile-sticky-cta">
+        <a
+            class="btn btn-dark"
+            href="#how-it-works"
+        >
+            How it works
+        </a>
+
+        <a
+            class="btn btn-primary"
+            href="https://wa.me/{{ whatsapp_number }}?text=Hi%20Garantii%2C%20I%20want%20to%20send%20my%20stock."
+            target="_blank"
+            rel="noopener"
+        >
+            WhatsApp us
+        </a>
     </div>
-</section>
-<!-- Banner Area -->
+    {% endwith %}
+</body>
+</html>
+'''
 
+path = Path("/mnt/data/garantii_landing.html")
+path.write_text(html, encoding="utf-8")
 
-{% endblock %}
+print(f"Created: {path}")
+print(f"Size: {path.stat().st_size:,} bytes")
+

@@ -108,9 +108,9 @@ def calculate_package_cost(package):
     # Weight surcharge
     weight_prices = {
         "2": Decimal("0"),
-        "5": Decimal("50"),
-        "10": Decimal("80"),
-        "20": Decimal("130"),
+        "5": Decimal("30"),
+        "10": Decimal("50"),
+        "20": Decimal("100"),
         "50": Decimal("150"),
         "50+": Decimal("200"),
     }
@@ -136,7 +136,7 @@ def update_dispatch_total(dispatch):
     """
     Recalculate dispatch total.
     """
-    cost = Decimal("250.00")
+    cost = Decimal("200.00")
 
     total = (
         Package.objects.filter(dispatch=dispatch)
@@ -904,12 +904,35 @@ def agent_dispatch_detail(request, pk):
             dispatch.save()
 
         elif action == 'mark_picked':
+
+            # ---------------------------------------------------------
+            # ALL PACKAGES MUST BE PICKED BY THEIR CUSTOMERS FIRST
+            # ---------------------------------------------------------
+            packages = dispatch.agent_dispatches.all()
+
+            unpicked_packages = packages.filter(
+                picked_picked_by_receiving_customer=False
+            )
+
+            if unpicked_packages.exists():
+                messages.error(
+                    request,
+                    f"All packages must be picked by their customers first. "
+                    f"{unpicked_packages.count()} package(s) are still waiting to be picked."
+                )
+
+                return redirect(
+                    "agent_dispatch_detail",
+                    dispatch.id
+                )
+
+            # ---------------------------------------------------------
+            # ALL PACKAGES HAVE BEEN PICKED
+            # ---------------------------------------------------------
             dispatch.all_luggages_picked = True
-            dispatch.date_picked_by_the_receiving_agent = timezone.now()
             dispatch.status = 'PICKED'
             dispatch.updated_by = user
             dispatch.save()
-
         return redirect('agent_dispatch_detail', pk=dispatch.pk)
   
     sending_agent = (

@@ -68,7 +68,7 @@ class PackageDispatch(models.Model):
     agent_dispatch = models.ForeignKey(AgentDispatch, blank=True, null=True, on_delete=models.SET_NULL, related_name="agent_dispatches")
 
     delivery_phone = models.CharField(max_length=20, blank=True, null=True)
-    delivery_address = models.CharField(max_length=20, blank=True, null=True)
+    delivery_address = models.CharField(max_length=200, blank=True, null=True)
 
     sending_customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL, related_name="sending_customer")
     sending_agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="sending_agent")

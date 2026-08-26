@@ -55,8 +55,8 @@
                     <div class="col-md-6"><label class="form-label">Name</label><input type="text" name="receiver_name" class="form-control" placeholder="Receiver name" required></div>
                     <div class="col-md-6"><label class="form-label">Phone</label><input type="number" name="receiver_phone" class="form-control" placeholder="07XX XXX XXX" required></div>
                     <div class="col-12"><label class="form-label">County</label><select id="toCounty" name="to_county" class="form-select"><option value="">Select County</option>{% for c in counties %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></div>
-                    <div class="col-12" id="toLocationDiv" style="display:none;"><label class="form-label">Location</label><select id="toLocation" name="to_location" class="form-select"></select></div>
-                    <div class="col-12" id="toPlaceDiv" style="display:none;"><label class="form-label">Location</label><input type="text" id="toPlace" name="to_place" class="form-control" placeholder="Enter location..." ></div>
+                    <div class="col-12" id="toLocationDiv" style="display:none;"><label class="form-label">Select Location</label><select id="toLocation" name="to_location" class="form-select"></select></div>
+                    <div class="col-12" id="toPlaceDiv" style="display:none;"><label class="form-label">Enter Location</label><input type="text" id="toPlace" name="to_place" class="form-control" placeholder="Enter location..." ></div>
                     <div class="col-12" id="toAgentDiv" style="display:none;"><label class="form-label">Agent</label><select id="toAgent" name="to_agent" class="form-select"></select></div>
                 </div>
             </div>
@@ -251,8 +251,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                 console.log("Showing location dropdown");
 
                 locationDiv.style.display = "block";
+                placeDiv.style.display = "block";
 
-                location.required = true;
 
                 location.appendChild(
                     new Option("Select Location", "")
