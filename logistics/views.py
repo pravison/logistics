@@ -219,8 +219,9 @@ def book_parcel(request):
         )
 
         from_location = None
-        if from_location:
+        if from_location_id:
             from_location = Location.objects.filter(id=from_location_id).first()
+    
 
         if sender_customer.name != sender_name:
             sender_customer.name = sender_name
