@@ -67,15 +67,15 @@ class PackageDispatch(models.Model):
 
     agent_dispatch = models.ForeignKey(AgentDispatch, blank=True, null=True, on_delete=models.SET_NULL, related_name="agent_dispatches")
 
-    delivery_phone = models.CharField(max_length=25, blank=True, null=True)
-    delivery_address = models.CharField(max_length=300, blank=True, null=True)
-
     sending_customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL, related_name="sending_customer")
     sending_agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="sending_agent")
+    sending_address = models.CharField(max_length=300, blank=True, null=True)
 
     receiving_customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL, related_name="receiving_customer")
     receiver_identification_code = models.CharField()
     receiving_agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="receiving_agent")
+    delivery_phone = models.CharField(max_length=25, blank=True, null=True)
+    delivery_address = models.CharField(max_length=300, blank=True, null=True)
 
     total_transport_cost = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     amount_paid = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))

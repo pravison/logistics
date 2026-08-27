@@ -208,6 +208,7 @@ def book_parcel(request):
         sender_name = request.POST.get("sender_name")
         sender_phone = request.POST.get("sender_phone")
         from_agent_id = request.POST.get("from_agent")
+        from_location_id = request.POST.get("from_location")
 
         sender_customer, _ = Customer.objects.get_or_create(
             phone_number=sender_phone,
@@ -216,6 +217,10 @@ def book_parcel(request):
                 "refferal_code": generate_unique_refferal_code(),
             },
         )
+
+        from_location = None
+        if from_location:
+            from_location = Location.objects.filter(id=from_location_id).first()
 
         if sender_customer.name != sender_name:
             sender_customer.name = sender_name
@@ -288,6 +293,7 @@ def book_parcel(request):
                 receiving_agent=receiving_agent,
                 receiver_identification_code=generate_unique_id_code(),
                 delivery_address=f"{location}",
+                sending_address=f"{from_location}",
                 is_special_dispatch=True,
             )
 
@@ -313,6 +319,7 @@ def book_parcel(request):
                     receiving_agent=receiving_agent,
                     receiver_identification_code=generate_unique_id_code(),
                     delivery_address=f"{location}",
+                    sending_address=f"{from_location}",
                     is_special_dispatch=False,
                 )
 
