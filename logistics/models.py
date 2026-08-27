@@ -23,8 +23,8 @@ class AgentDispatch(models.Model):
     delivery_address = models.TextField(blank=True, null=True)
     delivery_phone = models.CharField(max_length=20, blank=True, null=True)
 
-    vehicle_used = models.CharField(max_length=100, blank=True, null=True)
-    vehicle_used_phone_number = models.CharField(max_length=100, blank=True, null=True)
+    vehicle_used = models.CharField(max_length=300, blank=True, null=True)
+    vehicle_used_phone_number = models.CharField(max_length=30, blank=True, null=True)
 
     transport_cost = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
@@ -67,8 +67,8 @@ class PackageDispatch(models.Model):
 
     agent_dispatch = models.ForeignKey(AgentDispatch, blank=True, null=True, on_delete=models.SET_NULL, related_name="agent_dispatches")
 
-    delivery_phone = models.CharField(max_length=20, blank=True, null=True)
-    delivery_address = models.CharField(max_length=200, blank=True, null=True)
+    delivery_phone = models.CharField(max_length=25, blank=True, null=True)
+    delivery_address = models.CharField(max_length=300, blank=True, null=True)
 
     sending_customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL, related_name="sending_customer")
     sending_agent = models.ForeignKey(Agent, blank=True, null=True, on_delete=models.SET_NULL, related_name="sending_agent")
@@ -211,7 +211,7 @@ class Package(models.Model):
     )
 
     contents = models.CharField(
-        max_length=255,
+        max_length=355,
         help_text="E.g. Shoes, Clothes, Electronics",
     )
 
